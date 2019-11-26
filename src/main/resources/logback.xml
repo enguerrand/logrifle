@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <timestamp key="ts" datePattern="HH:mm:ss.SSS" />
+
+    <appender name="FILE-ENGINE" class="ch.qos.logback.core.FileAppender">
+        <file>out/log.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="de.rochefort.logrifle" level="debug" additivity="false">
+        <appender-ref ref="FILE-ENGINE" />
+    </logger>
+
+</configuration>

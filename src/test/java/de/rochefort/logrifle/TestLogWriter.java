@@ -15,8 +15,6 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class TestLogWriter {
     public static final Logger LOGGER = LoggerFactory.getLogger(TestLogWriter.class);
@@ -79,6 +77,9 @@ public class TestLogWriter {
     }
 
     public static void main(String[] args) throws IOException {
+        if (args.length > 0) {
+            System.setProperty("log.name", args[0]);
+        }
         TestLogWriter testLogWriter = new TestLogWriter(1, 0L);
         testLogWriter.start();
     }
