@@ -77,10 +77,7 @@ public class TestLogWriter {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length > 0) {
-            System.setProperty("log.name", args[0]);
-        }
-        TestLogWriter testLogWriter = new TestLogWriter(1, 0L);
+        TestLogWriter testLogWriter = new TestLogWriter(1000, 0L);
         testLogWriter.start();
     }
 }
