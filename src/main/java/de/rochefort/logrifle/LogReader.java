@@ -44,7 +44,6 @@ public class LogReader {
                         tailBuffer.clear();
                     }
                     lines.add(line);
-                    System.out.println(line.getRaw());
                 } else {
                     tailBuffer.add(line);
                 }

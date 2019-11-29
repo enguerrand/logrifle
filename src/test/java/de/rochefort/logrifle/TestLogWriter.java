@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,32 +21,55 @@ public class TestLogWriter {
     public static final Logger LOGGER = LoggerFactory.getLogger(TestLogWriter.class);
     public static final Marker MARKER = MarkerFactory.getMarker("TEST");
 
-    private final long maxLineDelayMs;
     private final ScheduledExecutorService executorService;
-    private final Random r;
+    private final Random rTime;
+    private final Random rContent;
     private final List<String> dictionary;
+    private volatile boolean stopRequested;
 
-    public TestLogWriter(double minimumRateLinesPerSecond, @Nullable Long seed) throws IOException {
-        this.maxLineDelayMs = (long) (1000.0 / minimumRateLinesPerSecond);
+    public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed) throws IOException {
         executorService = Executors.newScheduledThreadPool(1);
-        r = new Random(seed != null ? seed : System.currentTimeMillis());
+        rTime = new Random(timingSeed != null ? timingSeed : System.currentTimeMillis());
+        rContent = new Random(contentSeed != null ? contentSeed : System.currentTimeMillis());
         dictionary = readDictionary();
     }
 
-    public void start() {
-        scheduleNext();
+    private static long computeDelayMs(double minimumRateLinesPerSecond) {
+        return (long) (1000.0 / minimumRateLinesPerSecond);
     }
 
-    private void scheduleNext() {
-        long delayMs = r.nextLong() % this.maxLineDelayMs;
+    public CompletableFuture<Void> start(double minimumRateLinesPerSecond, @Nullable Integer maxLineCount) {
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        stopRequested = false;
+        long maxDelayMs = computeDelayMs(minimumRateLinesPerSecond);
+        scheduleNext(maxDelayMs, maxLineCount == null ? -1 : maxLineCount, f);
+        return f;
+    }
+
+    public void stop(){
+        stopRequested = true;
+    }
+
+    private void scheduleNext(long maxDelayMs, int maxLineCount, CompletableFuture<Void> f) {
+        if (stopRequested || (maxLineCount == 0)) {
+            f.complete(null);
+            return;
+        }
+        long delayMs = rTime.nextLong() % maxDelayMs;
         executorService.schedule(() -> {
             writeRandomLogLine();
-            scheduleNext();
+            scheduleNext(maxDelayMs, maxLineCount - 1, f);
         }, delayMs, TimeUnit.MILLISECONDS);
     }
 
-    private void writeRandomLogLine() {
-        int wordCount = r.nextInt(20);
+    public void writeRandomLines(int count) {
+        for (int i = 0; i < count; i++) {
+            writeRandomLogLine();
+        }
+    }
+
+    public void writeRandomLogLine() {
+        int wordCount = rContent.nextInt(20);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < wordCount; i++) {
             sb.append(nextRandomWord());
@@ -53,7 +77,7 @@ public class TestLogWriter {
                 sb.append(" ");
             }
         }
-        int debugLevel = r.nextInt(100);
+        int debugLevel = rContent.nextInt(100);
         String message = sb.toString();
         if (debugLevel < 2) {
             LOGGER.error(MARKER, message);
@@ -67,7 +91,7 @@ public class TestLogWriter {
     }
 
     private String nextRandomWord(){
-        int index = r.nextInt(dictionary.size());
+        int index = rContent.nextInt(dictionary.size());
         return dictionary.get(index);
     }
 
@@ -77,7 +101,7 @@ public class TestLogWriter {
     }
 
     public static void main(String[] args) throws IOException {
-        TestLogWriter testLogWriter = new TestLogWriter(1000, 0L);
-        testLogWriter.start();
+        TestLogWriter testLogWriter = new TestLogWriter(0L, 0L);
+        testLogWriter.start(100, null);
     }
 }
