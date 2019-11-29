@@ -48,6 +48,7 @@ public class TestLogWriter {
 
     public void stop(){
         stopRequested = true;
+        executorService.shutdown();
     }
 
     private void scheduleNext(long maxDelayMs, int maxLineCount, CompletableFuture<Void> f) {

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
@@ -20,12 +21,14 @@ class LogReaderTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        Files.deleteIfExists(LOGFILE);
+        if(Files.exists(LOGFILE)){
+            Files.write(LOGFILE, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
+        }
     }
 
     @AfterAll
     static void tearDown() throws IOException {
-        Files.deleteIfExists(LOGFILE);
+        Files.delete(LOGFILE);
     }
 
     @Test
@@ -34,6 +37,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
+        logWriter.stop();
         LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE);
         List<Line> lines = logReader.getLines();
         Assertions.assertEquals(3, lines.size(), "wrong line count");
