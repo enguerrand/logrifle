@@ -23,6 +23,11 @@
             <version>2.6</version>
         </dependency>
         <dependency>
+            <groupId>com.googlecode.lanterna</groupId>
+            <artifactId>lanterna</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
@@ -34,9 +39,6 @@
             <version>5.5.2</version>
             <scope>test</scope>
         </dependency>
-
-
-
     </dependencies>
     <build>
         <resources>
@@ -63,7 +65,8 @@
                     <finalName>${project.artifactId}</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>de.rochefort.logrifle.Main</mainClass>
+                            <mainClass>de.rochefort.logrifle.ui.HelloLanternaGui</mainClass>
+<!--                            <mainClass>de.rochefort.logrifle.Main</mainClass>-->
                         </manifest>
                     </archive>
                 </configuration>

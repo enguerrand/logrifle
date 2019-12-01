@@ -22,7 +22,6 @@ public class LogReader {
     private final LineParser lineParser;
 
     public LogReader(LineParser lineParser, Path logfile) throws IOException {
-        System.out.println("openening file ");
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {
@@ -33,7 +32,6 @@ public class LogReader {
 
             /**
              * this implementation is not thread safe. the assumption is that it will only be called on the Tailer Thread
-             * @param s
              */
             @Override
             public void handle(String s) {
