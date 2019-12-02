@@ -4,6 +4,7 @@ import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParseResult;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.views.DataView;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -15,10 +16,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class LogReader {
+public class LogReader implements DataView {
     private volatile List<Line> lines = null;
     private final LineParser lineParser;
 
@@ -107,7 +109,10 @@ public class LogReader {
         }
     }
 
-    public List<Line> getLines() {
+    /**
+     *   use only in tests!
+     */
+    List<Line> getLines() {
         return lines;
     }
 
@@ -124,5 +129,17 @@ public class LogReader {
         LogReader logReader = new LogReader(lineParser, path);
         long end = System.nanoTime();
         System.out.println("read "+logReader.getLines().size() +" in "+ TimeUnit.NANOSECONDS.toMillis(end-begin) +"ms");
+    }
+
+    @Override
+    public List<Line> getLines(int topIndex, int maxCount) {
+        List<Line> snapshot = this.lines;
+        if (snapshot == null || snapshot.size() <= topIndex) {
+            return Collections.emptyList();
+        } else if (snapshot.size() <= topIndex + maxCount) {
+            return snapshot.subList(topIndex, snapshot.size());
+        } else {
+            return snapshot.subList(topIndex, topIndex + maxCount);
+        }
     }
 }

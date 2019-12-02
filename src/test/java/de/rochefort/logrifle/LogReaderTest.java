@@ -73,6 +73,25 @@ class LogReaderTest {
         Assertions.assertEquals("java.lang.RuntimeException: Exception Message", lines.get(0).getAdditionalLines().get(0), "wrong first additional line");
     }
 
+
+    @Test
+    void testGetLines() throws Exception {
+        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        logWriter.writeRandomLogLine();
+        logWriter.writeRandomLogLine();
+        logWriter.writeRandomLogLine();
+        logWriter.writeRandomLogLine();
+        logWriter.writeRandomLogLine();
+        logWriter.stop();
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE);
+        Assertions.assertEquals(0, logReader.getLines(5, 3).size(), "completely out of bounds index");
+        Assertions.assertEquals(1, logReader.getLines(4, 2).size(), "partially out of bounds index");
+        Assertions.assertEquals(2, logReader.getLines(3, 2).size(), "at bounds index");
+        Assertions.assertEquals(3, logReader.getLines(2, 3).size(), "at bounds index");
+        Assertions.assertEquals(2, logReader.getLines(2, 2).size(), "in bounds index");
+    }
+
+
     private void await(BooleanSupplier condition, long timeoutMs) throws InterruptedException {
         long deadline = System.currentTimeMillis() + timeoutMs;
         while (System.currentTimeMillis() < deadline && !condition.getAsBoolean()) {
