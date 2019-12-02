@@ -2,7 +2,7 @@ package de.rochefort.logrifle;
 
 import de.rochefort.logrifle.data.Line;
 import de.rochefort.logrifle.data.LineParser;
-import de.rochefort.logrifle.data.LineParserTextImpl;
+import de.rochefort.logrifle.data.LineParserTimestampedTextImpl;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -89,7 +90,9 @@ public class LogReader {
         }
         String pathToLogFile = args[0];
         Path path = Paths.get(pathToLogFile);
-        LogReader logReader = new LogReader(new LineParserTextImpl(), path);
+//        LineParser lineParser = new LineParserTextImpl();
+        LineParser lineParser = new LineParserTimestampedTextImpl(".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*", "HH:mm:ss.SSS");
+        LogReader logReader = new LogReader(lineParser, path);
         long end = System.nanoTime();
         System.out.println("read "+logReader.getLines().size() +" in "+ TimeUnit.NANOSECONDS.toMillis(end-begin) +"ms");
     }

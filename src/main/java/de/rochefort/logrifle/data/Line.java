@@ -3,14 +3,20 @@ package de.rochefort.logrifle.data;
 import java.util.Objects;
 
 public class Line {
+    private final long timestamp;
     private final String raw;
 
-    Line(String raw) {
+    Line(String raw, long timestamp) {
+        this.timestamp = timestamp;
         this.raw = raw;
     }
 
     public String getRaw() {
         return raw;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     @Override
