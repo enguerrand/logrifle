@@ -5,6 +5,7 @@ import de.rochefort.logrifle.data.parsing.LineParserTextImpl;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +16,21 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
 class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
+    static ExecutorService POOL;
+
+    @BeforeAll
+    static void setUp() {
+        POOL = Executors.newCachedThreadPool();
+    }
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUpEach() throws IOException {
         if(Files.exists(LOGFILE)){
             Files.write(LOGFILE, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
         }
@@ -30,6 +39,7 @@ class LogReaderTest {
     @AfterAll
     static void tearDown() throws IOException {
         Files.delete(LOGFILE);
+        POOL.shutdown();
     }
 
     @Test
@@ -39,7 +49,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, POOL);
         List<Line> lines = logReader.getLines();
         Assertions.assertEquals(3, lines.size(), "wrong line count");
         Assertions.assertTrue(lines.get(1).getRaw().endsWith("ullam doloremque quia dolorem pariatur. adipiscing 0076.32 nesciunt. dolore"), "Wrong line content");
@@ -50,7 +60,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L);
         logWriter.writeRandomLines(100);
         CompletableFuture<Void> f = logWriter.start(100, 200);
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, POOL);
         f.get();
         List<Line> lines = logReader.getLines();
         await(() -> lines.size() == 300, 10_000L);
@@ -66,7 +76,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L);
         logWriter.writeException("Exception text", "Exception Message");
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, POOL);
         List<Line> lines = logReader.getLines();
         Assertions.assertEquals(1, lines.size(), "wrong line count");
         Assertions.assertNotEquals(0, lines.get(0).getAdditionalLines().size(), "additional lines missing");
@@ -83,7 +93,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, POOL);
         Assertions.assertEquals(0, logReader.getLines(5, 3).size(), "completely out of bounds index");
         Assertions.assertEquals(1, logReader.getLines(4, 2).size(), "partially out of bounds index");
         Assertions.assertEquals(2, logReader.getLines(3, 2).size(), "at bounds index");

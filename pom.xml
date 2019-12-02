@@ -65,8 +65,7 @@
                     <finalName>${project.artifactId}</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>de.rochefort.logrifle.ui.HelloLanternaGui</mainClass>
-<!--                            <mainClass>de.rochefort.logrifle.Main</mainClass>-->
+                            <mainClass>de.rochefort.logrifle.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

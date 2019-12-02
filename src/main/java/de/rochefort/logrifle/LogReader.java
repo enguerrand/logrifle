@@ -3,7 +3,6 @@ package de.rochefort.logrifle;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParseResult;
 import de.rochefort.logrifle.data.parsing.LineParser;
-import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.rochefort.logrifle.data.views.DataView;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
@@ -14,17 +13,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 
 public class LogReader implements DataView {
     private volatile List<Line> lines = null;
     private final LineParser lineParser;
+    private final Tailer tailer;
 
-    public LogReader(LineParser lineParser, Path logfile) throws IOException {
+    public LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool) throws IOException {
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {
@@ -77,10 +76,8 @@ public class LogReader implements DataView {
                 ex.printStackTrace();
             }
         };
-        Tailer tailer = new Tailer(logfile.toFile(), tailerListener, 250, true);
-        Thread thread = new Thread(tailer);
-        thread.setDaemon(false);
-        thread.start();
+        tailer = new Tailer(logfile.toFile(), tailerListener, 250, true);
+        workerPool.submit(tailer);
 
         List<Line> readResult = new ArrayList<>();
         Line lastLine = null;
@@ -116,21 +113,6 @@ public class LogReader implements DataView {
         return lines;
     }
 
-    public static void main(String[] args) throws IOException {
-        long begin = System.nanoTime();
-        if (args.length == 0) {
-            System.err.println("Need path to file!");
-            return;
-        }
-        String pathToLogFile = args[0];
-        Path path = Paths.get(pathToLogFile);
-//        LineParser lineParser = new LineParserTextImpl();
-        LineParser lineParser = new LineParserTimestampedTextImpl();
-        LogReader logReader = new LogReader(lineParser, path);
-        long end = System.nanoTime();
-        System.out.println("read "+logReader.getLines().size() +" in "+ TimeUnit.NANOSECONDS.toMillis(end-begin) +"ms");
-    }
-
     @Override
     public List<Line> getLines(int topIndex, int maxCount) {
         List<Line> snapshot = this.lines;
@@ -141,5 +123,9 @@ public class LogReader implements DataView {
         } else {
             return snapshot.subList(topIndex, topIndex + maxCount);
         }
+    }
+
+    public void shutdown() {
+        tailer.stop();
     }
 }
