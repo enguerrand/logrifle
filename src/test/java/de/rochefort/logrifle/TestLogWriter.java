@@ -81,14 +81,20 @@ public class TestLogWriter {
         int debugLevel = rContent.nextInt(100);
         String message = sb.toString();
         if (debugLevel < 2) {
+            writeException(message, "Oops, something went wrong!");
+        } else if (debugLevel < 12) {
             LOGGER.error(MARKER, message);
-        } else if (debugLevel < 10) {
+        } else if (debugLevel < 20) {
             LOGGER.warn(MARKER, message);
         } else if (debugLevel < 40) {
             LOGGER.info(MARKER, message);
         } else {
             LOGGER.debug(MARKER, message);
         }
+    }
+
+    public void writeException(String message, String exceptionMessage) {
+        LOGGER.error(MARKER, message, new RuntimeException(exceptionMessage));
     }
 
     private String nextRandomWord(){

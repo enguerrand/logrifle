@@ -1,11 +1,13 @@
 package de.rochefort.logrifle;
 
 import de.rochefort.logrifle.data.Line;
+import de.rochefort.logrifle.data.LineParseResult;
 import de.rochefort.logrifle.data.LineParser;
 import de.rochefort.logrifle.data.LineParserTimestampedTextImpl;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class LogReader {
     private volatile List<Line> lines = null;
@@ -26,6 +27,7 @@ public class LogReader {
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {
+            private @Nullable Line lastLine;
             @Override
             public void init(Tailer tailer) {
                 super.init(tailer);
@@ -36,15 +38,35 @@ public class LogReader {
              */
             @Override
             public void handle(String s) {
-                Line line = LogReader.this.lineParser.parse(s);
+                LineParseResult parseResult = LogReader.this.lineParser.parse(s);
                 if (lines != null) {
-                    if (!tailBuffer.isEmpty()) {
-                        readBuffer(tailBuffer);
-                        tailBuffer.clear();
-                    }
-                    lines.add(line);
+                    handleDirect(parseResult);
                 } else {
-                    tailBuffer.add(line);
+                    handleBuffered(parseResult);
+                }
+            }
+
+            private void handleDirect(LineParseResult parseResult) {
+                if (!tailBuffer.isEmpty()) {
+                    readBuffer(tailBuffer);
+                    tailBuffer.clear();
+                }
+                if (parseResult.isNewLine()) {
+                    lines.add(parseResult.getParsedLine());
+                } else {
+                    Line last = lines.get(lines.size() - 1);
+                    last.appendAdditionalLine(parseResult.getText());
+                }
+            }
+
+            private void handleBuffered(LineParseResult parseResult) {
+                if (parseResult.isNewLine()) {
+                    this.lastLine = parseResult.getParsedLine();
+                    tailBuffer.add(this.lastLine);
+                } else {
+                    if (this.lastLine != null) {
+                        this.lastLine.appendAdditionalLine(parseResult.getText());
+                    }
                 }
             }
 
@@ -59,10 +81,18 @@ public class LogReader {
         thread.setDaemon(false);
         thread.start();
 
-        this.lines = Files.readAllLines(logfile, StandardCharsets.UTF_8)
-                .stream()
-                .map(this.lineParser::parse)
-                .collect(Collectors.toList());
+        List<Line> readResult = new ArrayList<>();
+        Line lastLine = null;
+        for (String current : Files.readAllLines(logfile, StandardCharsets.UTF_8)) {
+            LineParseResult parseResult = this.lineParser.parse(current);
+            if (parseResult.isNewLine()) {
+                lastLine = parseResult.getParsedLine();
+                readResult.add(lastLine);
+            } else if (lastLine != null) {
+                lastLine.appendAdditionalLine(parseResult.getText());
+            }
+        }
+        this.lines = readResult;
     }
 
     private void readBuffer(List<Line> tailBuffer) {
@@ -91,7 +121,7 @@ public class LogReader {
         String pathToLogFile = args[0];
         Path path = Paths.get(pathToLogFile);
 //        LineParser lineParser = new LineParserTextImpl();
-        LineParser lineParser = new LineParserTimestampedTextImpl(".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*", "HH:mm:ss.SSS");
+        LineParser lineParser = new LineParserTimestampedTextImpl();
         LogReader logReader = new LogReader(lineParser, path);
         long end = System.nanoTime();
         System.out.println("read "+logReader.getLines().size() +" in "+ TimeUnit.NANOSECONDS.toMillis(end-begin) +"ms");

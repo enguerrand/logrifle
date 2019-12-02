@@ -2,6 +2,7 @@ package de.rochefort.logrifle;
 
 import de.rochefort.logrifle.data.Line;
 import de.rochefort.logrifle.data.LineParserTextImpl;
+import de.rochefort.logrifle.data.LineParserTimestampedTextImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L);
         logWriter.writeRandomLines(100);
         CompletableFuture<Void> f = logWriter.start(100, 200);
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE);
         f.get();
         List<Line> lines = logReader.getLines();
         await(() -> lines.size() == 300, 10_000L);
@@ -58,6 +59,18 @@ class LogReaderTest {
         Assertions.assertTrue(lines.get(99).getRaw().endsWith("laboriosam, autem minima ut est ad qui veritatis sunt dolore in sit quae labore öäßaweawe( consequat."), "Wrong line content");
         Assertions.assertTrue(lines.get(100).getRaw().endsWith("aperiam, pariatur. veniam,"), "Wrong line content");
         Assertions.assertTrue(lines.get(299).getRaw().endsWith("eum qui nostrud ut"), "Wrong line content");
+    }
+
+    @Test
+    void testReadException() throws Exception {
+        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        logWriter.writeException("Exception text", "Exception Message");
+        logWriter.stop();
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE);
+        List<Line> lines = logReader.getLines();
+        Assertions.assertEquals(1, lines.size(), "wrong line count");
+        Assertions.assertNotEquals(0, lines.get(0).getAdditionalLines().size(), "additional lines missing");
+        Assertions.assertEquals("java.lang.RuntimeException: Exception Message", lines.get(0).getAdditionalLines().get(0), "wrong first additional line");
     }
 
     private void await(BooleanSupplier condition, long timeoutMs) throws InterruptedException {

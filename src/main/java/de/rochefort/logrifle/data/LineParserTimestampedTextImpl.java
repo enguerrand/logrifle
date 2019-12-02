@@ -8,17 +8,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineParserTimestampedTextImpl implements LineParser {
+    public static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
+    public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
     private final Pattern timeStampPattern;
     private final DateFormat dateFormat;
 
-    public LineParserTimestampedTextImpl(String timestampRegex, String dateFormatPattern) {
-        this.timeStampPattern = Pattern.compile(timestampRegex);
-        this.dateFormat = new SimpleDateFormat(dateFormatPattern);
+    public LineParserTimestampedTextImpl() {
+        this(null, null);
+    }
+
+    public LineParserTimestampedTextImpl(String timestampRegex, String dateFormat) {
+        this.timeStampPattern = Pattern.compile(timestampRegex != null ? timestampRegex : DEFAULT_TIME_MATCH_REGEX);
+        this.dateFormat = new SimpleDateFormat(dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT);
     }
 
     @Override
-    public Line parse(String raw) {
-
+    public LineParseResult parse(String raw) {
         long timestamp;
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
@@ -28,21 +33,13 @@ public class LineParserTimestampedTextImpl implements LineParser {
                 parsed = this.dateFormat.parse(dateString);
                 timestamp = parsed.getTime();
             } catch (ParseException e) {
-                // TODO
-                timestamp = System.currentTimeMillis();
+                throw new IllegalStateException("Error while parsing datestring. \""+dateString+"\"." +
+                        "The date string pattern matches but the matched string cannot be parsed with the given date format! " +
+                        "Complete log line: \""+raw+"\"", e);
             }
         } else {
-            // TODO:
-            timestamp = System.currentTimeMillis();
+            return new LineParseResult(raw);
         }
-        return new Line(raw, timestamp);
-    }
-
-    public static void main(String[] args) {
-        LineParserTimestampedTextImpl parser = new LineParserTimestampedTextImpl(".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*", "HH:mm:ss.SSS");
-        String raw = "DEBUG 23:12:33.234 - asdiklajsdj";
-        Line line = parser.parse(raw);
-
-
+        return new LineParseResult(new Line(raw, timestamp));
     }
 }

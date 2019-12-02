@@ -1,10 +1,13 @@
 package de.rochefort.logrifle.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Line {
     private final long timestamp;
     private final String raw;
+    private final List<String> additionalLines = new ArrayList<>();
 
     Line(String raw, long timestamp) {
         this.timestamp = timestamp;
@@ -17,6 +20,14 @@ public class Line {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public List<String> getAdditionalLines() {
+        return additionalLines;
+    }
+
+    public void appendAdditionalLine(String text){
+        additionalLines.add(text);
     }
 
     @Override
