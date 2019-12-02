@@ -1,5 +1,8 @@
 package de.rochefort.logrifle.data;
 
+import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.parsing.LineParseResult;
+import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

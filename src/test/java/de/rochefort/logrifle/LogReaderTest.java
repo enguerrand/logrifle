@@ -1,8 +1,8 @@
 package de.rochefort.logrifle;
 
-import de.rochefort.logrifle.data.Line;
-import de.rochefort.logrifle.data.LineParserTextImpl;
-import de.rochefort.logrifle.data.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.parsing.LineParserTextImpl;
+import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

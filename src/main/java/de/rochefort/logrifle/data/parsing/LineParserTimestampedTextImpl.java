@@ -1,4 +1,4 @@
-package de.rochefort.logrifle.data;
+package de.rochefort.logrifle.data.parsing;
 
 import java.text.DateFormat;
 import java.text.ParseException;

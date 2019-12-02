@@ -1,4 +1,4 @@
-package de.rochefort.logrifle.data;
+package de.rochefort.logrifle.data.parsing;
 
 public class LineParserTextImpl implements LineParser {
     @Override

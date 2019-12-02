@@ -1,4 +1,4 @@
-package de.rochefort.logrifle.data;
+package de.rochefort.logrifle.data.parsing;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package de.rochefort.logrifle.data;
+package de.rochefort.logrifle.data.parsing;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

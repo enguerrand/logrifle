@@ -1,9 +1,9 @@
 package de.rochefort.logrifle;
 
-import de.rochefort.logrifle.data.Line;
-import de.rochefort.logrifle.data.LineParseResult;
-import de.rochefort.logrifle.data.LineParser;
-import de.rochefort.logrifle.data.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.parsing.LineParseResult;
+import de.rochefort.logrifle.data.parsing.LineParser;
+import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
