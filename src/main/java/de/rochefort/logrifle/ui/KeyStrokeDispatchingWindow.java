@@ -61,7 +61,7 @@ class KeyStrokeDispatchingWindow extends BasicWindow {
         });
     }
 
-    public void addInteractableListener(InteractableKeystrokeListener listener) {
+    void addInteractableListener(InteractableKeystrokeListener listener) {
         interactables.computeIfAbsent(listener.getInteractable(), i -> new LinkedHashSet<>()).add(listener);
     }
 }

@@ -34,11 +34,11 @@ public class LineParseResult {
         this.newLine = newLine;
     }
 
-    public LineParseResult(@NotNull Line parsedLine) {
+    LineParseResult(@NotNull Line parsedLine) {
         this(parsedLine, null, true);
     }
 
-    public LineParseResult(@NotNull String text) {
+    LineParseResult(@NotNull String text) {
         this(null, text, false);
     }
 

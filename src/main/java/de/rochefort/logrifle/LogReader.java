@@ -43,7 +43,7 @@ public class LogReader implements DataView {
     private final LineParser lineParser;
     private final Tailer tailer;
 
-    public LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool) throws IOException {
+    LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool) throws IOException {
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {

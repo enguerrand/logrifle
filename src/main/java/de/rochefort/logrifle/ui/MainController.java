@@ -73,7 +73,7 @@ public class MainController {
                 }
             }
             default:
-                return;
+                // ignored
         }
     }
 

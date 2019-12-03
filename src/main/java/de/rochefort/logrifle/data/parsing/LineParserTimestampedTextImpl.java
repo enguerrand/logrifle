@@ -28,8 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineParserTimestampedTextImpl implements LineParser {
-    public static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
-    public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
+    private static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
+    private static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
     private final Pattern timeStampPattern;
     private final DateFormat dateFormat;
 

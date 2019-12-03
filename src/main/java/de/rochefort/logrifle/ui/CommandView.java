@@ -101,7 +101,7 @@ class CommandView implements InteractableKeystrokeListener {
         return this.commandInput;
     }
 
-    public boolean isShown() {
+    boolean isShown() {
         return shown;
     }
 }

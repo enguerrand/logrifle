@@ -27,16 +27,16 @@ class MainWindowLayout {
     private final TerminalSize logViewSize;
     private final TerminalSize commandBarSize;
 
-    MainWindowLayout(TerminalSize logViewSize, TerminalSize commandBarSize) {
+    private MainWindowLayout(TerminalSize logViewSize, TerminalSize commandBarSize) {
         this.logViewSize = logViewSize;
         this.commandBarSize = commandBarSize;
     }
 
-    public TerminalSize getLogViewSize() {
+    TerminalSize getLogViewSize() {
         return logViewSize;
     }
 
-    public TerminalSize getCommandBarSize() {
+    TerminalSize getCommandBarSize() {
         return commandBarSize;
     }
 
