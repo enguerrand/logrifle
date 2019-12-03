@@ -23,7 +23,7 @@ public class MainController {
                 }
                 break;
             case F5:
-                mainWindow.updateLogView();
+                mainWindow.updateView();
                 break;
             default:
                 break;

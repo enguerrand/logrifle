@@ -32,6 +32,7 @@ public class MainWindow {
     private Screen screen;
     private final Panel logPanel;
     private TextGUIThread guiThread;
+    private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
 
     public MainWindow() {
 
@@ -56,32 +57,33 @@ public class MainWindow {
      */
     void setDataView(DataView dataView) {
         this.dataView = dataView;
-        updateLogView();
+        updateView();
     }
 
     /**
      * Must be called on the gui thread
      */
-    void updateLogView() {
-        updateLogView(null);
+    void updateView() {
+        updateView(null);
     }
 
     /**
      * Must be called on the gui thread
      */
-    private void updateLogView(@Nullable TerminalSize newSize) {
+    private void updateView(@Nullable TerminalSize newTerminalSize) {
         if (screen == null) {
             return;
         }
         checkGuiThreadOrThrow();
-        logPanel.removeAllComponents();
-        TerminalSize size = newSize != null ? newSize : logPanel.getSize();
-
+        TerminalSize size = newTerminalSize != null ? newTerminalSize : logPanel.getSize();
         int rows = size.getRows();
+
+        logPanel.removeAllComponents();
         List<Line> lines = dataView.getLines(0, Math.max(0, rows));
-        int i = 0;
-        for (Line line : lines) {
-            Label label = new Label(++i + " " + line.getRaw());
+
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            Label label = logLineRenderer.render(line, i+1, lines.size());
             logPanel.addComponent(label);
         }
     }
@@ -112,7 +114,7 @@ public class MainWindow {
                     @Override
                     public void onResized(Window window, TerminalSize previousSize, TerminalSize newSize) {
                         // TODO: This is not the logview size!
-                        updateLogView(newSize);
+                        updateView(newSize);
                     }
                 });
                 textGUI.addWindowAndWait(window);
