@@ -2,7 +2,6 @@ package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.bundle.LanternaThemes;
-import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.Panel;
@@ -23,14 +22,19 @@ import java.util.concurrent.Executor;
 public class MainWindow {
 
     private DataView dataView = null;
-    private final Window window;
+    private final KeyStrokeDispatchingWindow window;
     private Screen screen;
     private TextGUIThread guiThread;
     private final LogView logView;
+    private final CommandView commandView;
 
     public MainWindow() {
-
-        window = new BasicWindow("logrifle");
+        Executor uiExecutor = runnable -> {
+            if (guiThread != null) {
+                guiThread.invokeLater(runnable);
+            }
+        };
+        window = new KeyStrokeDispatchingWindow("logrifle", uiExecutor);
         window.setHints(Arrays.asList(
                 Window.Hint.FULL_SCREEN,
                 Window.Hint.NO_DECORATIONS,
@@ -43,7 +47,16 @@ public class MainWindow {
         mainPanel.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
 
+        commandView = new CommandView();
+        mainPanel.addComponent(commandView.getPanel());
+        commandView.getPanel().setLayoutData(BorderLayout.Location.BOTTOM);
+        window.addInteractableListener(commandView);
+
         window.setComponent(mainPanel);
+    }
+
+    void setCommandViewListener(CommandViewListener commandViewListener) {
+        this.commandView.setListener(commandViewListener);
     }
 
     /**
@@ -68,8 +81,10 @@ public class MainWindow {
         if (screen == null) {
             return;
         }
+        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.isShown());
         checkGuiThreadOrThrow();
-        logView.update(newTerminalSize, dataView);
+        logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
+        commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
     }
 
     void close() throws IOException {
@@ -97,7 +112,6 @@ public class MainWindow {
                 window.addWindowListener(new WindowListenerAdapter() {
                     @Override
                     public void onResized(Window window, TerminalSize previousSize, TerminalSize newSize) {
-                        // TODO: This is not the logview size!
                         updateView(newSize);
                     }
                 });
@@ -114,5 +128,15 @@ public class MainWindow {
         if (!Objects.equals(Thread.currentThread(), guiThread.getThread())) {
             throw new IllegalStateException("This method must be called on the gui thread!");
         }
+    }
+
+    void openCommandBar(String initialText) {
+        this.commandView.show(initialText);
+        updateView(screen.getTerminalSize());
+    }
+
+    void closeCommandBar() {
+        this.commandView.hide();
+        updateView(screen.getTerminalSize());
     }
 }
