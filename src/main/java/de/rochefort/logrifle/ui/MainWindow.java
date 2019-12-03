@@ -4,9 +4,6 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.bundle.LanternaThemes;
 import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.BorderLayout;
-import com.googlecode.lanterna.gui2.GridLayout;
-import com.googlecode.lanterna.gui2.Label;
-import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextGUIThread;
@@ -15,13 +12,11 @@ import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -30,9 +25,8 @@ public class MainWindow {
     private DataView dataView = null;
     private final Window window;
     private Screen screen;
-    private final Panel logPanel;
     private TextGUIThread guiThread;
-    private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
+    private final LogView logView;
 
     public MainWindow() {
 
@@ -45,10 +39,10 @@ public class MainWindow {
         ));
         BorderLayout layoutManager = new BorderLayout();
         Panel mainPanel = new Panel(layoutManager);
-        LayoutManager logLayout = new GridLayout(1);
-        logPanel = new Panel(logLayout);
-        logPanel.setLayoutData(BorderLayout.Location.CENTER);
-        mainPanel.addComponent(logPanel);
+        logView = new LogView();
+        mainPanel.addComponent(logView.getPanel());
+        logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
+
         window.setComponent(mainPanel);
     }
 
@@ -75,17 +69,7 @@ public class MainWindow {
             return;
         }
         checkGuiThreadOrThrow();
-        TerminalSize size = newTerminalSize != null ? newTerminalSize : logPanel.getSize();
-        int rows = size.getRows();
-
-        logPanel.removeAllComponents();
-        List<Line> lines = dataView.getLines(0, Math.max(0, rows));
-
-        for (int i = 0; i < lines.size(); i++) {
-            Line line = lines.get(i);
-            Label label = logLineRenderer.render(line, i+1, lines.size());
-            logPanel.addComponent(label);
-        }
+        logView.update(newTerminalSize, dataView);
     }
 
     void close() throws IOException {
