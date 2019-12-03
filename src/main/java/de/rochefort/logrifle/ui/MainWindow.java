@@ -9,6 +9,7 @@ import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.WindowListenerAdapter;
@@ -21,6 +22,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executor;
 
 public class MainWindow {
 
@@ -28,6 +31,7 @@ public class MainWindow {
     private final Window window;
     private Screen screen;
     private final Panel logPanel;
+    private TextGUIThread guiThread;
 
     public MainWindow() {
 
@@ -47,19 +51,29 @@ public class MainWindow {
         window.setComponent(mainPanel);
     }
 
-    public void setDataView(DataView dataView) {
+    /**
+     * Must be called on the gui thread
+     */
+    void setDataView(DataView dataView) {
         this.dataView = dataView;
         updateLogView();
     }
 
-    private void updateLogView() {
+    /**
+     * Must be called on the gui thread
+     */
+    void updateLogView() {
         updateLogView(null);
     }
 
+    /**
+     * Must be called on the gui thread
+     */
     private void updateLogView(@Nullable TerminalSize newSize) {
         if (screen == null) {
             return;
         }
+        checkGuiThreadOrThrow();
         logPanel.removeAllComponents();
         TerminalSize size = newSize != null ? newSize : logPanel.getSize();
 
@@ -72,45 +86,47 @@ public class MainWindow {
         }
     }
 
-    public void close() throws IOException {
+    void close() throws IOException {
+        checkGuiThreadOrThrow();
+        window.close();
         if(screen != null) {
             screen.stopScreen();
         }
     }
 
-    public void start() throws IOException {
-        DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
-        screen = terminalFactory.createScreen();
-        screen.startScreen();
-        final WindowBasedTextGUI textGUI = new MultiWindowTextGUI(screen);
+    public void start(Executor executor, MainWindowListener callback) {
+        executor.execute(() -> {
+            try {
+                if (screen != null) {
+                    throw new IllegalStateException("Already started!");
+                }
+                DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+                screen = terminalFactory.createScreen();
+                screen.startScreen();
+                final WindowBasedTextGUI textGUI = new MultiWindowTextGUI(screen);
+                guiThread = textGUI.getGUIThread();
+                textGUI.setTheme(LanternaThemes.getRegisteredTheme("businessmachine"));
+                textGUI.addListener(callback);
 
-        textGUI.setTheme(LanternaThemes.getRegisteredTheme("businessmachine"));
-        textGUI.addListener((gui, keyStroke) -> {
-            switch (keyStroke.getKeyType()) {
-                case Escape:
-                    try {
-                        close();
-                        return true;
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                window.addWindowListener(new WindowListenerAdapter() {
+                    @Override
+                    public void onResized(Window window, TerminalSize previousSize, TerminalSize newSize) {
+                        // TODO: This is not the logview size!
+                        updateLogView(newSize);
                     }
-                    break;
-                case F5:
-                    updateLogView();
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        });
-
-        window.addWindowListener(new WindowListenerAdapter() {
-            @Override
-            public void onResized(Window window, TerminalSize previousSize, TerminalSize newSize) {
-                updateLogView(newSize);
+                });
+                textGUI.addWindowAndWait(window);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                callback.onClosed();
             }
         });
+    }
 
-        textGUI.addWindowAndWait(window);
+    private void checkGuiThreadOrThrow() {
+        if (!Objects.equals(Thread.currentThread(), guiThread.getThread())) {
+            throw new IllegalStateException("This method must be called on the gui thread!");
+        }
     }
 }

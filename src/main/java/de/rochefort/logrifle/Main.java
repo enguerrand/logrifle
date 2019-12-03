@@ -1,8 +1,12 @@
 package de.rochefort.logrifle;
 
+import com.googlecode.lanterna.gui2.TextGUI;
+import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
+import de.rochefort.logrifle.ui.MainWindowListener;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,16 +26,20 @@ public class Main {
         LineParser lineParser = new LineParserTimestampedTextImpl();
         LogReader logReader = new LogReader(lineParser, path, workerPool);
         MainWindow mainWindow = new MainWindow();
-        workerPool.execute(() -> {
-            try {
-                mainWindow.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
+        MainController mainController = new MainController(mainWindow);
+        mainWindow.start(workerPool, new MainWindowListener() {
+            @Override
+            public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {
+                return mainController.handleKeyStroke(keyStroke);
+            }
+
+            @Override
+            public void onClosed() {
                 logReader.shutdown();
                 workerPool.shutdown();
+                System.exit(0);
             }
         });
-        mainWindow.setDataView(logReader);
+        mainController.setDataView(logReader);
     }
 }
