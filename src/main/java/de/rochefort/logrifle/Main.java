@@ -28,6 +28,8 @@ import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
 import de.rochefort.logrifle.ui.MainWindowListener;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
+import de.rochefort.logrifle.ui.cmd.KeyMapFactory;
+import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -47,8 +49,10 @@ public class Main {
         LineParser lineParser = new LineParserTimestampedTextImpl();
         LogReader logReader = new LogReader(lineParser, path, workerPool);
         MainWindow mainWindow = new MainWindow();
+        KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
-        MainController mainController = new MainController(mainWindow, commandHandler);
+        KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
+        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
             public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {

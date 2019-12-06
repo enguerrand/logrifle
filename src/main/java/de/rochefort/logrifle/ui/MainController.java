@@ -22,27 +22,30 @@ package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.LogReader;
 import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
+import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 
 import java.io.IOException;
 import java.util.List;
 
 public class MainController {
     private final MainWindow mainWindow;
+    private final KeyStrokeHandler keyStrokeHandler;
 
-    public MainController(MainWindow mainWindow, CommandHandler commandHandler) {
+    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler) {
         this.mainWindow = mainWindow;
+        this.keyStrokeHandler = keyStrokeHandler;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
                 mainWindow.closeCommandBar();
                 ExecutionResult result = commandHandler.handle(commandLine);
-                result.getUserMessage().ifPresent(msg -> {
-                    mainWindow.showCommandViewMessage(msg, TextColor.ANSI.RED);
-                });
+                result.getUserMessage().ifPresent(msg ->
+                        mainWindow.showCommandViewMessage(msg, TextColor.ANSI.RED));
                 if (result.isUiUpdateRequired()) {
                     mainWindow.updateView();
                 }
@@ -51,6 +54,26 @@ public class MainController {
             @Override
             public void onEmptied() {
                 mainWindow.closeCommandBar();
+            }
+        });
+
+        commandHandler.register(new Command(":quit") {
+            @Override
+            protected ExecutionResult execute(List<String> args) {
+                try {
+                    mainWindow.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return new ExecutionResult(false);
+            }
+        });
+
+        commandHandler.register(new Command(":refresh") {
+            @Override
+            protected ExecutionResult execute(List<String> args) {
+                mainWindow.updateView();
+                return new ExecutionResult(true);
             }
         });
 
@@ -72,35 +95,15 @@ public class MainController {
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
-        switch (keyStroke.getKeyType()) {
-            case F5:
-                mainWindow.updateView();
-                break;
-            case Character:
-                handleCharacter(keyStroke);
-                break;
-            default:
-                break;
-        }
-        return false;
-    }
-
-    private void handleCharacter(KeyStroke keyStroke) {
-        Character character = keyStroke.getCharacter();
-        switch(character) {
-            case ':':
+        if (keyStroke.getKeyType() == KeyType.Character) {
+            Character character = keyStroke.getCharacter();
+            if (character == ':' || character == '/') {
                 mainWindow.openCommandBar(character.toString());
-                break;
-            case 'q': {
-                try {
-                    mainWindow.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                return false;
             }
-            default:
-                // ignored
         }
+        ExecutionResult executionResult = keyStrokeHandler.handleKeyStroke(keyStroke);
+        return executionResult.isUiUpdateRequired();
     }
 
     public void setDataView(LogReader dataView) {
