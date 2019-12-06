@@ -22,19 +22,27 @@ package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.LogReader;
+import de.rochefort.logrifle.ui.cmd.CommandHandler;
+import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
 
 public class MainController {
     private final MainWindow mainWindow;
 
-    public MainController(MainWindow mainWindow) {
+    public MainController(MainWindow mainWindow, CommandHandler commandHandler) {
         this.mainWindow = mainWindow;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
-            public void onCommand(String command) {
-                System.out.println("Command received: "+command);
+            public void onCommand(String commandLine) {
                 mainWindow.closeCommandBar();
+                ExecutionResult result = commandHandler.handle(commandLine);
+                result.getUserMessage().ifPresent(msg -> {
+                    System.out.println(msg);
+                });
+                if (result.isUiUpdateRequired()) {
+                    mainWindow.updateView();
+                }
             }
 
             @Override
@@ -60,7 +68,6 @@ public class MainController {
 
     private void handleCharacter(KeyStroke keyStroke) {
         Character character = keyStroke.getCharacter();
-        System.out.println("Character typed: "+ character);
         switch(character) {
             case ':':
                 mainWindow.openCommandBar(character.toString());

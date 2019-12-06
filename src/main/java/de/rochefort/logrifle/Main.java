@@ -27,6 +27,7 @@ import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
 import de.rochefort.logrifle.ui.MainWindowListener;
+import de.rochefort.logrifle.ui.cmd.CommandHandler;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,7 +47,8 @@ public class Main {
         LineParser lineParser = new LineParserTimestampedTextImpl();
         LogReader logReader = new LogReader(lineParser, path, workerPool);
         MainWindow mainWindow = new MainWindow();
-        MainController mainController = new MainController(mainWindow);
+        CommandHandler commandHandler = new CommandHandler();
+        MainController mainController = new MainController(mainWindow, commandHandler);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
             public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {

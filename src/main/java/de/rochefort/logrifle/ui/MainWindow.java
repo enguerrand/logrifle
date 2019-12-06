@@ -136,7 +136,7 @@ public class MainWindow {
                     }
                 });
                 textGUI.addWindowAndWait(window);
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 e.printStackTrace();
             } finally {
                 callback.onClosed();
