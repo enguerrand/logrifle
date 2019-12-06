@@ -36,6 +36,7 @@ class LogView {
     private final Panel panel;
     private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
     private int topIndex = 0;
+    private int focusOffset = 0;
 
     LogView() {
         LayoutManager layout = new GridLayout(1);
@@ -69,5 +70,9 @@ class LogView {
     public ExecutionResult scroll(int lineCountDelta) {
         this.topIndex += lineCountDelta;
         return new ExecutionResult(true);
+    }
+
+    public int getFocusedLineIndex(){
+        return topIndex + focusOffset;
     }
 }

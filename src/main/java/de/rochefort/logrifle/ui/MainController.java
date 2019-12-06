@@ -24,14 +24,21 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.LogReader;
+import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class MainController {
+    private static final String COMMAND_PREFIX = ":";
+    private static final String SEARCH_NEXT_PREFIX = "/";
+    private static final String SEARCH_PREV_PREFIX = "?";
     private final MainWindow mainWindow;
     private final KeyStrokeHandler keyStrokeHandler;
 
@@ -42,7 +49,21 @@ public class MainController {
             @Override
             public void onCommand(String commandLine) {
                 mainWindow.closeCommandBar();
-                ExecutionResult result = commandHandler.handle(commandLine);
+                ExecutionResult result;
+                if (commandLine.length() <= 1) {
+                    return;
+                }
+                String prefix = commandLine.substring(0, 1);
+                String command = commandLine.substring(1);
+                if (prefix.equals(COMMAND_PREFIX)) {
+                    result = commandHandler.handle(command);
+                } else if (prefix.equals(SEARCH_NEXT_PREFIX)) {
+                    result = searchNext(command);
+                } else if (prefix.equals(SEARCH_PREV_PREFIX)) {
+                    result = searchPrevious(command);
+                } else {
+                    return;
+                }
                 result.getUserMessage().ifPresent(msg ->
                         mainWindow.showCommandViewMessage(msg, TextColor.ANSI.RED));
                 if (result.isUiUpdateRequired()) {
@@ -56,24 +77,38 @@ public class MainController {
             }
         });
 
-        commandHandler.register(new Command(":quit") {
+        commandHandler.register(new Command("quit") {
             @Override
             protected ExecutionResult execute(String args) {
                 return quit();
             }
         });
 
-        commandHandler.register(new Command(":refresh") {
+        commandHandler.register(new Command("refresh") {
             @Override
             protected ExecutionResult execute(String args) {
                 return refresh();
             }
         });
 
-        commandHandler.register(new Command(":scroll") {
+        commandHandler.register(new Command("scroll") {
             @Override
             protected ExecutionResult execute(String args) {
                 return scroll(args);
+            }
+        });
+
+        commandHandler.register(new Command("search-next") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return searchNext(args);
+            }
+        });
+
+        commandHandler.register(new Command("search-prev") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return searchPrevious(args);
             }
         });
 
@@ -81,7 +116,7 @@ public class MainController {
 
     private ExecutionResult scroll(String args) {
         int lineCount = 1;
-        if (args.matches("^\\s*$")) {
+        if (!args.matches("^\\s*$")) {
             try {
                 lineCount = Integer.parseInt(args);
             } catch (NumberFormatException e) {
@@ -105,10 +140,55 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
+    private ExecutionResult searchNext(String query) {
+        if (query.matches("\\s*")) {
+            return new ExecutionResult(false);
+        }
+        Pattern p = Pattern.compile(query);
+        LogView logView = this.mainWindow.getLogView();
+        int focusedLineIndex = logView.getFocusedLineIndex();
+        DataView dataView = this.mainWindow.getDataView();
+        List<Line> allLines = dataView.getAllLines();
+        if (focusedLineIndex < allLines.size() - 1) {
+            for (int i = focusedLineIndex + 1; i < allLines.size(); i++) {
+                String raw = allLines.get(i).getRaw();
+                if (p.matcher(raw).find()) {
+                    logView.scroll(i - focusedLineIndex);
+                    return new ExecutionResult(true);
+                }
+            }
+        }
+
+        return new ExecutionResult(false, query + ": pattern not found.");
+    }
+
+    private ExecutionResult searchPrevious(String query) {
+        if (query.matches("\\s*")) {
+            return new ExecutionResult(false);
+        }
+        Pattern p = Pattern.compile(query);
+        LogView logView = this.mainWindow.getLogView();
+        int focusedLineIndex = logView.getFocusedLineIndex();
+        if (focusedLineIndex > 0) {
+            DataView dataView = this.mainWindow.getDataView();
+            List<Line> allLines = dataView.getAllLines();
+
+            for (int i = focusedLineIndex - 1; i >= 0; i--) {
+                String raw = allLines.get(i).getRaw();
+                if (p.matcher(raw).find()) {
+                    logView.scroll(i - focusedLineIndex);
+                    return new ExecutionResult(true);
+                }
+            }
+        }
+
+        return new ExecutionResult(false, query + ": pattern not found.");
+    }
+
     public boolean handleKeyStroke(KeyStroke keyStroke) {
         if (keyStroke.getKeyType() == KeyType.Character) {
             Character character = keyStroke.getCharacter();
-            if (character == ':' || character == '/') {
+            if (character == ':' || character == '/' || character == '?') {
                 this.mainWindow.openCommandBar(character.toString());
                 return false;
             }

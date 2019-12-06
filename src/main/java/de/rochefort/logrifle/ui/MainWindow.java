@@ -155,4 +155,8 @@ public class MainWindow {
     public LogView getLogView() {
         return this.logView;
     }
+
+    public DataView getDataView() {
+        return dataView;
+    }
 }

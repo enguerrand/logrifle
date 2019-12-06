@@ -27,4 +27,5 @@ import java.util.List;
 public interface DataView {
     List<Line> getLines(int topIndex, int maxCount);
     int getLineCount();
+    List<Line> getAllLines();
 }

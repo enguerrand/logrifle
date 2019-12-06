@@ -151,6 +151,11 @@ public class LogReader implements DataView {
         return snapshot == null ? 0 : snapshot.size();
     }
 
+    @Override
+    public List<Line> getAllLines() {
+        return new ArrayList<>(this.lines);
+    }
+
     public void shutdown() {
         tailer.stop();
     }
