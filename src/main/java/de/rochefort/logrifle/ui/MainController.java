@@ -30,7 +30,6 @@ import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 
 import java.io.IOException;
-import java.util.List;
 
 public class MainController {
     private final MainWindow mainWindow;
@@ -59,35 +58,34 @@ public class MainController {
 
         commandHandler.register(new Command(":quit") {
             @Override
-            protected ExecutionResult execute(List<String> args) {
+            protected ExecutionResult execute(String args) {
                 return quit();
             }
         });
 
         commandHandler.register(new Command(":refresh") {
             @Override
-            protected ExecutionResult execute(List<String> args) {
+            protected ExecutionResult execute(String args) {
                 return refresh();
             }
         });
 
         commandHandler.register(new Command(":scroll") {
             @Override
-            protected ExecutionResult execute(List<String> args) {
+            protected ExecutionResult execute(String args) {
                 return scroll(args);
             }
         });
 
     }
 
-    private ExecutionResult scroll(List<String> args) {
+    private ExecutionResult scroll(String args) {
         int lineCount = 1;
-        if (!args.isEmpty()) {
-            String arg1 = args.get(0);
+        if (args.matches("^\\s*$")) {
             try {
-                lineCount = Integer.parseInt(arg1);
+                lineCount = Integer.parseInt(args);
             } catch (NumberFormatException e) {
-                return new ExecutionResult(false, arg1 + ": Not a valid line count");
+                return new ExecutionResult(false, args + ": Not a valid line count");
             }
         }
         return this.mainWindow.getLogView().scroll(lineCount);

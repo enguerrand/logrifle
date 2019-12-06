@@ -40,7 +40,7 @@ public class CommandHandler {
      * @return whether the ui should be updated as a result of this command execution
      */
     public ExecutionResult handle(String commandLine) {
-        List<String> words = Arrays.asList(commandLine.split("\\s"));
+        List<String> words = Arrays.asList(commandLine.split("\\s+", 2));
         if (words.isEmpty()) {
             return new ExecutionResult(false);
         }
@@ -52,7 +52,12 @@ public class CommandHandler {
         if (command == null) {
             return new ExecutionResult(false, commandName.substring(1) + ": Command not found.");
         }
-        List<String> args = words.subList(1, words.size());
+        String args;
+        if (words.size() < 2) {
+            args = "";
+        } else {
+            args = words.get(1);
+        }
         return command.execute(args);
     }
 }

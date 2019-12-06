@@ -20,8 +20,6 @@
 
 package de.rochefort.logrifle.ui.cmd;
 
-import java.util.List;
-
 public abstract class Command {
     private final String commandName;
 
@@ -33,5 +31,5 @@ public abstract class Command {
         return commandName;
     }
 
-    protected abstract ExecutionResult execute(List<String> args);
+    protected abstract ExecutionResult execute(String args);
 }
