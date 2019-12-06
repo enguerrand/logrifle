@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle.ui;
 
+import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.LogReader;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
@@ -38,7 +39,7 @@ public class MainController {
                 mainWindow.closeCommandBar();
                 ExecutionResult result = commandHandler.handle(commandLine);
                 result.getUserMessage().ifPresent(msg -> {
-                    System.out.println(msg);
+                    mainWindow.showCommandViewMessage(msg, TextColor.ANSI.RED);
                 });
                 if (result.isUiUpdateRequired()) {
                     mainWindow.updateView();

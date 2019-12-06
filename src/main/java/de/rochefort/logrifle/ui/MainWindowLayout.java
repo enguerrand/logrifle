@@ -40,11 +40,11 @@ class MainWindowLayout {
         return commandBarSize;
     }
 
-    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, boolean commandBarVisible) {
+    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight) {
         if(terminalSize == null) {
             return null;
         }
-        TerminalSize cmd = new TerminalSize(terminalSize.getColumns(), commandBarVisible ? 1 : 0);
+        TerminalSize cmd = new TerminalSize(terminalSize.getColumns(), commandBarHeight);
         TerminalSize log = new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - cmd.getRows());
         return new MainWindowLayout(
                 log,

@@ -21,9 +21,11 @@
 package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Interactable;
+import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextBox;
@@ -34,8 +36,12 @@ import org.jetbrains.annotations.Nullable;
 class CommandView implements InteractableKeystrokeListener {
     private final Panel panel;
     private final TextBox commandInput;
+    private final Label messageBox;
+    /**
+     * only access on ui thread
+     */
     private CommandViewListener listener;
-    private boolean shown = false;
+    private int height = 0;
 
     CommandView() {
         LayoutManager layout = new GridLayout(1);
@@ -45,6 +51,7 @@ class CommandView implements InteractableKeystrokeListener {
         renderer.setUnusedSpaceCharacter(' ');
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
             .setRenderer(renderer);
+        messageBox = new Label("");
     }
 
     void setListener(CommandViewListener listener) {
@@ -52,16 +59,29 @@ class CommandView implements InteractableKeystrokeListener {
     }
 
     void show(String initialText){
+        hide();
         commandInput.setText(initialText);
         commandInput.setCaretPosition(initialText.length());
         panel.addComponent(commandInput);
         commandInput.takeFocus();
-        shown = true;
+        height = 1;
+    }
+
+    void showMessage(String message, @Nullable TextColor textColor) {
+        hide();
+        messageBox.setText(message);
+        if (textColor != null) {
+            messageBox.setForegroundColor(textColor);
+        }
+        panel.addComponent(messageBox);
+        height = 1;
     }
 
     void hide(){
+        UI.checkGuiThreadOrThrow();
         panel.removeComponent(commandInput);
-        shown = false;
+        panel.removeComponent(messageBox);
+        height = 0;
     }
 
     Panel getPanel() {
@@ -101,7 +121,7 @@ class CommandView implements InteractableKeystrokeListener {
         return this.commandInput;
     }
 
-    boolean isShown() {
-        return shown;
+    public int getHeight() {
+        return height;
     }
 }
