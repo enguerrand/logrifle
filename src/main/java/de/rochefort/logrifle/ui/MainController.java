@@ -60,45 +60,58 @@ public class MainController {
         commandHandler.register(new Command(":quit") {
             @Override
             protected ExecutionResult execute(List<String> args) {
-                try {
-                    mainWindow.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return new ExecutionResult(false);
+                return quit();
             }
         });
 
         commandHandler.register(new Command(":refresh") {
             @Override
             protected ExecutionResult execute(List<String> args) {
-                mainWindow.updateView();
-                return new ExecutionResult(true);
+                return refresh();
             }
         });
 
         commandHandler.register(new Command(":scroll") {
             @Override
             protected ExecutionResult execute(List<String> args) {
-                int lineCount = 1;
-                if (!args.isEmpty()) {
-                    String arg1 = args.get(0);
-                    try {
-                        lineCount = Integer.parseInt(arg1);
-                    } catch (NumberFormatException e) {
-                        return new ExecutionResult(false, arg1 + ": Not a valid line count");
-                    }
-                }
-                return mainWindow.getLogView().scroll(lineCount);
+                return scroll(args);
             }
         });
+
+    }
+
+    private ExecutionResult scroll(List<String> args) {
+        int lineCount = 1;
+        if (!args.isEmpty()) {
+            String arg1 = args.get(0);
+            try {
+                lineCount = Integer.parseInt(arg1);
+            } catch (NumberFormatException e) {
+                return new ExecutionResult(false, arg1 + ": Not a valid line count");
+            }
+        }
+        return this.mainWindow.getLogView().scroll(lineCount);
+    }
+
+    private ExecutionResult quit() {
+        try {
+            this.mainWindow.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ExecutionResult(false);
+    }
+
+    private ExecutionResult refresh() {
+        this.mainWindow.updateView();
+        return new ExecutionResult(true);
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
         if (keyStroke.getKeyType() == KeyType.Character) {
             Character character = keyStroke.getCharacter();
             if (character == ':' || character == '/') {
-                mainWindow.openCommandBar(character.toString());
+                this.mainWindow.openCommandBar(character.toString());
                 return false;
             }
         }
@@ -107,6 +120,6 @@ public class MainController {
     }
 
     public void setDataView(LogReader dataView) {
-        mainWindow.setDataView(dataView);
+        this.mainWindow.setDataView(dataView);
     }
 }
