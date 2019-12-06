@@ -145,6 +145,12 @@ public class LogReader implements DataView {
         }
     }
 
+    @Override
+    public int getLineCount() {
+        List<Line> snapshot = this.lines;
+        return snapshot == null ? 0 : snapshot.size();
+    }
+
     public void shutdown() {
         tailer.stop();
     }

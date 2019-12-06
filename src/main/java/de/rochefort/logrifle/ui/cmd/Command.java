@@ -33,5 +33,5 @@ public abstract class Command {
         return commandName;
     }
 
-    abstract ExecutionResult execute(List<String> args);
+    protected abstract ExecutionResult execute(List<String> args);
 }

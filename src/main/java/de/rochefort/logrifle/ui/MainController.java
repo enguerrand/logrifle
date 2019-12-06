@@ -23,10 +23,12 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.LogReader;
+import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
+import java.util.List;
 
 public class MainController {
     private final MainWindow mainWindow;
@@ -49,6 +51,22 @@ public class MainController {
             @Override
             public void onEmptied() {
                 mainWindow.closeCommandBar();
+            }
+        });
+
+        commandHandler.register(new Command(":scroll") {
+            @Override
+            protected ExecutionResult execute(List<String> args) {
+                int lineCount = 1;
+                if (!args.isEmpty()) {
+                    String arg1 = args.get(0);
+                    try {
+                        lineCount = Integer.parseInt(arg1);
+                    } catch (NumberFormatException e) {
+                        return new ExecutionResult(false, arg1 + ": Not a valid line count");
+                    }
+                }
+                return mainWindow.getLogView().scroll(lineCount);
             }
         });
     }

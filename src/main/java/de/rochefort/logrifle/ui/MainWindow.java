@@ -151,4 +151,8 @@ public class MainWindow {
     void showCommandViewMessage(String message, @Nullable TextColor textColor) {
         this.commandView.showMessage(message, textColor == null ? TextColor.ANSI.DEFAULT : textColor);
     }
+
+    public LogView getLogView() {
+        return this.logView;
+    }
 }
