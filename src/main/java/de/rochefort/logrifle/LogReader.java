@@ -34,7 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -134,18 +133,6 @@ public class LogReader implements DataView {
     }
 
     @Override
-    public List<Line> getLines(int topIndex, int maxCount) {
-        List<Line> snapshot = this.lines;
-        if (snapshot == null || snapshot.size() <= topIndex) {
-            return Collections.emptyList();
-        } else if (snapshot.size() <= topIndex + maxCount) {
-            return snapshot.subList(topIndex, snapshot.size());
-        } else {
-            return snapshot.subList(topIndex, topIndex + maxCount);
-        }
-    }
-
-    @Override
     public int getLineCount() {
         List<Line> snapshot = this.lines;
         return snapshot == null ? 0 : snapshot.size();
@@ -154,6 +141,12 @@ public class LogReader implements DataView {
     @Override
     public List<Line> getAllLines() {
         return new ArrayList<>(this.lines);
+    }
+
+    @Nullable
+    @Override
+    public DataView getParentView() {
+        return null;
     }
 
     public void shutdown() {

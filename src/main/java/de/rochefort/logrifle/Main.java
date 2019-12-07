@@ -67,5 +67,7 @@ public class Main {
             }
         });
         mainController.setDataView(logReader);
+        mainWindow.updateView();
+
     }
 }

@@ -26,6 +26,7 @@ import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.LogReader;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
+import de.rochefort.logrifle.data.views.DataViewFiltered;
 import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
@@ -81,6 +82,19 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("!filter") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return addFilter(args, true);
+            }
+        });
+
+        commandHandler.register(new Command("filter") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return addFilter(args, false);
+            }
+        });
 
         commandHandler.register(new Command("find") {
             @Override
@@ -171,6 +185,15 @@ public class MainController {
         }
 
         return new ExecutionResult(false, query + ": pattern not found.");
+    }
+
+    private ExecutionResult addFilter(String regex, boolean inverted) {
+        if (regex.isEmpty()) {
+            return new ExecutionResult(false, "Missing argument: filter pattern");
+        }
+        DataView dataView = this.mainWindow.getDataView();
+        this.mainWindow.setDataView(new DataViewFiltered(regex, dataView, inverted));
+        return new ExecutionResult(true);
     }
 
     private ExecutionResult findAgain() {

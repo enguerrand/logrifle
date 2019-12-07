@@ -21,11 +21,28 @@
 package de.rochefort.logrifle.data.views;
 
 import de.rochefort.logrifle.data.parsing.Line;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface DataView {
-    List<Line> getLines(int topIndex, int maxCount);
+    default List<Line> getLines(int topIndex, int maxCount) {
+        List<Line> snapshot = getAllLines();
+        if (snapshot == null) {
+            return Collections.emptyList();
+        }
+        int topIndexCorrected = Math.max(0, Math.min(topIndex, snapshot.size()-1));
+        if (snapshot.size() <= topIndexCorrected || topIndex < 0) {
+            return Collections.emptyList();
+        } else if (snapshot.size() <= topIndexCorrected + maxCount) {
+            return snapshot.subList(topIndexCorrected, snapshot.size());
+        } else {
+            return snapshot.subList(topIndexCorrected, topIndexCorrected + maxCount);
+        }
+    }
     int getLineCount();
     List<Line> getAllLines();
+    @Nullable
+    DataView getParentView();
 }

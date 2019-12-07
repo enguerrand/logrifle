@@ -77,13 +77,12 @@ public class MainWindow {
      */
     void setDataView(DataView dataView) {
         this.dataView = dataView;
-        updateView();
     }
 
     /**
      * Must be called on the gui thread
      */
-    void updateView() {
+    public void updateView() {
         updateView(null);
     }
 
@@ -94,8 +93,8 @@ public class MainWindow {
         if (screen == null) {
             return;
         }
-        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight());
         UI.checkGuiThreadOrThrow();
+        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight());
         logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
     }
