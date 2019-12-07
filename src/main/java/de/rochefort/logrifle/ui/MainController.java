@@ -30,17 +30,21 @@ import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
+import de.rochefort.logrifle.ui.cmd.Query;
 
 import java.io.IOException;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class MainController {
     private static final String COMMAND_PREFIX = ":";
-    private static final String SEARCH_NEXT_PREFIX = "/";
-    private static final String SEARCH_PREV_PREFIX = "?";
+    private static final String FIND_PREFIX = "/";
+    private static final String FIND_BACKWARDS_PREFIX = "?";
     private final MainWindow mainWindow;
     private final KeyStrokeHandler keyStrokeHandler;
+    private final Deque<Query> queryHistory = new LinkedList<>();
 
     public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler) {
         this.mainWindow = mainWindow;
@@ -57,10 +61,10 @@ public class MainController {
                 String command = commandLine.substring(1);
                 if (prefix.equals(COMMAND_PREFIX)) {
                     result = commandHandler.handle(command);
-                } else if (prefix.equals(SEARCH_NEXT_PREFIX)) {
-                    result = searchNext(command);
-                } else if (prefix.equals(SEARCH_PREV_PREFIX)) {
-                    result = searchPrevious(command);
+                } else if (prefix.equals(FIND_PREFIX)) {
+                    result = find(new Query(command, false));
+                } else if (prefix.equals(FIND_BACKWARDS_PREFIX)) {
+                    result = find(new Query(command, true));
                 } else {
                     return;
                 }
@@ -98,17 +102,31 @@ public class MainController {
             }
         });
 
-        commandHandler.register(new Command("search-next") {
+        commandHandler.register(new Command("find") {
             @Override
             protected ExecutionResult execute(String args) {
-                return searchNext(args);
+                return find(new Query(args, false));
             }
         });
 
-        commandHandler.register(new Command("search-prev") {
+        commandHandler.register(new Command("find-backwards") {
             @Override
             protected ExecutionResult execute(String args) {
-                return searchPrevious(args);
+                return find(new Query(args, true));
+            }
+        });
+
+        commandHandler.register(new Command("find-again") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return findAgain();
+            }
+        });
+
+        commandHandler.register(new Command("find-again-backwards") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return findAgainBackwards();
             }
         });
 
@@ -140,16 +158,35 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
-    private ExecutionResult searchNext(String query) {
-        if (query.matches("\\s*")) {
+    private ExecutionResult find(Query query) {
+        return find(query, false);
+    }
+
+    private ExecutionResult find(Query query, boolean noRecordHistory) {
+        if (query.getSearchTerm().matches("\\s*")) {
             return new ExecutionResult(false);
         }
-        Pattern p = Pattern.compile(query);
+        if (!noRecordHistory) {
+            this.queryHistory.remove(query);
+            this.queryHistory.add(query);
+        }
+        Pattern p = Pattern.compile(query.getSearchTerm());
         LogView logView = this.mainWindow.getLogView();
         int focusedLineIndex = logView.getFocusedLineIndex();
         DataView dataView = this.mainWindow.getDataView();
         List<Line> allLines = dataView.getAllLines();
-        if (focusedLineIndex < allLines.size() - 1) {
+        if (isEofReached(query, focusedLineIndex, allLines)) {
+            return new ExecutionResult(false, query + ": End of file reached.");
+        }
+        if (query.isBackwards()) {
+            for (int i = focusedLineIndex - 1; i >= 0; i--) {
+                String raw = allLines.get(i).getRaw();
+                if (p.matcher(raw).find()) {
+                    logView.scroll(i - focusedLineIndex);
+                    return new ExecutionResult(true);
+                }
+            }
+        } else {
             for (int i = focusedLineIndex + 1; i < allLines.size(); i++) {
                 String raw = allLines.get(i).getRaw();
                 if (p.matcher(raw).find()) {
@@ -162,27 +199,27 @@ public class MainController {
         return new ExecutionResult(false, query + ": pattern not found.");
     }
 
-    private ExecutionResult searchPrevious(String query) {
-        if (query.matches("\\s*")) {
+    private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
+        if (query.isBackwards()) {
+            return focusedLineIndex == 0;
+        } else {
+            return focusedLineIndex == allLines.size() - 1;
+        }
+    }
+
+    private ExecutionResult findAgain() {
+        if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);
         }
-        Pattern p = Pattern.compile(query);
-        LogView logView = this.mainWindow.getLogView();
-        int focusedLineIndex = logView.getFocusedLineIndex();
-        if (focusedLineIndex > 0) {
-            DataView dataView = this.mainWindow.getDataView();
-            List<Line> allLines = dataView.getAllLines();
+        return find(this.queryHistory.getLast());
+    }
 
-            for (int i = focusedLineIndex - 1; i >= 0; i--) {
-                String raw = allLines.get(i).getRaw();
-                if (p.matcher(raw).find()) {
-                    logView.scroll(i - focusedLineIndex);
-                    return new ExecutionResult(true);
-                }
-            }
+    private ExecutionResult findAgainBackwards() {
+        if (this.queryHistory.isEmpty()) {
+            return new ExecutionResult(false);
         }
-
-        return new ExecutionResult(false, query + ": pattern not found.");
+        Query last = this.queryHistory.getLast();
+        return find(new Query(last.getSearchTerm(), !last.isBackwards()), true);
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {

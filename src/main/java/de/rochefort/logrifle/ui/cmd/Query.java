@@ -20,25 +20,36 @@
 
 package de.rochefort.logrifle.ui.cmd;
 
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.input.KeyType;
+import java.util.Objects;
 
-import java.util.HashMap;
-import java.util.Map;
+public class Query {
+    private final String searchTerm;
+    private final boolean backwards;
 
-public class KeyMapFactory {
-    private Map<KeyStroke, String> keyMap = new HashMap<>();
-
-    public KeyMapFactory() {
-        keyMap.put(new KeyStroke(KeyType.ArrowUp), "scroll -1");
-        keyMap.put(new KeyStroke(KeyType.ArrowDown), "scroll 1");
-        keyMap.put(new KeyStroke(KeyType.F5), "refresh");
-        keyMap.put(new KeyStroke('n', false, false), "find-again");
-        keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
-        keyMap.put(new KeyStroke('q', false, false), "quit");
+    public Query(String searchTerm, boolean backwards) {
+        this.searchTerm = searchTerm;
+        this.backwards = backwards;
     }
 
-    public Map<KeyStroke, String> get() {
-        return keyMap;
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public boolean isBackwards() {
+        return backwards;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Query query = (Query) o;
+        return backwards == query.backwards &&
+                searchTerm.equals(query.searchTerm);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(searchTerm, backwards);
     }
 }
