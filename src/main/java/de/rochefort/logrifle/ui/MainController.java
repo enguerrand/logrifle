@@ -81,6 +81,35 @@ public class MainController {
             }
         });
 
+
+        commandHandler.register(new Command("find") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return find(new Query(args, false));
+            }
+        });
+
+        commandHandler.register(new Command("find-again") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return findAgain();
+            }
+        });
+
+        commandHandler.register(new Command("find-again-backwards") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return findAgainBackwards();
+            }
+        });
+
+        commandHandler.register(new Command("find-backwards") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return find(new Query(args, true));
+            }
+        });
+
         commandHandler.register(new Command("quit") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -101,61 +130,6 @@ public class MainController {
                 return scroll(args);
             }
         });
-
-        commandHandler.register(new Command("find") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return find(new Query(args, false));
-            }
-        });
-
-        commandHandler.register(new Command("find-backwards") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return find(new Query(args, true));
-            }
-        });
-
-        commandHandler.register(new Command("find-again") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return findAgain();
-            }
-        });
-
-        commandHandler.register(new Command("find-again-backwards") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return findAgainBackwards();
-            }
-        });
-
-    }
-
-    private ExecutionResult scroll(String args) {
-        int lineCount = 1;
-        if (!args.matches("^\\s*$")) {
-            try {
-                lineCount = Integer.parseInt(args);
-            } catch (NumberFormatException e) {
-                return new ExecutionResult(false, args + ": Not a valid line count");
-            }
-        }
-        return this.mainWindow.getLogView().scroll(lineCount);
-    }
-
-    private ExecutionResult quit() {
-        try {
-            this.mainWindow.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new ExecutionResult(false);
-    }
-
-    private ExecutionResult refresh() {
-        this.mainWindow.updateView();
-        return new ExecutionResult(true);
     }
 
     private ExecutionResult find(Query query) {
@@ -199,14 +173,6 @@ public class MainController {
         return new ExecutionResult(false, query + ": pattern not found.");
     }
 
-    private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
-        if (query.isBackwards()) {
-            return focusedLineIndex == 0;
-        } else {
-            return focusedLineIndex == allLines.size() - 1;
-        }
-    }
-
     private ExecutionResult findAgain() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);
@@ -220,6 +186,40 @@ public class MainController {
         }
         Query last = this.queryHistory.getLast();
         return find(new Query(last.getSearchTerm(), !last.isBackwards()), true);
+    }
+
+    private ExecutionResult quit() {
+        try {
+            this.mainWindow.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ExecutionResult(false);
+    }
+
+    private ExecutionResult refresh() {
+        this.mainWindow.updateView();
+        return new ExecutionResult(true);
+    }
+
+    private ExecutionResult scroll(String args) {
+        int lineCount = 1;
+        if (!args.matches("^\\s*$")) {
+            try {
+                lineCount = Integer.parseInt(args);
+            } catch (NumberFormatException e) {
+                return new ExecutionResult(false, args + ": Not a valid line count");
+            }
+        }
+        return this.mainWindow.getLogView().scroll(lineCount);
+    }
+
+    private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
+        if (query.isBackwards()) {
+            return focusedLineIndex == 0;
+        } else {
+            return focusedLineIndex == allLines.size() - 1;
+        }
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
