@@ -23,10 +23,11 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
-import de.rochefort.logrifle.LogReader;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewFiltered;
+import de.rochefort.logrifle.data.views.ViewsTree;
+import de.rochefort.logrifle.data.views.ViewsTreeNode;
 import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
@@ -96,6 +97,20 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("filter-view-up") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return moveFilterUp();
+            }
+        });
+
+        commandHandler.register(new Command("filter-view-down") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return moveFilterDown();
+            }
+        });
+
         commandHandler.register(new Command("find") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -146,6 +161,16 @@ public class MainController {
         });
     }
 
+    private ExecutionResult moveFilterUp() {
+        boolean changed = mainWindow.getViewsTree().moveFocusUp();
+        return new ExecutionResult(changed, null);
+    }
+
+    private ExecutionResult moveFilterDown() {
+        boolean changed = mainWindow.getViewsTree().moveFocusDown();
+        return new ExecutionResult(changed, null);
+    }
+
     private ExecutionResult find(Query query) {
         return find(query, false);
     }
@@ -191,8 +216,11 @@ public class MainController {
         if (regex.isEmpty()) {
             return new ExecutionResult(false, "Missing argument: filter pattern");
         }
-        DataView dataView = this.mainWindow.getDataView();
-        this.mainWindow.setDataView(new DataViewFiltered(regex, dataView, inverted));
+        ViewsTree viewsTree = this.mainWindow.getViewsTree();
+        ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
+        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedTreeNode.getDataView(), inverted);
+        ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
+        viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
         return new ExecutionResult(true);
     }
 
@@ -255,9 +283,5 @@ public class MainController {
         }
         ExecutionResult executionResult = keyStrokeHandler.handleKeyStroke(keyStroke);
         return executionResult.isUiUpdateRequired();
-    }
-
-    public void setDataView(LogReader dataView) {
-        this.mainWindow.setDataView(dataView);
     }
 }

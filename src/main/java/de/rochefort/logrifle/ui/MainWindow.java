@@ -32,6 +32,7 @@ import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.rochefort.logrifle.data.views.DataView;
+import de.rochefort.logrifle.data.views.ViewsTree;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -40,13 +41,14 @@ import java.util.concurrent.Executor;
 
 public class MainWindow {
 
-    private DataView dataView = null;
     private final KeyStrokeDispatchingWindow window;
     private Screen screen;
     private final LogView logView;
     private final CommandView commandView;
+    private final ViewsTree viewsTree;
 
-    public MainWindow() {
+    public MainWindow(ViewsTree viewsTree) {
+        this.viewsTree = viewsTree;
         window = new KeyStrokeDispatchingWindow("logrifle", UI::runLater);
         window.setHints(Arrays.asList(
                 Window.Hint.FULL_SCREEN,
@@ -75,13 +77,6 @@ public class MainWindow {
     /**
      * Must be called on the gui thread
      */
-    void setDataView(DataView dataView) {
-        this.dataView = dataView;
-    }
-
-    /**
-     * Must be called on the gui thread
-     */
     public void updateView() {
         updateView(null);
     }
@@ -95,7 +90,7 @@ public class MainWindow {
         }
         UI.checkGuiThreadOrThrow();
         @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight());
-        logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
+        logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, viewsTree.getFocusedNode().getDataView());
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
     }
 
@@ -156,6 +151,10 @@ public class MainWindow {
     }
 
     public DataView getDataView() {
-        return dataView;
+        return viewsTree.getFocusedNode().getDataView();
+    }
+
+    public ViewsTree getViewsTree() {
+        return viewsTree;
     }
 }

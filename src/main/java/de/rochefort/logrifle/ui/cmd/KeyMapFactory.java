@@ -36,6 +36,8 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
         keyMap.put(new KeyStroke('q', false, false), "quit");
+        keyMap.put(new KeyStroke(KeyType.ArrowUp, false, true), "filter-view-up");
+        keyMap.put(new KeyStroke(KeyType.ArrowDown, false, true), "filter-view-down");
     }
 
     public Map<KeyStroke, String> get() {

@@ -21,7 +21,6 @@
 package de.rochefort.logrifle.data.views;
 
 import de.rochefort.logrifle.data.parsing.Line;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +42,5 @@ public interface DataView {
     }
     int getLineCount();
     List<Line> getAllLines();
-    @Nullable
-    DataView getParentView();
+    String getTitle();
 }

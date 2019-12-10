@@ -41,9 +41,11 @@ public class LogReader implements DataView {
     private volatile List<Line> lines = null;
     private final LineParser lineParser;
     private final Tailer tailer;
+    private final String title;
 
     LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool) throws IOException {
         this.lineParser = lineParser;
+        this.title = logfile.getFileName().toString();
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {
             private @Nullable Line lastLine;
@@ -143,10 +145,9 @@ public class LogReader implements DataView {
         return new ArrayList<>(this.lines);
     }
 
-    @Nullable
     @Override
-    public DataView getParentView() {
-        return null;
+    public String getTitle() {
+        return this.title;
     }
 
     public void shutdown() {

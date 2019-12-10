@@ -24,6 +24,7 @@ import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.views.ViewsTree;
 import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
 import de.rochefort.logrifle.ui.MainWindowListener;
@@ -48,7 +49,8 @@ public class Main {
         Path path = Paths.get(pathToLogFile);
         LineParser lineParser = new LineParserTimestampedTextImpl();
         LogReader logReader = new LogReader(lineParser, path, workerPool);
-        MainWindow mainWindow = new MainWindow();
+        ViewsTree viewsTree = new ViewsTree(logReader);
+        MainWindow mainWindow = new MainWindow(viewsTree);
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
@@ -66,7 +68,6 @@ public class Main {
                 System.exit(0);
             }
         });
-        mainController.setDataView(logReader);
         mainWindow.updateView();
 
     }
