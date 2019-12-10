@@ -85,4 +85,19 @@ public class ViewsTree {
         }
         return false;
     }
+
+    public void walk(Walker walker){
+        walkImpl(walker, this.rootNode, 0);
+    }
+
+    private void walkImpl(Walker walker, ViewsTreeNode currentNode, int depth) {
+        walker.handleNode(currentNode, depth, currentNode == focusedNode);
+        for (ViewsTreeNode child : currentNode.getChildren()) {
+            walkImpl(walker, child, depth + 1);
+        }
+    }
+
+    public interface Walker {
+        void handleNode(ViewsTreeNode node, int recursionDepth, boolean focused);
+    }
 }

@@ -45,6 +45,7 @@ public class MainWindow {
     private Screen screen;
     private final LogView logView;
     private final CommandView commandView;
+    private final SideBar sideBar;
     private final ViewsTree viewsTree;
 
     public MainWindow(ViewsTree viewsTree) {
@@ -61,7 +62,9 @@ public class MainWindow {
         logView = new LogView();
         mainPanel.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
-
+        sideBar = new SideBar(viewsTree);
+        mainPanel.addComponent(sideBar.getPanel());
+        sideBar.getPanel().setLayoutData(BorderLayout.Location.LEFT);
         commandView = new CommandView();
         mainPanel.addComponent(commandView.getPanel());
         commandView.getPanel().setLayoutData(BorderLayout.Location.BOTTOM);
@@ -89,7 +92,8 @@ public class MainWindow {
             return;
         }
         UI.checkGuiThreadOrThrow();
-        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight());
+        int sideBarWidth = sideBar.update();
+        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth);
         logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, viewsTree.getFocusedNode().getDataView());
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
     }

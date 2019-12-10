@@ -22,7 +22,6 @@ package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Interactable;
 import com.googlecode.lanterna.gui2.Label;
@@ -46,7 +45,6 @@ class CommandView implements InteractableKeystrokeListener {
     CommandView() {
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
-        panel.setLayoutData(BorderLayout.Location.CENTER);
         TextBox.DefaultTextBoxRenderer renderer = new TextBox.DefaultTextBoxRenderer();
         renderer.setUnusedSpaceCharacter(' ');
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
