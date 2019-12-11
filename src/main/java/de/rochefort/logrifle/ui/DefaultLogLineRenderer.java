@@ -20,14 +20,22 @@
 
 package de.rochefort.logrifle.ui;
 
+import com.googlecode.lanterna.SGR;
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.Label;
 import de.rochefort.logrifle.data.parsing.Line;
 
 public class DefaultLogLineRenderer implements LogLineRenderer {
     @Override
-    public Label render(Line line, int lineIndex, int visibleLineCount) {
+    public AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused) {
         int digitCount = getDigitCount(visibleLineCount);
-        return new Label(String.format(" %"+digitCount+"d %s", lineIndex, line.getRaw()));
+        Label label = new Label(String.format(" %" + digitCount + "d %s", lineIndex, line.getRaw()));
+        if (focused) {
+            label.setForegroundColor(TextColor.ANSI.WHITE);
+            label.addStyle(SGR.BOLD);
+        }
+        return label;
     }
 
     private int getDigitCount(int n) {

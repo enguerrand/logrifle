@@ -30,9 +30,11 @@ public class KeyMapFactory {
     private Map<KeyStroke, String> keyMap = new HashMap<>();
 
     public KeyMapFactory() {
-        keyMap.put(new KeyStroke(KeyType.ArrowUp), "scroll -1");
-        keyMap.put(new KeyStroke(KeyType.ArrowDown), "scroll 1");
+        keyMap.put(new KeyStroke(KeyType.ArrowUp), "move-focus -1");
+        keyMap.put(new KeyStroke(KeyType.ArrowDown), "move-focus 1");
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
+        keyMap.put(new KeyStroke('y', true, false), "scroll -1");
+        keyMap.put(new KeyStroke('e', true, false), "scroll 1");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
         keyMap.put(new KeyStroke('q', false, false), "quit");

@@ -159,6 +159,13 @@ public class MainController {
                 return scroll(args);
             }
         });
+
+        commandHandler.register(new Command("move-focus") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return moveFocus(args);
+            }
+        });
     }
 
     private ExecutionResult moveFilterUp() {
@@ -254,15 +261,22 @@ public class MainController {
     }
 
     private ExecutionResult scroll(String args) {
-        int lineCount = 1;
-        if (!args.matches("^\\s*$")) {
-            try {
-                lineCount = Integer.parseInt(args);
-            } catch (NumberFormatException e) {
-                return new ExecutionResult(false, args + ": Not a valid line count");
-            }
+        try {
+            int lineCount = Integer.parseInt(args);
+            return this.mainWindow.getLogView().scroll(lineCount);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid line count");
         }
-        return this.mainWindow.getLogView().scroll(lineCount);
+    }
+
+
+    private ExecutionResult moveFocus(String args) {
+        try {
+            int lineCount = Integer.parseInt(args);
+            return this.mainWindow.getLogView().moveFocus(lineCount);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid line count");
+        }
     }
 
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {

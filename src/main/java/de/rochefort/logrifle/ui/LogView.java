@@ -21,8 +21,8 @@
 package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.GridLayout;
-import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.data.parsing.Line;
@@ -50,9 +50,11 @@ class LogView {
     void update(@Nullable TerminalSize newTerminalSize, DataView dataView) {
         TerminalSize size = newTerminalSize != null ? newTerminalSize : panel.getSize();
         int rows = size.getRows();
+        int maxLineCount = dataView.getLineCount();
+
+        scrollIfRequiredByFocus(rows, maxLineCount);
 
         panel.removeAllComponents();
-        int maxLineCount = dataView.getLineCount();
         if (topIndex >= maxLineCount) {
             topIndex = maxLineCount - 1;
         } else if (topIndex < 0) {
@@ -62,13 +64,34 @@ class LogView {
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-            Label label = logLineRenderer.render(line, i+1, lines.size());
+            boolean focused = i == focusOffset;
+            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused);
             panel.addComponent(label);
         }
     }
 
+    private void scrollIfRequiredByFocus(int visibleRowsCount, int maxLineCount) {
+        if (focusOffset < 0) {
+            topIndex = Math.max(0, topIndex + focusOffset);
+            focusOffset = 0;
+        }
+        if (focusOffset > visibleRowsCount - 1) {
+            topIndex = Math.min(maxLineCount, topIndex + focusOffset + 1 - visibleRowsCount);
+            focusOffset = visibleRowsCount - 1;
+        }
+        if (focusOffset + topIndex >= maxLineCount) {
+            focusOffset = maxLineCount - topIndex - 1;
+        }
+
+    }
+
     public ExecutionResult scroll(int lineCountDelta) {
         this.topIndex += lineCountDelta;
+        return new ExecutionResult(true);
+    }
+
+    public ExecutionResult moveFocus(int lineCountDelta) {
+        this.focusOffset += lineCountDelta;
         return new ExecutionResult(true);
     }
 
