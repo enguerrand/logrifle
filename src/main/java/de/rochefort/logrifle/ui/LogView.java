@@ -31,12 +31,13 @@ import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 class LogView {
     private final Panel panel;
     private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
-    private int topIndex = 0;
-    private int focusOffset = 0;
+    private LogPosition logPosition = new LogPosition(0,0);
+    private @Nullable DataView lastView;
 
     LogView() {
         LayoutManager layout = new GridLayout(1);
@@ -52,50 +53,40 @@ class LogView {
         int rows = size.getRows();
         int maxLineCount = dataView.getLineCount();
 
-        scrollIfRequiredByFocus(rows, maxLineCount);
+        this.logPosition = this.logPosition.scrollIfRequiredByFocus(rows, maxLineCount);
 
         panel.removeAllComponents();
-        if (topIndex >= maxLineCount) {
-            topIndex = maxLineCount - 1;
-        } else if (topIndex < 0) {
-            topIndex = 0;
-        }
-        List<Line> lines = dataView.getLines(topIndex, Math.max(0, rows));
+        this.logPosition = this.logPosition.ensureValid(maxLineCount);
+        List<Line> lines = dataView.getLines(this.logPosition.getTopIndex(), Math.max(0, rows));
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-            boolean focused = i == focusOffset;
+            boolean focused = i == this.logPosition.getFocusOffset();
             AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused);
             panel.addComponent(label);
         }
     }
 
-    private void scrollIfRequiredByFocus(int visibleRowsCount, int maxLineCount) {
-        if (focusOffset < 0) {
-            topIndex = Math.max(0, topIndex + focusOffset);
-            focusOffset = 0;
-        }
-        if (focusOffset > visibleRowsCount - 1) {
-            topIndex = Math.min(maxLineCount, topIndex + focusOffset + 1 - visibleRowsCount);
-            focusOffset = visibleRowsCount - 1;
-        }
-        if (focusOffset + topIndex >= maxLineCount) {
-            focusOffset = maxLineCount - topIndex - 1;
-        }
-
-    }
-
-    public ExecutionResult scroll(int lineCountDelta) {
-        this.topIndex += lineCountDelta;
+    ExecutionResult scroll(int lineCountDelta) {
+        this.logPosition = this.logPosition.scroll(lineCountDelta);
         return new ExecutionResult(true);
     }
 
-    public ExecutionResult moveFocus(int lineCountDelta) {
-        this.focusOffset += lineCountDelta;
+    ExecutionResult moveFocus(int lineCountDelta) {
+        this.logPosition = this.logPosition.moveFocus(lineCountDelta);
         return new ExecutionResult(true);
     }
 
-    public int getFocusedLineIndex(){
-        return topIndex + focusOffset;
+    int getFocusedLineIndex(){
+        return this.logPosition.getFocusedLineIndex();
+    }
+
+    @Nullable
+    private Line getFocusedLine(){
+        DataView lastView = this.lastView;
+        if (lastView == null) {
+            return null;
+        }
+        return lastView.getLine(getFocusedLineIndex());
     }
 }

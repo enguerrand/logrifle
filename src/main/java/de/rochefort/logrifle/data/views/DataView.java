@@ -26,6 +26,9 @@ import java.util.Collections;
 import java.util.List;
 
 public interface DataView {
+    default Line getLine(int index) {
+        return getAllLines().get(index);
+    }
     default List<Line> getLines(int topIndex, int maxCount) {
         List<Line> snapshot = getAllLines();
         if (snapshot == null) {
