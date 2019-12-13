@@ -20,6 +20,13 @@
 
 package de.rochefort.logrifle.ui;
 
+import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.views.DataView;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+
 public class LogPosition {
     private final int topIndex;
     private final int focusOffset;
@@ -45,7 +52,7 @@ public class LogPosition {
         return new LogPosition(this.topIndex, this.focusOffset + delta);
     }
 
-    public int getFocusedLineIndex(){
+    int getFocusedLineIndex(){
         return topIndex + focusOffset;
     }
 
@@ -74,5 +81,29 @@ public class LogPosition {
             nextFocusOffset = maxLineCount - nextTopIndex - 1;
         }
         return new LogPosition(nextTopIndex, nextFocusOffset);
+    }
+
+    LogPosition transferIfNeeded(@Nullable DataView from, DataView to) {
+        if (Objects.equals(from, to)) {
+            return this;
+        }
+        if (from == null) {
+            return this;
+        }
+        Line focusedLine = from.getLine(getFocusedLineIndex());
+        List<Line> allLines = to.getAllLines();
+        int nextFocusIndex = allLines.indexOf(focusedLine);
+        if (nextFocusIndex < 0) {
+            long focusedLineTimestamp = focusedLine.getTimestamp();
+            for (int i = 0; i < allLines.size(); i++) {
+                Line line = allLines.get(i);
+                if (line.getTimestamp() >= focusedLineTimestamp) {
+                    nextFocusIndex = i;
+                    break;
+                }
+            }
+        }
+        int top = Math.max(0, nextFocusIndex - this.focusOffset);
+        return new LogPosition(top, nextFocusIndex - top);
     }
 }

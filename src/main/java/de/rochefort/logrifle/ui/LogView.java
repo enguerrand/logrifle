@@ -31,7 +31,6 @@ import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 class LogView {
     private final Panel panel;
@@ -49,6 +48,7 @@ class LogView {
     }
 
     void update(@Nullable TerminalSize newTerminalSize, DataView dataView) {
+        this.logPosition = this.logPosition.transferIfNeeded(this.lastView, dataView);
         TerminalSize size = newTerminalSize != null ? newTerminalSize : panel.getSize();
         int rows = size.getRows();
         int maxLineCount = dataView.getLineCount();
@@ -65,6 +65,7 @@ class LogView {
             AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused);
             panel.addComponent(label);
         }
+        this.lastView = dataView;
     }
 
     ExecutionResult scroll(int lineCountDelta) {
