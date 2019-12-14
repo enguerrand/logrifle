@@ -22,25 +22,24 @@ package de.rochefort.logrifle.data.views;
 
 
 import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.ui.UI;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class DataViewFiltered implements DataView {
-    private final List<Line> visibleLines;
+public class DataViewFiltered extends DataView {
+    private final List<Line> visibleLines = new ArrayList<>();
     private final boolean inverted;
     private final Pattern pattern;
-    private final String title;
+    private int processedLinesCount = 0;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted) {
+        super((inverted ? "! " : "") + regex);
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
-        this.visibleLines = parentView.getAllLines().stream()
-                .filter(this::lineMatches)
-                .collect(Collectors.toList());
-        this.title = (inverted ? "! " : "") + regex;
+        onUpdated(parentView);
     }
 
     private boolean lineMatches(Line l) {
@@ -59,7 +58,13 @@ public class DataViewFiltered implements DataView {
     }
 
     @Override
-    public String getTitle() {
-        return title;
+    public void onUpdated(DataView source) {
+        UI.checkGuiThreadOrThrow();
+        List<Line> sourceLines = source.getLines(processedLinesCount, null);
+        this.processedLinesCount += sourceLines.size();
+        this.visibleLines.addAll(sourceLines.stream()
+                .filter(this::lineMatches)
+                .collect(Collectors.toList()));
+        fireUpdated();
     }
 }

@@ -21,15 +21,27 @@
 package de.rochefort.logrifle.data.views;
 
 import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.ui.UI;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-public interface DataView {
-    default Line getLine(int index) {
+public abstract class DataView implements DataViewListener {
+    private final String title;
+    private final Set<DataViewListener> listeners = new LinkedHashSet<>();
+    protected DataView(String title) {
+        this.title = title;
+    }
+    public String getTitle() {
+        return this.title;
+    }
+    public Line getLine(int index) {
         return getAllLines().get(index);
     }
-    default List<Line> getLines(int topIndex, int maxCount) {
+    public List<Line> getLines(int topIndex, @Nullable Integer maxCount) {
         List<Line> snapshot = getAllLines();
         if (snapshot == null) {
             return Collections.emptyList();
@@ -37,13 +49,27 @@ public interface DataView {
         int topIndexCorrected = Math.max(0, Math.min(topIndex, snapshot.size()-1));
         if (snapshot.size() <= topIndexCorrected || topIndex < 0) {
             return Collections.emptyList();
-        } else if (snapshot.size() <= topIndexCorrected + maxCount) {
+        } else if (maxCount == null || snapshot.size() <= topIndexCorrected + maxCount) {
             return snapshot.subList(topIndexCorrected, snapshot.size());
         } else {
             return snapshot.subList(topIndexCorrected, topIndexCorrected + maxCount);
         }
     }
-    int getLineCount();
-    List<Line> getAllLines();
-    String getTitle();
+    public void addListener(DataViewListener listener) {
+        UI.checkGuiThreadOrThrow();
+        this.listeners.add(listener);
+    }
+    public void removeListener(DataViewListener listener) {
+        UI.checkGuiThreadOrThrow();
+        this.listeners.remove(listener);
+    }
+
+    protected void fireUpdated() {
+        UI.checkGuiThreadOrThrow();
+        for (DataViewListener listener : this.listeners) {
+            listener.onUpdated(DataView.this);
+        }
+    }
+    public abstract int getLineCount();
+    public abstract List<Line> getAllLines();
 }

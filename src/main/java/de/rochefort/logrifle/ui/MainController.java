@@ -225,7 +225,9 @@ public class MainController {
         }
         ViewsTree viewsTree = this.mainWindow.getViewsTree();
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedTreeNode.getDataView(), inverted);
+        DataView focusedView = focusedTreeNode.getDataView();
+        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted);
+        focusedView.addListener(dataViewFiltered);
         ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
         viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
         return new ExecutionResult(true);

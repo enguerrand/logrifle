@@ -27,20 +27,30 @@ import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
+import de.rochefort.logrifle.data.views.DataViewListener;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 class LogView {
     private final Panel panel;
     private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
-    private LogPosition logPosition = new LogPosition(0,0);
+    private LogPosition logPosition = new LogPosition(-1,0);
     private @Nullable DataView lastView;
+    private final DataViewListener viewListener;
 
     LogView() {
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
+        viewListener = new DataViewListener() {
+            @Override
+            public void onUpdated(DataView source) {
+                UI.runLater(() ->
+                        update(null, source));
+            }
+        };
     }
 
     Panel getPanel() {
@@ -48,6 +58,7 @@ class LogView {
     }
 
     void update(@Nullable TerminalSize newTerminalSize, DataView dataView) {
+        updateListenerRegistrationIfNeeded(dataView);
         this.logPosition = this.logPosition.transferIfNeeded(this.lastView, dataView);
         TerminalSize size = newTerminalSize != null ? newTerminalSize : panel.getSize();
         int rows = size.getRows();
@@ -66,6 +77,15 @@ class LogView {
             panel.addComponent(label);
         }
         this.lastView = dataView;
+    }
+
+    private void updateListenerRegistrationIfNeeded(DataView dataView) {
+        if (!Objects.equals(this.lastView, dataView)) {
+            if (this.lastView != null) {
+                this.lastView.removeListener(this.viewListener);
+            }
+            dataView.addListener(this.viewListener);
+        }
     }
 
     ExecutionResult scroll(int lineCountDelta) {
@@ -88,6 +108,10 @@ class LogView {
         if (lastView == null) {
             return null;
         }
-        return lastView.getLine(getFocusedLineIndex());
+        int focusedLineIndex = getFocusedLineIndex();
+        if (focusedLineIndex < 0) {
+            return null;
+        }
+        return lastView.getLine(focusedLineIndex);
     }
 }

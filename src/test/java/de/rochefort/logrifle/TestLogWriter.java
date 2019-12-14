@@ -109,6 +109,6 @@ public class TestLogWriter {
 
     public static void main(String[] args) throws IOException {
         TestLogWriter testLogWriter = new TestLogWriter(0L, 0L);
-        testLogWriter.start(100, null);
+        testLogWriter.start(1, null);
     }
 }

@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-public class LogPosition {
+class LogPosition {
     private final int topIndex;
     private final int focusOffset;
 
@@ -90,18 +90,27 @@ public class LogPosition {
         if (from == null) {
             return this;
         }
-        Line focusedLine = from.getLine(getFocusedLineIndex());
         List<Line> allLines = to.getAllLines();
-        int nextFocusIndex = allLines.indexOf(focusedLine);
-        if (nextFocusIndex < 0) {
-            long focusedLineTimestamp = focusedLine.getTimestamp();
-            for (int i = 0; i < allLines.size(); i++) {
-                Line line = allLines.get(i);
-                if (line.getTimestamp() >= focusedLineTimestamp) {
-                    nextFocusIndex = i;
-                    break;
+        if (allLines.isEmpty()) {
+            return new LogPosition(-1, 0);
+        }
+        int focusedLineIndex = getFocusedLineIndex();
+        int nextFocusIndex;
+        if (focusedLineIndex > 0) {
+            Line focusedLine = from.getLine(focusedLineIndex);
+            nextFocusIndex = allLines.indexOf(focusedLine);
+            if (nextFocusIndex < 0) {
+                long focusedLineTimestamp = focusedLine.getTimestamp();
+                for (int i = 0; i < allLines.size(); i++) {
+                    Line line = allLines.get(i);
+                    if (line.getTimestamp() >= focusedLineTimestamp) {
+                        nextFocusIndex = i;
+                        break;
+                    }
                 }
             }
+        } else {
+            nextFocusIndex = -1;
         }
         int top = Math.max(0, nextFocusIndex - this.focusOffset);
         return new LogPosition(top, nextFocusIndex - top);

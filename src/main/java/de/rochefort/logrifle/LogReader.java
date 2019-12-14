@@ -24,6 +24,7 @@ import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParseResult;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.views.DataView;
+import de.rochefort.logrifle.ui.UI;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -37,18 +38,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-public class LogReader implements DataView {
+public class LogReader extends DataView {
     private volatile List<Line> lines = null;
     private final LineParser lineParser;
     private final Tailer tailer;
-    private final String title;
 
     LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool) throws IOException {
+        super(logfile.getFileName().toString());
         this.lineParser = lineParser;
-        this.title = logfile.getFileName().toString();
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {
             private @Nullable Line lastLine;
+            private long lastFired = System.currentTimeMillis();
             @Override
             public void init(Tailer tailer) {
                 super.init(tailer);
@@ -78,6 +79,13 @@ public class LogReader implements DataView {
                     Line last = lines.get(lines.size() - 1);
                     last.appendAdditionalLine(parseResult.getText());
                 }
+                // TODO: implement proper relaxing and do not use the ui thread
+                long now = System.currentTimeMillis();
+                if (now - lastFired < 500) {
+                    return;
+                }
+                lastFired = now;
+                UI.runLater(() -> fireUpdated());
             }
 
             private void handleBuffered(LineParseResult parseResult) {
@@ -146,8 +154,8 @@ public class LogReader implements DataView {
     }
 
     @Override
-    public String getTitle() {
-        return this.title;
+    public void onUpdated(DataView parent) {
+        // ignored - this should never happen
     }
 
     public void shutdown() {
