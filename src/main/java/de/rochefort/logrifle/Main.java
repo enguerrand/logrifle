@@ -35,8 +35,10 @@ import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -45,10 +47,12 @@ public class Main {
             return;
         }
         ExecutorService workerPool = Executors.newCachedThreadPool();
+        ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
+        Executor logUpdateExecutor = Executors.newSingleThreadExecutor();
         String pathToLogFile = args[0];
         Path path = Paths.get(pathToLogFile);
         LineParser lineParser = new LineParserTimestampedTextImpl();
-        LogReader logReader = new LogReader(lineParser, path, workerPool);
+        LogReader logReader = new LogReader(lineParser, path, workerPool, timerPool, logUpdateExecutor);
         ViewsTree viewsTree = new ViewsTree(logReader);
         MainWindow mainWindow = new MainWindow(viewsTree);
         KeyMapFactory keyMapFactory = new KeyMapFactory();

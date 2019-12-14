@@ -22,7 +22,6 @@ package de.rochefort.logrifle.data.views;
 
 
 import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.ui.UI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +56,11 @@ public class DataViewFiltered extends DataView {
         return new ArrayList<>(this.visibleLines);
     }
 
+    /**
+     * Must be executed on logdispatch thread
+     */
     @Override
     public void onUpdated(DataView source) {
-        UI.checkGuiThreadOrThrow();
         List<Line> sourceLines = source.getLines(processedLinesCount, null);
         this.processedLinesCount += sourceLines.size();
         this.visibleLines.addAll(sourceLines.stream()

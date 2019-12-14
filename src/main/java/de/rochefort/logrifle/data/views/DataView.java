@@ -64,8 +64,10 @@ public abstract class DataView implements DataViewListener {
         this.listeners.remove(listener);
     }
 
+    /**
+     * Must be executed on logdispatch thread
+     */
     protected void fireUpdated() {
-        UI.checkGuiThreadOrThrow();
         for (DataViewListener listener : this.listeners) {
             listener.onUpdated(DataView.this);
         }

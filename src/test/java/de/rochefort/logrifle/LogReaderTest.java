@@ -16,17 +16,23 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BooleanSupplier;
 
 class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
-    static ExecutorService POOL;
+    static ExecutorService WORKER_POOL;
+    static ScheduledExecutorService TIMER_POOL;
+    static Executor LOG_DISPATCH_EXECUTOR;
 
     @BeforeAll
     static void setUp() {
-        POOL = Executors.newCachedThreadPool();
+        WORKER_POOL = Executors.newCachedThreadPool();
+        TIMER_POOL = Executors.newScheduledThreadPool(10);
+        LOG_DISPATCH_EXECUTOR = Executors.newSingleThreadExecutor();
     }
 
     @BeforeEach
@@ -39,7 +45,7 @@ class LogReaderTest {
     @AfterAll
     static void tearDown() throws IOException {
         Files.delete(LOGFILE);
-        POOL.shutdown();
+        WORKER_POOL.shutdown();
     }
 
     @Test
@@ -49,7 +55,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, POOL);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         List<Line> lines = logReader.getLines();
         Assertions.assertEquals(3, lines.size(), "wrong line count");
         Assertions.assertTrue(lines.get(1).getRaw().endsWith("ullam doloremque quia dolorem pariatur. adipiscing 0076.32 nesciunt. dolore"), "Wrong line content");
@@ -60,7 +66,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L);
         logWriter.writeRandomLines(100);
         CompletableFuture<Void> f = logWriter.start(100, 200);
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, POOL);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         f.get();
         List<Line> lines = logReader.getLines();
         await(() -> lines.size() == 300, 10_000L);
@@ -76,7 +82,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L);
         logWriter.writeException("Exception text", "Exception Message");
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, POOL);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         List<Line> lines = logReader.getLines();
         Assertions.assertEquals(1, lines.size(), "wrong line count");
         Assertions.assertNotEquals(0, lines.get(0).getAdditionalLines().size(), "additional lines missing");
@@ -93,7 +99,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, POOL);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         Assertions.assertEquals(0, logReader.getLines(5, 3).size(), "completely out of bounds index");
         Assertions.assertEquals(1, logReader.getLines(4, 2).size(), "partially out of bounds index");
         Assertions.assertEquals(2, logReader.getLines(3, 2).size(), "at bounds index");
