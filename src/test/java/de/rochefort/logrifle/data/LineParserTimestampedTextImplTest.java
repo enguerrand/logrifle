@@ -17,6 +17,6 @@ class LineParserTimestampedTextImplTest {
         long timestamp = line.getTimestamp();
         Assertions.assertTrue(result.isNewLine(), "newLine should be true");
         Assertions.assertEquals(raw, line.getRaw(), "Wrong raw content");
-        Assertions.assertEquals(79953234L, timestamp, "Wrong timestamp");
+        Assertions.assertEquals(83553234L, timestamp, "Wrong timestamp");
     }
 }

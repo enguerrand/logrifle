@@ -20,10 +20,9 @@
 
 package de.rochefort.logrifle.data.parsing;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +30,7 @@ public class LineParserTimestampedTextImpl implements LineParser {
     private static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
     private static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
     private final Pattern timeStampPattern;
-    private final DateFormat dateFormat;
+    private final DateTimeFormatter dateFormatter;
 
     public LineParserTimestampedTextImpl() {
         this(null, null);
@@ -39,7 +38,7 @@ public class LineParserTimestampedTextImpl implements LineParser {
 
     public LineParserTimestampedTextImpl(String timestampRegex, String dateFormat) {
         this.timeStampPattern = Pattern.compile(timestampRegex != null ? timestampRegex : DEFAULT_TIME_MATCH_REGEX);
-        this.dateFormat = new SimpleDateFormat(dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT);
+        this.dateFormatter = DateTimeFormatter.ofPattern(dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT);
     }
 
     @Override
@@ -48,11 +47,11 @@ public class LineParserTimestampedTextImpl implements LineParser {
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
             String dateString = matcher.group(1);
-            Date parsed = null;
+            LocalTime parsed = null;
             try {
-                parsed = this.dateFormat.parse(dateString);
-                timestamp = parsed.getTime();
-            } catch (ParseException e) {
+                parsed = LocalTime.parse(dateString, dateFormatter);
+                timestamp = TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
+            } catch (RuntimeException e) {
                 throw new IllegalStateException("Error while parsing datestring. \""+dateString+"\"." +
                         "The date string pattern matches but the matched string cannot be parsed with the given date format! " +
                         "Complete log line: \""+raw+"\"", e);
