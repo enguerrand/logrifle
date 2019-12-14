@@ -43,13 +43,11 @@ public abstract class DataView implements DataViewListener {
     }
     public List<Line> getLines(int topIndex, @Nullable Integer maxCount) {
         List<Line> snapshot = getAllLines();
-        if (snapshot == null) {
+        if (snapshot == null || snapshot.isEmpty() || topIndex >= snapshot.size() || topIndex < 0) {
             return Collections.emptyList();
         }
-        int topIndexCorrected = Math.max(0, Math.min(topIndex, snapshot.size()-1));
-        if (snapshot.size() <= topIndexCorrected || topIndex < 0) {
-            return Collections.emptyList();
-        } else if (maxCount == null || snapshot.size() <= topIndexCorrected + maxCount) {
+        int topIndexCorrected = Math.max(0, topIndex);
+        if (maxCount == null || snapshot.size() <= topIndexCorrected + maxCount) {
             return snapshot.subList(topIndexCorrected, snapshot.size());
         } else {
             return snapshot.subList(topIndexCorrected, topIndexCorrected + maxCount);
