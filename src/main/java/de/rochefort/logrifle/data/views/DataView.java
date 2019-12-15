@@ -20,20 +20,24 @@
 
 package de.rochefort.logrifle.data.views;
 
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public abstract class DataView implements DataViewListener {
+    private final String id = UUID.randomUUID().toString();
     private final String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
-    protected DataView(String title) {
+    private final LogDispatcher logDispatcher;
+    protected DataView(String title, LogDispatcher logDispatcher) {
         this.title = title;
+        this.logDispatcher = logDispatcher;
     }
     public String getTitle() {
         return this.title;
@@ -54,22 +58,28 @@ public abstract class DataView implements DataViewListener {
         }
     }
     public void addListener(DataViewListener listener) {
-        UI.checkGuiThreadOrThrow();
+        logDispatcher.checkOnDispatchThreadOrThrow();
         this.listeners.add(listener);
     }
     public void removeListener(DataViewListener listener) {
-        UI.checkGuiThreadOrThrow();
+        logDispatcher.checkOnDispatchThreadOrThrow();
         this.listeners.remove(listener);
     }
 
-    /**
-     * Must be executed on logdispatch thread
-     */
+    public String getId() {
+        return id;
+    }
+
     protected void fireUpdated() {
+        logDispatcher.checkOnDispatchThreadOrThrow();
         for (DataViewListener listener : this.listeners) {
             listener.onUpdated(DataView.this);
         }
     }
     public abstract int getLineCount();
     public abstract List<Line> getAllLines();
+
+    protected LogDispatcher getLogDispatcher() {
+        return logDispatcher;
+    }
 }

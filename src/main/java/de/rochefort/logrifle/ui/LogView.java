@@ -25,6 +25,7 @@ import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewListener;
@@ -40,8 +41,10 @@ class LogView {
     private LogPosition logPosition = new LogPosition(-1,0);
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
+    private final LogDispatcher logDispatcher;
 
-    LogView() {
+    LogView(LogDispatcher logDispatcher) {
+        this.logDispatcher = logDispatcher;
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
         viewListener = new DataViewListener() {
@@ -81,10 +84,12 @@ class LogView {
 
     private void updateListenerRegistrationIfNeeded(DataView dataView) {
         if (!Objects.equals(this.lastView, dataView)) {
-            if (this.lastView != null) {
-                this.lastView.removeListener(this.viewListener);
-            }
-            dataView.addListener(this.viewListener);
+            logDispatcher.execute(() -> {
+                if (this.lastView != null) {
+                    this.lastView.removeListener(this.viewListener);
+                }
+                dataView.addListener(this.viewListener);
+            });
         }
     }
 

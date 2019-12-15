@@ -115,7 +115,7 @@ public class TestLogWriter {
         if (args.length > 0) {
             logfileName = args[0];
         }
-        TestLogWriter testLogWriter = new TestLogWriter(0L, 0L, logfileName);
+        TestLogWriter testLogWriter = new TestLogWriter(null, null, logfileName);
         testLogWriter.start(1, null);
     }
 }

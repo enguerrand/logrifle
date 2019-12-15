@@ -1,5 +1,6 @@
 package de.rochefort.logrifle;
 
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParserTextImpl;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
@@ -16,7 +17,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,13 +26,13 @@ class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
     static ExecutorService WORKER_POOL;
     static ScheduledExecutorService TIMER_POOL;
-    static Executor LOG_DISPATCH_EXECUTOR;
+    static LogDispatcher LOG_DISPATCH_EXECUTOR;
 
     @BeforeAll
     static void setUp() {
         WORKER_POOL = Executors.newCachedThreadPool();
         TIMER_POOL = Executors.newScheduledThreadPool(10);
-        LOG_DISPATCH_EXECUTOR = Executors.newSingleThreadExecutor();
+        LOG_DISPATCH_EXECUTOR = new LogDispatcher();
     }
 
     @BeforeEach

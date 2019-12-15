@@ -31,6 +31,7 @@ import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.ViewsTree;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +49,7 @@ public class MainWindow {
     private final SideBar sideBar;
     private final ViewsTree viewsTree;
 
-    public MainWindow(ViewsTree viewsTree) {
+    public MainWindow(ViewsTree viewsTree, LogDispatcher logDispatcher) {
         this.viewsTree = viewsTree;
         window = new KeyStrokeDispatchingWindow("logrifle", UI::runLater);
         window.setHints(Arrays.asList(
@@ -59,7 +60,7 @@ public class MainWindow {
         ));
         BorderLayout layoutManager = new BorderLayout();
         Panel mainPanel = new Panel(layoutManager);
-        logView = new LogView();
+        logView = new LogView(logDispatcher);
         mainPanel.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
         sideBar = new SideBar(viewsTree);

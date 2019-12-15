@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle;
 
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.base.RateLimiter;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParseResult;
@@ -36,7 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -46,9 +46,9 @@ public class LogReader extends DataView {
     private final Tailer tailer;
     private final RateLimiter dispatcher;
 
-    LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool, ScheduledExecutorService timerPool, Executor logUpdateExecutor) throws IOException {
-        super(logfile.getFileName().toString());
-        this.dispatcher = new RateLimiter(this::fireUpdated, logUpdateExecutor, timerPool, 150);
+    LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
+        super(logfile.getFileName().toString(), logDispatcher);
+        this.dispatcher = new RateLimiter(this::fireUpdated, logDispatcher, timerPool, 150);
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
         TailerListener tailerListener = new TailerListenerAdapter() {

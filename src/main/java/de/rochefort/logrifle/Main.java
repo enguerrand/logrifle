@@ -22,8 +22,11 @@ package de.rochefort.logrifle;
 
 import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.views.DataView;
+import de.rochefort.logrifle.data.views.DataViewMerged;
 import de.rochefort.logrifle.data.views.ViewsTree;
 import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
@@ -35,7 +38,8 @@ import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,19 +50,33 @@ public class Main {
             System.err.println("Need path to file!");
             return;
         }
+        List<Path> logfiles = new ArrayList<>();
+        for (String arg : args) {
+            Path path = Paths.get(arg);
+            logfiles.add(path);
+        }
         ExecutorService workerPool = Executors.newCachedThreadPool();
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
-        Executor logUpdateExecutor = Executors.newSingleThreadExecutor();
-        String pathToLogFile = args[0];
-        Path path = Paths.get(pathToLogFile);
+
+        LogDispatcher logDispatcher = new LogDispatcher();
         LineParser lineParser = new LineParserTimestampedTextImpl();
-        LogReader logReader = new LogReader(lineParser, path, workerPool, timerPool, logUpdateExecutor);
-        ViewsTree viewsTree = new ViewsTree(logReader);
-        MainWindow mainWindow = new MainWindow(viewsTree);
+        DataView rootView;
+        List<LogReader> logReaders = new ArrayList<>();
+        for (Path logfile : logfiles) {
+            logReaders.add(new LogReader(lineParser, logfile, workerPool, timerPool, logDispatcher));
+        }
+        if (logReaders.size() == 1) {
+            rootView = logReaders.get(0);
+        } else {
+            rootView = new DataViewMerged(logReaders, logDispatcher, timerPool);
+        }
+
+        ViewsTree viewsTree = new ViewsTree(rootView);
+        MainWindow mainWindow = new MainWindow(viewsTree, logDispatcher);
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
-        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler);
+        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
             public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {
@@ -67,12 +85,13 @@ public class Main {
 
             @Override
             public void onClosed() {
-                logReader.shutdown();
+                for (LogReader logReader : logReaders) {
+                    logReader.shutdown();
+                }
                 workerPool.shutdown();
                 System.exit(0);
             }
         });
         mainWindow.updateView();
-
     }
 }

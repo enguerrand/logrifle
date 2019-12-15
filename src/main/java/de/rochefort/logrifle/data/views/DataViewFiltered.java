@@ -21,6 +21,7 @@
 package de.rochefort.logrifle.data.views;
 
 
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 
 import java.util.ArrayList;
@@ -34,8 +35,8 @@ public class DataViewFiltered extends DataView {
     private final Pattern pattern;
     private int processedLinesCount = 0;
 
-    public DataViewFiltered(String regex, DataView parentView, boolean inverted) {
-        super((inverted ? "! " : "") + regex);
+    public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
+        super((inverted ? "! " : "") + regex, logDispatcher);
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
         onUpdated(parentView);
@@ -56,11 +57,9 @@ public class DataViewFiltered extends DataView {
         return new ArrayList<>(this.visibleLines);
     }
 
-    /**
-     * Must be executed on logdispatch thread
-     */
     @Override
     public void onUpdated(DataView source) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
         List<Line> sourceLines = source.getLines(processedLinesCount, null);
         this.processedLinesCount += sourceLines.size();
         this.visibleLines.addAll(sourceLines.stream()

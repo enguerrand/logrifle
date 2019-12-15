@@ -23,6 +23,7 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewFiltered;
@@ -47,10 +48,12 @@ public class MainController {
     private final MainWindow mainWindow;
     private final KeyStrokeHandler keyStrokeHandler;
     private final Deque<Query> queryHistory = new LinkedList<>();
+    private final LogDispatcher logDispatcher;
 
-    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler) {
+    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler, LogDispatcher logDispatcher) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
+        this.logDispatcher = logDispatcher;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
@@ -226,8 +229,10 @@ public class MainController {
         ViewsTree viewsTree = this.mainWindow.getViewsTree();
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
-        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted);
-        focusedView.addListener(dataViewFiltered);
+        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
+        logDispatcher.execute(() -> {
+            focusedView.addListener(dataViewFiltered);
+        });
         ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
         viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
         return new ExecutionResult(true);
