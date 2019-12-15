@@ -35,13 +35,12 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
+        keyMap.put(new KeyStroke('l', false, false), "toggle-line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
         keyMap.put(new KeyStroke('q', false, false), "quit");
         keyMap.put(new KeyStroke(KeyType.ArrowUp, false, true), "filter-view-up");
         keyMap.put(new KeyStroke(KeyType.ArrowDown, false, true), "filter-view-down");
-        keyMap.put(new KeyStroke(KeyType.ArrowLeft, false, false), "show-line-labels true");
-        keyMap.put(new KeyStroke(KeyType.ArrowRight, false, false), "show-line-labels false");
     }
 
     public Map<KeyStroke, String> get() {

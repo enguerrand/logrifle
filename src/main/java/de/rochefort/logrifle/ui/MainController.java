@@ -170,10 +170,10 @@ public class MainController {
             }
         });
 
-        commandHandler.register(new Command("show-line-labels") {
+        commandHandler.register(new Command("toggle-line-labels") {
             @Override
             protected ExecutionResult execute(String args) {
-                return showLineLabels(args);
+                return toggleLineLabels();
             }
         });
     }
@@ -292,9 +292,8 @@ public class MainController {
         }
     }
 
-    private ExecutionResult showLineLabels(String args) {
-        boolean show = Boolean.parseBoolean(args);
-        return this.mainWindow.getLogView().setShowLineLabels(show);
+    private ExecutionResult toggleLineLabels() {
+        return this.mainWindow.getLogView().toggleLineLabels();
     }
 
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {

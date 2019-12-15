@@ -104,11 +104,8 @@ class LogView {
         return new ExecutionResult(true);
     }
 
-    ExecutionResult setShowLineLabels(boolean showLineLabels) {
-        if (showLineLabels == this.showLineLabels) {
-            return new ExecutionResult(false);
-        }
-        this.showLineLabels = showLineLabels;
+    ExecutionResult toggleLineLabels() {
+        this.showLineLabels = !this.showLineLabels;
         return new ExecutionResult(true);
     }
 
