@@ -21,5 +21,5 @@
 package de.rochefort.logrifle.data.parsing;
 
 public interface LineParser {
-    LineParseResult parse(String raw);
+    LineParseResult parse(String raw, String lineLabel);
 }

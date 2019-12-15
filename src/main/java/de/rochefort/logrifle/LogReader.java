@@ -47,7 +47,7 @@ public class LogReader extends DataView {
     private final RateLimiter dispatcher;
 
     LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
-        super(logfile.getFileName().toString(), logDispatcher);
+        super(logfile.getFileName().toString(), logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = new RateLimiter(this::fireUpdated, logDispatcher, timerPool, 150);
         this.lineParser = lineParser;
         final List<Line> tailBuffer = new ArrayList<>();
@@ -63,7 +63,7 @@ public class LogReader extends DataView {
              */
             @Override
             public void handle(String s) {
-                LineParseResult parseResult = LogReader.this.lineParser.parse(s);
+                LineParseResult parseResult = LogReader.this.lineParser.parse(s, getTitle());
                 if (lines != null) {
                     handleDirect(parseResult);
                 } else {
@@ -108,7 +108,7 @@ public class LogReader extends DataView {
         List<Line> readResult = new ArrayList<>();
         Line lastLine = null;
         for (String current : Files.readAllLines(logfile, StandardCharsets.UTF_8)) {
-            LineParseResult parseResult = this.lineParser.parse(current);
+            LineParseResult parseResult = this.lineParser.parse(current, getTitle());
             if (parseResult.isNewLine()) {
                 lastLine = parseResult.getParsedLine();
                 readResult.add(lastLine);

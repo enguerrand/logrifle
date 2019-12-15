@@ -35,13 +35,20 @@ public abstract class DataView implements DataViewListener {
     private final String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher logDispatcher;
-    protected DataView(String title, LogDispatcher logDispatcher) {
+    private int maxLineLabelLength;
+    protected DataView(String title, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
         this.logDispatcher = logDispatcher;
+        this.maxLineLabelLength = maxLineLabelLength;
     }
     public String getTitle() {
         return this.title;
     }
+
+    public int getMaxLineLabelLength() {
+        return maxLineLabelLength;
+    }
+
     public Line getLine(int index) {
         return getAllLines().get(index);
     }

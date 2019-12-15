@@ -142,6 +142,13 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("move-focus") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return moveFocus(args);
+            }
+        });
+
         commandHandler.register(new Command("quit") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -163,10 +170,10 @@ public class MainController {
             }
         });
 
-        commandHandler.register(new Command("move-focus") {
+        commandHandler.register(new Command("show-line-labels") {
             @Override
             protected ExecutionResult execute(String args) {
-                return moveFocus(args);
+                return showLineLabels(args);
             }
         });
     }
@@ -253,6 +260,15 @@ public class MainController {
         return find(new Query(last.getSearchTerm(), !last.isBackwards()), true);
     }
 
+    private ExecutionResult moveFocus(String args) {
+        try {
+            int lineCount = Integer.parseInt(args);
+            return this.mainWindow.getLogView().moveFocus(lineCount);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid line count");
+        }
+    }
+
     private ExecutionResult quit() {
         try {
             this.mainWindow.close();
@@ -276,14 +292,9 @@ public class MainController {
         }
     }
 
-
-    private ExecutionResult moveFocus(String args) {
-        try {
-            int lineCount = Integer.parseInt(args);
-            return this.mainWindow.getLogView().moveFocus(lineCount);
-        } catch (NumberFormatException e) {
-            return new ExecutionResult(false, args + ": Not a valid line count");
-        }
+    private ExecutionResult showLineLabels(String args) {
+        boolean show = Boolean.parseBoolean(args);
+        return this.mainWindow.getLogView().setShowLineLabels(show);
     }
 
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {

@@ -28,14 +28,20 @@ public class Line {
     private final long timestamp;
     private final String raw;
     private final List<String> additionalLines = new ArrayList<>();
+    private final String lineLabel;
 
-    Line(String raw, long timestamp) {
+    Line(String raw, long timestamp, String lineLabel) {
         this.timestamp = timestamp;
         this.raw = raw;
+        this.lineLabel = lineLabel;
     }
 
     public String getRaw() {
         return raw;
+    }
+
+    public String getLineLabel() {
+        return lineLabel;
     }
 
     public long getTimestamp() {

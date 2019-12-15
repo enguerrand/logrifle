@@ -36,7 +36,7 @@ public class DataViewFiltered extends DataView {
     private int processedLinesCount = 0;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
-        super((inverted ? "! " : "") + regex, logDispatcher);
+        super((inverted ? "! " : "") + regex, logDispatcher, parentView.getMaxLineLabelLength());
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
         onUpdated(parentView);

@@ -40,6 +40,8 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('q', false, false), "quit");
         keyMap.put(new KeyStroke(KeyType.ArrowUp, false, true), "filter-view-up");
         keyMap.put(new KeyStroke(KeyType.ArrowDown, false, true), "filter-view-down");
+        keyMap.put(new KeyStroke(KeyType.ArrowLeft, false, false), "show-line-labels true");
+        keyMap.put(new KeyStroke(KeyType.ArrowRight, false, false), "show-line-labels false");
     }
 
     public Map<KeyStroke, String> get() {

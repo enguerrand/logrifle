@@ -42,6 +42,7 @@ class LogView {
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
     private final LogDispatcher logDispatcher;
+    private boolean showLineLabels = true;
 
     LogView(LogDispatcher logDispatcher) {
         this.logDispatcher = logDispatcher;
@@ -76,7 +77,7 @@ class LogView {
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
-            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused);
+            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused, (showLineLabels ? dataView.getMaxLineLabelLength() : 0));
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -100,6 +101,14 @@ class LogView {
 
     ExecutionResult moveFocus(int lineCountDelta) {
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
+        return new ExecutionResult(true);
+    }
+
+    ExecutionResult setShowLineLabels(boolean showLineLabels) {
+        if (showLineLabels == this.showLineLabels) {
+            return new ExecutionResult(false);
+        }
+        this.showLineLabels = showLineLabels;
         return new ExecutionResult(true);
     }
 

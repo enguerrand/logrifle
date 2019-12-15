@@ -42,7 +42,7 @@ public class LineParserTimestampedTextImpl implements LineParser {
     }
 
     @Override
-    public LineParseResult parse(String raw) {
+    public LineParseResult parse(String raw, String lineLabel) {
         long timestamp;
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
@@ -59,6 +59,6 @@ public class LineParserTimestampedTextImpl implements LineParser {
         } else {
             return new LineParseResult(raw);
         }
-        return new LineParseResult(new Line(raw, timestamp));
+        return new LineParseResult(new Line(raw, timestamp, lineLabel));
     }
 }

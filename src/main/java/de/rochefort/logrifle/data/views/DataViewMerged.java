@@ -43,7 +43,12 @@ public class DataViewMerged extends DataView {
     public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, ScheduledExecutorService timerPool) {
         super(sourceViews.stream()
                 .map(DataView::getTitle)
-                .collect(Collectors.joining(" + ")), logDispatcher);
+                .collect(Collectors.joining(" + ")),
+                logDispatcher,
+                sourceViews.stream()
+                        .map(DataView::getMaxLineLabelLength)
+                        .max(Comparator.comparing(x -> x))
+                        .orElse(0));
         this.sourceViews = sourceViews;
         this.updater = new RateLimiter(this::handleUpdate, logDispatcher, timerPool, 150);
         logDispatcher.execute(() -> {
