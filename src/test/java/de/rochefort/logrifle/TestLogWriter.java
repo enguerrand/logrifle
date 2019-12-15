@@ -18,8 +18,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class TestLogWriter {
-    public static final Logger LOGGER = LoggerFactory.getLogger(TestLogWriter.class);
-    public static final Marker MARKER = MarkerFactory.getMarker("TEST");
+    public final Logger logger;
+    public final Marker marker;
 
     private final ScheduledExecutorService executorService;
     private final Random rTime;
@@ -27,7 +27,10 @@ public class TestLogWriter {
     private final List<String> dictionary;
     private volatile boolean stopRequested;
 
-    public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed) throws IOException {
+    public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed, @Nullable String outfileName) throws IOException {
+        System.setProperty("logfile.name", outfileName != null ? outfileName : "log.log");
+        logger = LoggerFactory.getLogger(TestLogWriter.class);
+        marker = MarkerFactory.getMarker("TEST");
         executorService = Executors.newScheduledThreadPool(1);
         rTime = new Random(timingSeed != null ? timingSeed : System.currentTimeMillis());
         rContent = new Random(contentSeed != null ? contentSeed : System.currentTimeMillis());
@@ -83,18 +86,18 @@ public class TestLogWriter {
         if (debugLevel < 2) {
             writeException(message, "Oops, something went wrong!");
         } else if (debugLevel < 12) {
-            LOGGER.error(MARKER, message);
+            logger.error(marker, message);
         } else if (debugLevel < 20) {
-            LOGGER.warn(MARKER, message);
+            logger.warn(marker, message);
         } else if (debugLevel < 40) {
-            LOGGER.info(MARKER, message);
+            logger.info(marker, message);
         } else {
-            LOGGER.debug(MARKER, message);
+            logger.debug(marker, message);
         }
     }
 
     public void writeException(String message, String exceptionMessage) {
-        LOGGER.error(MARKER, message, new RuntimeException(exceptionMessage));
+        logger.error(marker, message, new RuntimeException(exceptionMessage));
     }
 
     private String nextRandomWord(){
@@ -108,7 +111,11 @@ public class TestLogWriter {
     }
 
     public static void main(String[] args) throws IOException {
-        TestLogWriter testLogWriter = new TestLogWriter(0L, 0L);
+        String logfileName = null;
+        if (args.length > 0) {
+            logfileName = args[0];
+        }
+        TestLogWriter testLogWriter = new TestLogWriter(0L, 0L, logfileName);
         testLogWriter.start(1, null);
     }
 }

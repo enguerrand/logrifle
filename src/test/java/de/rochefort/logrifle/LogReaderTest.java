@@ -50,7 +50,7 @@ class LogReaderTest {
 
     @Test
     void testReadStaticLog() throws Exception {
-        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
@@ -63,7 +63,7 @@ class LogReaderTest {
 
     @Test
     void testOpenDynamicLog() throws Exception {
-        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeRandomLines(100);
         CompletableFuture<Void> f = logWriter.start(100, 200);
         LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
@@ -79,7 +79,7 @@ class LogReaderTest {
 
     @Test
     void testReadException() throws Exception {
-        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeException("Exception text", "Exception Message");
         logWriter.stop();
         LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
@@ -92,7 +92,7 @@ class LogReaderTest {
 
     @Test
     void testGetLines() throws Exception {
-        TestLogWriter logWriter = new TestLogWriter(null, 0L);
+        TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
