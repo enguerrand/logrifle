@@ -63,7 +63,13 @@ public class LogReader extends DataView {
                 if (parseResult.isNewLine()) {
                     lines.add(parseResult.getParsedLine());
                 } else {
-                    Line last = lines.get(lines.size() - 1);
+                    Line last;
+                    if (lines.isEmpty()) {
+                        last = Line.initialTextLineOf(s, getTitle());
+                        lines.add(last);
+                    } else {
+                        last = lines.get(lines.size() - 1);
+                    }
                     last.appendAdditionalLine(parseResult.getText());
                 }
                 dispatcher.requestExecution();

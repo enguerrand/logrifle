@@ -68,4 +68,8 @@ public class Line {
     public int hashCode() {
         return Objects.hash(raw);
     }
+
+    public static Line initialTextLineOf(String raw, String lineLabel) {
+        return new Line(raw, 0, lineLabel);
+    }
 }
