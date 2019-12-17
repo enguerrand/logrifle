@@ -42,7 +42,7 @@ public class ViewsTreeNode {
         this.children.add(child);
     }
 
-    void removeChild(ViewsTreeNode child) {
+    public void removeChild(ViewsTreeNode child) {
         this.children.remove(child);
     }
 
@@ -50,7 +50,7 @@ public class ViewsTreeNode {
         return Collections.unmodifiableList(children);
     }
 
-    ViewsTreeNode getParent() {
+    public ViewsTreeNode getParent() {
         return parent;
     }
 
