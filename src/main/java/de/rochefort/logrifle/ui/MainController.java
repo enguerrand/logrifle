@@ -184,6 +184,13 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("scroll-page") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return scrollPage(args);
+            }
+        });
+
         commandHandler.register(new Command("toggle-line-labels") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -324,6 +331,15 @@ public class MainController {
             return this.mainWindow.getLogView().scrollVertically(lineCount);
         } catch (NumberFormatException e) {
             return new ExecutionResult(false, args + ": Not a valid line count");
+        }
+    }
+
+    private ExecutionResult scrollPage(String args) {
+        try {
+            float factor = Float.parseFloat(args);
+            return this.mainWindow.getLogView().scrollPage(factor);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid factor");
         }
     }
 

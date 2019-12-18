@@ -108,6 +108,19 @@ class LogView {
         return new ExecutionResult(true);
     }
 
+    ExecutionResult scrollPage(float factor) {
+        Panel panel = this.panel;
+        if (panel == null) {
+            return new ExecutionResult(false);
+        }
+        int visibleLineCount = panel.getSize().getRows();
+        int scrollLineCount;
+        scrollLineCount = (int) (factor > 0
+                ? Math.ceil(factor * visibleLineCount)
+                : Math.floor(factor * visibleLineCount));
+        return scrollVertically(scrollLineCount);
+    }
+
     ExecutionResult moveFocus(int lineCountDelta) {
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
         return new ExecutionResult(true);

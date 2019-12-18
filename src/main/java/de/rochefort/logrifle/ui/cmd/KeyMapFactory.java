@@ -34,6 +34,10 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.ArrowDown), "move-focus 1");
         keyMap.put(new KeyStroke(KeyType.ArrowLeft), "hscroll -5");
         keyMap.put(new KeyStroke(KeyType.ArrowRight), "hscroll 5");
+        keyMap.put(new KeyStroke(KeyType.PageUp), "scroll-page -1");
+        keyMap.put(new KeyStroke(KeyType.PageDown), "scroll-page 1");
+        keyMap.put(new KeyStroke(KeyType.PageUp, false, true), "scroll-page -0.5");
+        keyMap.put(new KeyStroke(KeyType.PageDown, false, true), "scroll-page 0.5");
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
