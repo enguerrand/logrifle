@@ -43,6 +43,7 @@ class LogView {
     private final DataViewListener viewListener;
     private final LogDispatcher logDispatcher;
     private boolean showLineLabels = true;
+    private int horizontalScrollPosition = 0;
 
     LogView(LogDispatcher logDispatcher) {
         this.logDispatcher = logDispatcher;
@@ -74,10 +75,12 @@ class LogView {
         this.logPosition = this.logPosition.ensureValid(maxLineCount);
         List<Line> lines = dataView.getLines(this.logPosition.getTopIndex(), Math.max(0, rows));
 
+        int maxLineLabelLength = dataView.getMaxLineLabelLength();
+
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
-            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused, (showLineLabels ? dataView.getMaxLineLabelLength() : 0));
+            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused, (showLineLabels ? maxLineLabelLength : 0), horizontalScrollPosition);
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -94,7 +97,13 @@ class LogView {
         }
     }
 
-    ExecutionResult scroll(int lineCountDelta) {
+    ExecutionResult scrollHorizontally(int columnCountDelta) {
+        int currentHorizontalScrollPosition = this.horizontalScrollPosition;
+        this.horizontalScrollPosition = Math.max(0, currentHorizontalScrollPosition + columnCountDelta);
+        return new ExecutionResult(this.horizontalScrollPosition != currentHorizontalScrollPosition);
+    }
+
+    ExecutionResult scrollVertically(int lineCountDelta) {
         this.logPosition = this.logPosition.scroll(lineCountDelta);
         return new ExecutionResult(true);
     }

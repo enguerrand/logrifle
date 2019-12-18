@@ -24,5 +24,5 @@ import com.googlecode.lanterna.gui2.AbstractComponent;
 import de.rochefort.logrifle.data.parsing.Line;
 
 public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength);
+    AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn);
 }

@@ -170,10 +170,17 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("hscroll") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return scrollHotizontally(args);
+            }
+        });
+
         commandHandler.register(new Command("scroll") {
             @Override
             protected ExecutionResult execute(String args) {
-                return scroll(args);
+                return scrollVertically(args);
             }
         });
 
@@ -219,7 +226,7 @@ public class MainController {
             for (int i = focusedLineIndex - 1; i >= 0; i--) {
                 String raw = allLines.get(i).getRaw();
                 if (p.matcher(raw).find()) {
-                    logView.scroll(i - focusedLineIndex);
+                    logView.scrollVertically(i - focusedLineIndex);
                     return new ExecutionResult(true);
                 }
             }
@@ -227,7 +234,7 @@ public class MainController {
             for (int i = focusedLineIndex + 1; i < allLines.size(); i++) {
                 String raw = allLines.get(i).getRaw();
                 if (p.matcher(raw).find()) {
-                    logView.scroll(i - focusedLineIndex);
+                    logView.scrollVertically(i - focusedLineIndex);
                     return new ExecutionResult(true);
                 }
             }
@@ -302,10 +309,19 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
-    private ExecutionResult scroll(String args) {
+    private ExecutionResult scrollHotizontally(String args) {
+        try {
+            int columnCount = Integer.parseInt(args);
+            return this.mainWindow.getLogView().scrollHorizontally(columnCount);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid column count");
+        }
+    }
+
+    private ExecutionResult scrollVertically(String args) {
         try {
             int lineCount = Integer.parseInt(args);
-            return this.mainWindow.getLogView().scroll(lineCount);
+            return this.mainWindow.getLogView().scrollVertically(lineCount);
         } catch (NumberFormatException e) {
             return new ExecutionResult(false, args + ": Not a valid line count");
         }

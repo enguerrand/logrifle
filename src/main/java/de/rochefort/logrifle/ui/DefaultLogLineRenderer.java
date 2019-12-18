@@ -28,14 +28,20 @@ import de.rochefort.logrifle.data.parsing.Line;
 
 public class DefaultLogLineRenderer implements LogLineRenderer {
     @Override
-    public AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength) {
+    public AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn) {
         int digitCount = getDigitCount(visibleLineCount);
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
             lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length())) + "| ";
         }
-        Label label = new Label(String.format("%s%" + digitCount + "d %s", lineLabel, lineIndex, line.getRaw()));
+        String lineText = line.getRaw();
+        if (lineText.length() < beginColumn) {
+            lineText = "";
+        } else {
+            lineText = lineText.substring(beginColumn);
+        }
+        Label label = new Label(String.format("%s%" + digitCount + "d %s", lineLabel, lineIndex, lineText));
         if (focused) {
             label.setForegroundColor(TextColor.ANSI.WHITE);
             label.addStyle(SGR.BOLD);
