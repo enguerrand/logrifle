@@ -18,13 +18,36 @@
  *
  */
 
-package de.rochefort.logrifle.data.parsing;
+package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TextColor;
 
-public class LineParserTextImpl implements LineParser {
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class TextColorIterator implements Iterator<TextColor> {
+    private final List<TextColor> available;
+    private final AtomicInteger index = new AtomicInteger(0);
+
+    public TextColorIterator(List<TextColor> available) {
+        this.available = available;
+    }
+
     @Override
-    public LineParseResult parse(String raw, String lineLabel, TextColor labelColor) {
-        return new LineParseResult(new Line(raw, System.currentTimeMillis(), lineLabel, labelColor));
+    public boolean hasNext() {
+        return true;
+    }
+
+    @Override
+    public TextColor next() {
+        int nextIndex = index.getAndUpdate(prev -> {
+            if (prev >= available.size() - 1) {
+                return 0;
+            } else {
+                return prev + 1;
+            }
+        });
+        return available.get(nextIndex);
     }
 }

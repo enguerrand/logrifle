@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle;
 
+import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.base.LogDispatcher;
@@ -31,6 +32,7 @@ import de.rochefort.logrifle.data.views.ViewsTree;
 import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
 import de.rochefort.logrifle.ui.MainWindowListener;
+import de.rochefort.logrifle.ui.TextColorIterator;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.KeyMapFactory;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,8 +65,17 @@ public class Main {
         LineParser lineParser = new LineParserTimestampedTextImpl();
         DataView rootView;
         List<LogReader> logReaders = new ArrayList<>();
+        TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
+                TextColor.ANSI.BLUE,
+                TextColor.ANSI.GREEN,
+                TextColor.ANSI.MAGENTA,
+                TextColor.ANSI.RED,
+                TextColor.ANSI.CYAN,
+                TextColor.ANSI.YELLOW,
+                TextColor.ANSI.WHITE
+        ));
         for (Path logfile : logfiles) {
-            logReaders.add(new LogReader(lineParser, logfile, workerPool, timerPool, logDispatcher));
+            logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, timerPool, logDispatcher));
         }
         if (logReaders.size() == 1) {
             rootView = logReaders.get(0);

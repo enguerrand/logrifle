@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle;
 
+import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.base.RateLimiter;
 import de.rochefort.logrifle.data.parsing.Line;
@@ -44,8 +45,8 @@ public class LogReader extends DataView {
     private final Tailer tailer;
     private final RateLimiter dispatcher;
 
-    LogReader(LineParser lineParser, Path logfile, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
-        super(logfile.getFileName().toString(), logDispatcher, logfile.getFileName().toString().length());
+    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
+        super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = new RateLimiter(this::fireUpdated, logDispatcher, timerPool, 150);
         this.lineParser = lineParser;
         TailerListener tailerListener = new TailerListenerAdapter() {
@@ -59,13 +60,13 @@ public class LogReader extends DataView {
              */
             @Override
             public void handle(String s) {
-                LineParseResult parseResult = LogReader.this.lineParser.parse(s, getTitle());
+                LineParseResult parseResult = LogReader.this.lineParser.parse(s, getTitle(), getViewColor());
                 if (parseResult.isNewLine()) {
                     lines.add(parseResult.getParsedLine());
                 } else {
                     Line last;
                     if (lines.isEmpty()) {
-                        last = Line.initialTextLineOf(s, getTitle());
+                        last = Line.initialTextLineOf(s, getTitle(), getViewColor());
                         lines.add(last);
                     } else {
                         last = lines.get(lines.size() - 1);

@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle.data.views;
 
+import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 import org.jetbrains.annotations.Nullable;
@@ -36,13 +37,20 @@ public abstract class DataView implements DataViewListener {
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher logDispatcher;
     private int maxLineLabelLength;
-    protected DataView(String title, LogDispatcher logDispatcher, int maxLineLabelLength) {
+    private final TextColor viewColor;
+    protected DataView(String title, TextColor viewColor, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
+        this.viewColor = viewColor;
         this.logDispatcher = logDispatcher;
         this.maxLineLabelLength = maxLineLabelLength;
     }
+
     public String getTitle() {
         return this.title;
+    }
+
+    public TextColor getViewColor() {
+        return viewColor;
     }
 
     public int getMaxLineLabelLength() {

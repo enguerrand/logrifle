@@ -1,5 +1,6 @@
 package de.rochefort.logrifle;
 
+import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParserTextImpl;
@@ -55,7 +56,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         await(() -> logReader.getLineCount() == 3, 2_000L);
         Assertions.assertEquals(3, logReader.getLineCount(), "wrong line count");
         Assertions.assertTrue(logReader.getLine(1).getRaw().endsWith("ullam doloremque quia dolorem pariatur. adipiscing 0076.32 nesciunt. dolore"), "Wrong line content");
@@ -66,7 +67,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeRandomLines(100);
         CompletableFuture<Void> f = logWriter.start(100, 200);
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         f.get();
         await(() -> logReader.getLineCount() == 300, 2_000L);
         Assertions.assertEquals(300, logReader.getLineCount(), "wrong line count");
@@ -81,7 +82,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeException("Exception text", "Exception Message");
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
         List<Line> lines = logReader.getLines();
         await(() -> logReader.getAllLines().size() == 1, 2_000L);
         Assertions.assertEquals(1, lines.size(), "wrong line count");
@@ -99,7 +100,7 @@ class LogReaderTest {
         logWriter.writeRandomLogLine();
         logWriter.writeRandomLogLine();
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, TIMER_POOL, LOG_DISPATCH_EXECUTOR);
 
         await(() -> logReader.getAllLines().size() == 5, 2_000L);
         Assertions.assertEquals(0, logReader.getLines(5, 3).size(), "completely out of bounds index");

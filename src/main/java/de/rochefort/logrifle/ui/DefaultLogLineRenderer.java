@@ -23,8 +23,9 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.AbstractComponent;
-import com.googlecode.lanterna.gui2.Label;
 import de.rochefort.logrifle.data.parsing.Line;
+
+import java.util.Arrays;
 
 public class DefaultLogLineRenderer implements LogLineRenderer {
     @Override
@@ -33,7 +34,7 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
-            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length())) + "| ";
+            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length()));
         }
         String lineText = line.getRaw();
         if (lineText.length() < beginColumn) {
@@ -41,12 +42,14 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         } else {
             lineText = lineText.substring(beginColumn);
         }
-        Label label = new Label(String.format("%s%" + digitCount + "d %s", lineLabel, lineIndex, lineText));
-        if (focused) {
-            label.setForegroundColor(TextColor.ANSI.WHITE);
-            label.addStyle(SGR.BOLD);
-        }
-        return label;
+        ColoredString coloredLabelText = new ColoredString(lineLabel, line.getLabelColor(), null, null);
+        ColoredString coloredIndexText = new ColoredString(String.format("%" + digitCount + "d", lineIndex), TextColor.ANSI.CYAN, null);
+        ColoredString coloredLineContentText = focused
+            ? new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD)
+            : new ColoredString(lineText, null, null);
+        return new MultiColoredLabel(
+                        Arrays.asList(coloredLabelText, coloredIndexText, coloredLineContentText)
+                ).asComponent();
     }
 
     private int getDigitCount(int n) {

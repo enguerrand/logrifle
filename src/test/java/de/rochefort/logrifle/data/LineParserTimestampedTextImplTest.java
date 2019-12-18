@@ -1,5 +1,6 @@
 package de.rochefort.logrifle.data;
 
+import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.parsing.LineParseResult;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
@@ -12,7 +13,7 @@ class LineParserTimestampedTextImplTest {
     void parse() {
         LineParserTimestampedTextImpl parser = new LineParserTimestampedTextImpl();
         String raw = "DEBUG 23:12:33.234 - whatever log message";
-        LineParseResult result = parser.parse(raw, "dummy");
+        LineParseResult result = parser.parse(raw, "dummy", TextColor.ANSI.DEFAULT);
         Line line = result.getParsedLine();
         long timestamp = line.getTimestamp();
         Assertions.assertTrue(result.isNewLine(), "newLine should be true");

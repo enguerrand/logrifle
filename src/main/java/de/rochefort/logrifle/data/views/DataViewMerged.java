@@ -20,6 +20,7 @@
 
 package de.rochefort.logrifle.data.views;
 
+import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.base.RateLimiter;
 import de.rochefort.logrifle.data.parsing.Line;
@@ -44,6 +45,7 @@ public class DataViewMerged extends DataView {
         super(sourceViews.stream()
                 .map(DataView::getTitle)
                 .collect(Collectors.joining(" + ")),
+                TextColor.ANSI.DEFAULT,
                 logDispatcher,
                 sourceViews.stream()
                         .map(DataView::getMaxLineLabelLength)

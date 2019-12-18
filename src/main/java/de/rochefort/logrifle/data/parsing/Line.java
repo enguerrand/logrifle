@@ -20,6 +20,8 @@
 
 package de.rochefort.logrifle.data.parsing;
 
+import com.googlecode.lanterna.TextColor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,11 +31,13 @@ public class Line {
     private final String raw;
     private final List<String> additionalLines = new ArrayList<>();
     private final String lineLabel;
+    private final TextColor labelColor;
 
-    Line(String raw, long timestamp, String lineLabel) {
+    Line(String raw, long timestamp, String lineLabel, TextColor labelColor) {
         this.timestamp = timestamp;
         this.raw = raw;
         this.lineLabel = lineLabel;
+        this.labelColor = labelColor;
     }
 
     public String getRaw() {
@@ -42,6 +46,10 @@ public class Line {
 
     public String getLineLabel() {
         return lineLabel;
+    }
+
+    public TextColor getLabelColor() {
+        return labelColor;
     }
 
     public long getTimestamp() {
@@ -69,7 +77,7 @@ public class Line {
         return Objects.hash(raw);
     }
 
-    public static Line initialTextLineOf(String raw, String lineLabel) {
-        return new Line(raw, 0, lineLabel);
+    public static Line initialTextLineOf(String raw, String lineLabel, TextColor labelColor) {
+        return new Line(raw, 0, lineLabel, labelColor);
     }
 }
