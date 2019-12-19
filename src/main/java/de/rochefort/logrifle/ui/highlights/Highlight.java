@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Highlight {
+    private final String regex;
     private final Pattern pattern;
     private final @Nullable TextColor fgColor;
     private final @Nullable TextColor bgColor;
@@ -39,9 +40,14 @@ public class Highlight {
 
     public Highlight(String regex, @Nullable TextColor fgColor, @Nullable TextColor bgColor, SGR... styles) {
         this.pattern = Pattern.compile(regex);
+        this.regex = regex;
         this.fgColor = fgColor;
         this.bgColor = bgColor;
         this.styles = styles != null ? Arrays.asList(styles) : Collections.emptyList();
+    }
+
+    public String getRegex() {
+        return regex;
     }
 
     public TextColor getFgColor() {

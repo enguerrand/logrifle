@@ -33,7 +33,9 @@ public class MultiColoredLabel extends Panel {
 
     public MultiColoredLabel(Collection<ColoredString> text) {
         LinearLayout layout = new LinearLayout(Direction.HORIZONTAL);
+        layout.setSpacing(0);
         panel = new Panel(layout);
+
         for (ColoredString coloredString : text) {
             Label label = new Label(coloredString.getText());
             coloredString.getBgColor().ifPresent(label::setBackgroundColor);

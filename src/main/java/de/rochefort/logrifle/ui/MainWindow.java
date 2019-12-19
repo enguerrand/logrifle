@@ -34,6 +34,7 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.ViewsTree;
+import de.rochefort.logrifle.ui.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class MainWindow {
     private final SideBar sideBar;
     private final ViewsTree viewsTree;
 
-    public MainWindow(ViewsTree viewsTree, LogDispatcher logDispatcher) {
+    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, LogDispatcher logDispatcher) {
         this.viewsTree = viewsTree;
         window = new KeyStrokeDispatchingWindow("logrifle", UI::runLater);
         window.setHints(Arrays.asList(
@@ -60,10 +61,10 @@ public class MainWindow {
         ));
         BorderLayout layoutManager = new BorderLayout();
         Panel mainPanel = new Panel(layoutManager);
-        logView = new LogView(logDispatcher);
+        logView = new LogView(logDispatcher, highlightsData);
         mainPanel.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
-        sideBar = new SideBar(viewsTree);
+        sideBar = new SideBar(viewsTree, highlightsData);
         mainPanel.addComponent(sideBar.getPanel());
         sideBar.getPanel().setLayoutData(BorderLayout.Location.LEFT);
         commandView = new CommandView();

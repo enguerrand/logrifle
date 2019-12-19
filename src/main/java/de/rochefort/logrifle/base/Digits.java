@@ -18,14 +18,19 @@
  *
  */
 
-package de.rochefort.logrifle.ui;
+package de.rochefort.logrifle.base;
 
-import com.googlecode.lanterna.gui2.AbstractComponent;
-import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.ui.highlights.Highlight;
+public class Digits {
+    private Digits(){
+        throw new IllegalArgumentException("Do not instantiate this class!");
+    }
 
-import java.util.List;
-
-public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights);
+    public static int getDigitCount(int n) {
+        int count = 0;
+        while (n != 0) {
+            n = n / 10;
+            ++count;
+        }
+        return count;
+    }
 }

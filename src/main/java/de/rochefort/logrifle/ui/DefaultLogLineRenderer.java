@@ -23,14 +23,26 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.AbstractComponent;
+import de.rochefort.logrifle.base.Digits;
 import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.ui.highlights.Highlight;
+import de.rochefort.logrifle.ui.highlights.Highlights;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultLogLineRenderer implements LogLineRenderer {
     @Override
-    public AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn) {
-        int digitCount = getDigitCount(visibleLineCount);
+    public AbstractComponent<?> render(
+            Line line,
+            int lineIndex,
+            int visibleLineCount,
+            boolean focused,
+            int lineLabelLength,
+            int beginColumn,
+            List<Highlight> highlights
+    ) {
+        int digitCount = Digits.getDigitCount(visibleLineCount);
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
@@ -42,22 +54,14 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         } else {
             lineText = lineText.substring(beginColumn);
         }
-        ColoredString coloredLabelText = new ColoredString(lineLabel, line.getLabelColor(), null, null);
-        ColoredString coloredIndexText = new ColoredString(String.format("%" + digitCount + "d", lineIndex), TextColor.ANSI.CYAN, null);
-        ColoredString coloredLineContentText = focused
-            ? new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD)
-            : new ColoredString(lineText, null, null);
-        return new MultiColoredLabel(
-                        Arrays.asList(coloredLabelText, coloredIndexText, coloredLineContentText)
-                ).asComponent();
-    }
-
-    private int getDigitCount(int n) {
-        int count = 0;
-        while (n != 0) {
-            n = n / 10;
-            ++count;
+        List<ColoredString> coloredStrings = new ArrayList<>();
+        coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
+        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", lineIndex), TextColor.ANSI.CYAN, null));
+        if (focused) {
+            coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
+        } else {
+            coloredStrings.addAll(Highlights.applyHighlights(lineText, highlights));
         }
-        return count;
+        return new MultiColoredLabel(coloredStrings).asComponent();
     }
 }

@@ -36,6 +36,7 @@ import de.rochefort.logrifle.ui.TextColorIterator;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.KeyMapFactory;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
+import de.rochefort.logrifle.ui.highlights.HighlightsData;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -84,11 +85,12 @@ public class Main {
         }
 
         ViewsTree viewsTree = new ViewsTree(rootView);
-        MainWindow mainWindow = new MainWindow(viewsTree, logDispatcher);
+        HighlightsData highlightsData = new HighlightsData();
+        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, logDispatcher);
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
-        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher);
+        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
             public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {

@@ -30,6 +30,7 @@ import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewListener;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
+import de.rochefort.logrifle.ui.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -38,6 +39,7 @@ import java.util.Objects;
 class LogView {
     private final Panel panel;
     private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
+    private final HighlightsData highlightsData;
     private LogPosition logPosition = new LogPosition(-1,0);
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
@@ -45,8 +47,9 @@ class LogView {
     private boolean showLineLabels = true;
     private int horizontalScrollPosition = 0;
 
-    LogView(LogDispatcher logDispatcher) {
+    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData) {
         this.logDispatcher = logDispatcher;
+        this.highlightsData = highlightsData;
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
         viewListener = new DataViewListener() {
@@ -80,7 +83,7 @@ class LogView {
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
-            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused, (showLineLabels ? maxLineLabelLength : 1), horizontalScrollPosition);
+            AbstractComponent<?> label = logLineRenderer.render(line, i+1, lines.size(), focused, (showLineLabels ? maxLineLabelLength : 1), horizontalScrollPosition, highlightsData.getHighlights());
             panel.addComponent(label);
         }
         this.lastView = dataView;

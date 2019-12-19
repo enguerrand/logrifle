@@ -34,8 +34,11 @@ import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import de.rochefort.logrifle.ui.cmd.Query;
+import de.rochefort.logrifle.ui.highlights.Highlight;
+import de.rochefort.logrifle.ui.highlights.HighlightsData;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,11 +52,29 @@ public class MainController {
     private final KeyStrokeHandler keyStrokeHandler;
     private final Deque<Query> queryHistory = new LinkedList<>();
     private final LogDispatcher logDispatcher;
+    private final ViewsTree viewsTree;
+    private final HighlightsData highlightsData;
+    private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
+            TextColor.ANSI.BLACK,
+            TextColor.ANSI.BLACK,
+            TextColor.ANSI.BLACK,
+            TextColor.ANSI.WHITE,
+            TextColor.ANSI.WHITE
+    ));
+    private final TextColorIterator highlightsBgIterator = new TextColorIterator(Arrays.asList(
+            TextColor.ANSI.YELLOW,
+            TextColor.ANSI.CYAN,
+            TextColor.ANSI.MAGENTA,
+            TextColor.ANSI.BLUE,
+            TextColor.ANSI.RED
+    ));
 
-    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler, LogDispatcher logDispatcher) {
+    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler, LogDispatcher logDispatcher, ViewsTree viewsTree, HighlightsData highlightsData) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
+        this.viewsTree = viewsTree;
+        this.highlightsData = highlightsData;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
@@ -92,6 +113,14 @@ public class MainController {
                 return deleteFilter();
             }
         });
+
+        commandHandler.register(new Command("delete-highlight") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return removeHighlight(args);
+            }
+        });
+
         commandHandler.register(new Command("!filter") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -148,6 +177,13 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("highlight") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return addHighlight(args);
+            }
+        });
+
         commandHandler.register(new Command("move-focus") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -199,12 +235,12 @@ public class MainController {
     }
 
     private ExecutionResult moveFilterUp() {
-        boolean changed = mainWindow.getViewsTree().moveFocusUp();
+        boolean changed = viewsTree.moveFocusUp();
         return new ExecutionResult(changed, null);
     }
 
     private ExecutionResult moveFilterDown() {
-        boolean changed = mainWindow.getViewsTree().moveFocusDown();
+        boolean changed = viewsTree.moveFocusDown();
         return new ExecutionResult(changed, null);
     }
 
@@ -253,7 +289,7 @@ public class MainController {
         if (regex.isEmpty()) {
             return new ExecutionResult(false, "Missing argument: filter pattern");
         }
-        ViewsTree viewsTree = this.mainWindow.getViewsTree();
+        ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
         DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
@@ -265,8 +301,24 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
+    private ExecutionResult addHighlight(String args) {
+        Highlight highlight = new Highlight(args, highlightsFgIterator.next(), highlightsBgIterator.next());
+        this.highlightsData.addHighlight(highlight);
+        return new ExecutionResult(true);
+
+    }
+
+    private ExecutionResult removeHighlight(String args) {
+        try {
+            int index = Integer.parseInt(args);
+            return this.highlightsData.removeHighlight(index);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, "Not a valid highlight index: " + args);
+        }
+    }
+
     private ExecutionResult deleteFilter() {
-        ViewsTree viewsTree = this.mainWindow.getViewsTree();
+        ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         return viewsTree.removeNode(focusedTreeNode);
     }
