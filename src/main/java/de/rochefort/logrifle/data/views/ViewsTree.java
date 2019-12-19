@@ -20,6 +20,8 @@
 
 package de.rochefort.logrifle.data.views;
 
+import de.rochefort.logrifle.ui.cmd.ExecutionResult;
+
 import java.util.List;
 
 public class ViewsTree {
@@ -36,14 +38,14 @@ public class ViewsTree {
         this.focusedNode = child;
     }
 
-    public void removeNode(ViewsTreeNode node) {
+    public ExecutionResult removeNode(ViewsTreeNode node) {
         ViewsTreeNode parent = node.getParent();
         if (parent == null) {
-            //TODO
-            return;
+            return new ExecutionResult(false, "Cannot delete the root view");
         }
         moveFocusUp();
         parent.removeChild(node);
+        return new ExecutionResult(true);
     }
 
     public ViewsTreeNode getFocusedNode() {

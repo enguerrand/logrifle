@@ -34,7 +34,6 @@ import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import de.rochefort.logrifle.ui.cmd.Query;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Deque;
@@ -269,13 +268,7 @@ public class MainController {
     private ExecutionResult deleteFilter() {
         ViewsTree viewsTree = this.mainWindow.getViewsTree();
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        @Nullable ViewsTreeNode parent = focusedTreeNode.getParent();
-        if (parent == null) {
-            return new ExecutionResult(false, "Cannot delete the root view");
-        }
-        moveFilterUp();
-        parent.removeChild(focusedTreeNode);
-        return new ExecutionResult(true);
+        return viewsTree.removeNode(focusedTreeNode);
     }
 
     private ExecutionResult findAgain() {
