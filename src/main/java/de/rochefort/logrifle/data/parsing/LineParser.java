@@ -23,5 +23,5 @@ package de.rochefort.logrifle.data.parsing;
 import com.googlecode.lanterna.TextColor;
 
 public interface LineParser {
-    LineParseResult parse(String raw, String lineLabel, TextColor labelColor);
+    LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor);
 }

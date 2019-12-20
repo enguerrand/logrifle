@@ -13,7 +13,7 @@ class LineParserTimestampedTextImplTest {
     void parse() {
         LineParserTimestampedTextImpl parser = new LineParserTimestampedTextImpl();
         String raw = "DEBUG 23:12:33.234 - whatever log message";
-        LineParseResult result = parser.parse(raw, "dummy", TextColor.ANSI.DEFAULT);
+        LineParseResult result = parser.parse(0, raw, "dummy", TextColor.ANSI.DEFAULT);
         Line line = result.getParsedLine();
         long timestamp = line.getTimestamp();
         Assertions.assertTrue(result.isNewLine(), "newLine should be true");

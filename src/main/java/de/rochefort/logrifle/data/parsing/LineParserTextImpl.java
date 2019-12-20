@@ -24,7 +24,7 @@ import com.googlecode.lanterna.TextColor;
 
 public class LineParserTextImpl implements LineParser {
     @Override
-    public LineParseResult parse(String raw, String lineLabel, TextColor labelColor) {
-        return new LineParseResult(new Line(raw, System.currentTimeMillis(), lineLabel, labelColor));
+    public LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor) {
+        return new LineParseResult(new Line(index, raw, System.currentTimeMillis(), lineLabel, labelColor));
     }
 }

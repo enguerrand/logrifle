@@ -27,17 +27,23 @@ import java.util.List;
 import java.util.Objects;
 
 public class Line {
+    private final int index;
     private final long timestamp;
     private final String raw;
     private final List<String> additionalLines = new ArrayList<>();
     private final String lineLabel;
     private final TextColor labelColor;
 
-    Line(String raw, long timestamp, String lineLabel, TextColor labelColor) {
+    Line(int index, String raw, long timestamp, String lineLabel, TextColor labelColor) {
+        this.index = index;
         this.timestamp = timestamp;
         this.raw = raw;
         this.lineLabel = lineLabel;
         this.labelColor = labelColor;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public String getRaw() {
@@ -77,7 +83,7 @@ public class Line {
         return Objects.hash(raw);
     }
 
-    public static Line initialTextLineOf(String raw, String lineLabel, TextColor labelColor) {
-        return new Line(raw, 0, lineLabel, labelColor);
+    public static Line initialTextLineOf(int index, String raw, String lineLabel, TextColor labelColor) {
+        return new Line(index, raw, 0, lineLabel, labelColor);
     }
 }

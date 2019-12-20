@@ -44,7 +44,7 @@ public class LineParserTimestampedTextImpl implements LineParser {
     }
 
     @Override
-    public LineParseResult parse(String raw, String lineLabel, TextColor labelColor) {
+    public LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor) {
         long timestamp;
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
@@ -61,6 +61,6 @@ public class LineParserTimestampedTextImpl implements LineParser {
         } else {
             return new LineParseResult(raw);
         }
-        return new LineParseResult(new Line(raw, timestamp, lineLabel, labelColor));
+        return new LineParseResult(new Line(index, raw, timestamp, lineLabel, labelColor));
     }
 }

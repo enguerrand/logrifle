@@ -44,6 +44,7 @@ public class LogReader extends DataView {
     private final LineParser lineParser;
     private final Tailer tailer;
     private final RateLimiter dispatcher;
+    private int currentLineIndex = 0;
 
     LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
@@ -60,13 +61,13 @@ public class LogReader extends DataView {
              */
             @Override
             public void handle(String s) {
-                LineParseResult parseResult = LogReader.this.lineParser.parse(s, getTitle(), getViewColor());
+                LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex++, s, getTitle(), getViewColor());
                 if (parseResult.isNewLine()) {
                     lines.add(parseResult.getParsedLine());
                 } else {
                     Line last;
                     if (lines.isEmpty()) {
-                        last = Line.initialTextLineOf(s, getTitle(), getViewColor());
+                        last = Line.initialTextLineOf(currentLineIndex++, s, getTitle(), getViewColor());
                         lines.add(last);
                     } else {
                         last = lines.get(lines.size() - 1);

@@ -27,5 +27,5 @@ import de.rochefort.logrifle.ui.highlights.Highlight;
 import java.util.List;
 
 public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int lineIndex, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights);
+    AbstractComponent<?> render(Line line, int visibleLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights);
 }

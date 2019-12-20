@@ -35,14 +35,13 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
     @Override
     public AbstractComponent<?> render(
             Line line,
-            int lineIndex,
-            int visibleLineCount,
+            int totalLineCount,
             boolean focused,
             int lineLabelLength,
             int beginColumn,
             List<Highlight> highlights
     ) {
-        int digitCount = Digits.getDigitCount(visibleLineCount);
+        int digitCount = Digits.getDigitCount(totalLineCount);
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
@@ -56,7 +55,7 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         }
         List<ColoredString> coloredStrings = new ArrayList<>();
         coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
-        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", lineIndex), TextColor.ANSI.CYAN, null));
+        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), TextColor.ANSI.CYAN, null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
         } else {
