@@ -313,6 +313,11 @@ public class MainController {
         return this.mainWindow.getLogView().toggleLineLabels();
     }
 
+    public ExecutionResult toggleSidebar() {
+        this.mainWindow.toggleSidebar();
+        return new ExecutionResult(true);
+    }
+
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
         if (query.isBackwards()) {
             return focusedLineIndex == 0;

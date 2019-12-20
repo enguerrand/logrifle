@@ -48,6 +48,7 @@ public class MainWindow {
     private final LogView logView;
     private final CommandView commandView;
     private final SideBar sideBar;
+    private boolean sidebarVisible = true;
     private final ViewsTree viewsTree;
 
     public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, LogDispatcher logDispatcher) {
@@ -94,7 +95,7 @@ public class MainWindow {
             return;
         }
         UI.checkGuiThreadOrThrow();
-        int sideBarWidth = sideBar.update();
+        int sideBarWidth = sideBar.update(sidebarVisible);
         @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth);
         logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, viewsTree.getFocusedNode().getDataView());
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
@@ -138,7 +139,7 @@ public class MainWindow {
         });
     }
 
-    public void openCommandBar(String initialText) {
+    void openCommandBar(String initialText) {
         UI.checkGuiThreadOrThrow();
         this.commandView.show(initialText);
         updateView(screen.getTerminalSize());
@@ -153,15 +154,19 @@ public class MainWindow {
         this.commandView.showMessage(message, textColor == null ? TextColor.ANSI.DEFAULT : textColor);
     }
 
-    public LogView getLogView() {
+    LogView getLogView() {
         return this.logView;
     }
 
-    public DataView getDataView() {
+    DataView getDataView() {
         return viewsTree.getFocusedNode().getDataView();
     }
 
     public ViewsTree getViewsTree() {
         return viewsTree;
+    }
+
+    void toggleSidebar() {
+        this.sidebarVisible = !this.sidebarVisible;
     }
 }

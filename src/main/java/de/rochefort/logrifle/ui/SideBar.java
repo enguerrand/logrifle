@@ -37,28 +37,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 class SideBar {
+    public static final String FILTERS_TITLE = "Views Tree";
+    public static final String HIGHLIGHTS_TITLE = "Highlights";
     private final Panel panel;
     private final Panel viewsContentPanel;
     private final Panel highlightsContentPanel;
     private final ViewsTree viewsTree;
     private final HighlightsData highlightsData;
+    private final Label filtersTitleLabel;
+    private final Label highlightsTitleLabel;
 
     SideBar(ViewsTree viewsTree, HighlightsData highlightsData) {
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.panel = new Panel(new BorderLayout());
         Panel viewsPanel = new Panel(new BorderLayout());
-        Label filtersTitle = new Label("Views Tree");
-        filtersTitle.addStyle(SGR.BOLD);
-        viewsPanel.addComponent(filtersTitle);
-        filtersTitle.setLayoutData(BorderLayout.Location.TOP);
+        filtersTitleLabel = new Label(FILTERS_TITLE);
+        filtersTitleLabel.addStyle(SGR.BOLD);
+        viewsPanel.addComponent(filtersTitleLabel);
+        filtersTitleLabel.setLayoutData(BorderLayout.Location.TOP);
         this.viewsContentPanel = new Panel(new GridLayout(1));
         viewsPanel.addComponent(this.viewsContentPanel);
         this.viewsContentPanel.setLayoutData(BorderLayout.Location.CENTER);
         Panel highlightsPanel = new Panel(new BorderLayout());
-        Label highlightsTitle = new Label("Highlights");
-        highlightsTitle.addStyle(SGR.BOLD);
-        highlightsPanel.addComponent(highlightsTitle);
+        highlightsTitleLabel = new Label(HIGHLIGHTS_TITLE);
+        highlightsTitleLabel.addStyle(SGR.BOLD);
+        highlightsPanel.addComponent(highlightsTitleLabel);
         this.highlightsContentPanel = new Panel(new LinearLayout(Direction.VERTICAL));
         highlightsPanel.addComponent(this.highlightsContentPanel);
         this.highlightsContentPanel.setLayoutData(BorderLayout.Location.CENTER);
@@ -72,11 +76,21 @@ class SideBar {
         return panel;
     }
 
-    int update() {
+    int update(boolean show) {
         UI.checkGuiThreadOrThrow();
-        updateHighlights();
-        int maxLabelLength = updateViewsTree();
-        return maxLabelLength;
+        if (show) {
+            filtersTitleLabel.setText(FILTERS_TITLE);
+            highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
+            updateHighlights();
+            int maxLabelLength = updateViewsTree();
+            return maxLabelLength;
+        } else {
+            filtersTitleLabel.setText("");
+            highlightsTitleLabel.setText("");
+            this.highlightsContentPanel.removeAllComponents();
+            this.viewsContentPanel.removeAllComponents();
+            return 0;
+        }
     }
 
     private int updateViewsTree() {
@@ -131,7 +145,7 @@ class SideBar {
 
     private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount) {
         Panel p = new Panel(new GridLayout(1));
-        Label l = new Label(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()));
+        Label l = new Label(truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex())));
         if (highlight.getFgColor() != null) {
             l.setForegroundColor(highlight.getFgColor());
         }

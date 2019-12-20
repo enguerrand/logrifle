@@ -186,6 +186,13 @@ public class CommandHandler {
                 return mainController.toggleLineLabels();
             }
         });
+
+        register(new Command("toggle-sidebar", null, "Toggles the sidebar visibility.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.toggleSidebar();
+            }
+        });
     }
 
     private void register(Command command) {
