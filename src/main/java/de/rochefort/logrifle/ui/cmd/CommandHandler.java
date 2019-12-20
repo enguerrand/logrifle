@@ -239,6 +239,10 @@ public class CommandHandler {
         }
         int keyLength = helpEntries.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
         int bindLength = helpEntries.stream().mapToInt(e -> e.getBinds().length()).max().orElse(0);
+        System.out.println("Synopsis:");
+        System.out.println("===========================");
+        System.out.println("java -jar logrifle.jar -h | --help | logfile1 [ logfile2 [ ... logfileN ] ]");
+        System.out.println("");
         System.out.println("List of available commands:");
         System.out.println("===========================");
         for (HelpEntry helpEntry : helpEntries) {
