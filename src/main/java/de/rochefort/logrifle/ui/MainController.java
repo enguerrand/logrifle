@@ -295,10 +295,14 @@ public class MainController {
         DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
         logDispatcher.execute(() -> {
             focusedView.addListener(dataViewFiltered);
+            dataViewFiltered.onUpdated(focusedView);
+            UI.runLater(() -> {
+	            ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
+	            viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
+	            mainWindow.updateView();
+            });
         });
-        ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
-        viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
-        return new ExecutionResult(true);
+        return new ExecutionResult(false);
     }
 
     private ExecutionResult addHighlight(String args) {

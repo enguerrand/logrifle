@@ -39,9 +39,6 @@ public class DataViewFiltered extends DataView {
         super((inverted ? "! " : "") + regex, parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
-        logDispatcher.execute(() -> {
-            onUpdated(parentView);
-        });
     }
 
     private boolean lineMatches(Line l) {
