@@ -22,6 +22,7 @@ package de.rochefort.logrifle.ui.cmd;
 
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.rochefort.logrifle.base.Strings;
 import de.rochefort.logrifle.ui.MainController;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +45,13 @@ public class CommandHandler {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.prepareCommand(args);
+            }
+        });
+
+        register(new Command("bookmark", "b", "Bookmarks the currently focused line.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.addBookmark();
             }
         });
 
@@ -180,6 +188,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("toggle-bookmarks-view", null, "Toggles the bookmarks view visibility.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.toggleBookmarks();
+            }
+        });
+
         register(new Command("toggle-line-labels", null, "Toggles the full display of line labels on/off") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -219,7 +234,7 @@ public class CommandHandler {
         }
         Command command = commands.get(commandName);
         if (command == null) {
-            return new ExecutionResult(false, commandName.substring(1) + ": Command not found.");
+            return new ExecutionResult(false, commandName + ": Command not found.");
         }
         String args;
         if (words.size() < 2) {
@@ -298,16 +313,7 @@ public class CommandHandler {
         }
 
         String render(int keyLength, int bindLength) {
-            return pad(getKey(), keyLength) + " " + pad(getBinds(), bindLength) + ": " + getDescription();
-        }
-
-        private String pad(String s, int length) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(s);
-            for (int i = s.length(); i<length ; i++) {
-                sb.append(" ");
-            }
-            return sb.toString();
+            return Strings.pad(getKey(), keyLength) + " " + Strings.pad(getBinds(), bindLength) + ": " + getDescription();
         }
     }
 }

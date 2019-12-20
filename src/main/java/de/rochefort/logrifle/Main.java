@@ -24,6 +24,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.rochefort.logrifle.data.views.DataView;
@@ -92,9 +93,10 @@ public class Main {
 
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
-        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, logDispatcher);
+        Bookmarks bookmarks = new Bookmarks();
+        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
-        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData);
+        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override

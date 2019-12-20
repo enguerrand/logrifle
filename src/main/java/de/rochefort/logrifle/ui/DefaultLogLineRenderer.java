@@ -24,9 +24,10 @@ import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.AbstractComponent;
 import de.rochefort.logrifle.base.Digits;
-import de.rochefort.logrifle.data.parsing.Line;
+import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.highlights.Highlight;
 import de.rochefort.logrifle.data.highlights.Highlights;
+import de.rochefort.logrifle.data.parsing.Line;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,8 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             boolean focused,
             int lineLabelLength,
             int beginColumn,
-            List<Highlight> highlights
+            List<Highlight> highlights,
+            Bookmarks bookmarks
     ) {
         int digitCount = Digits.getDigitCount(totalLineCount);
         String lineLabel = "";
@@ -55,7 +57,8 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         }
         List<ColoredString> coloredStrings = new ArrayList<>();
         coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
-        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), TextColor.ANSI.CYAN, null));
+        boolean bookmarked = bookmarks.isLineBookmarked(line);
+        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), TextColor.ANSI.CYAN, bookmarked ? TextColor.ANSI.RED: null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
         } else {

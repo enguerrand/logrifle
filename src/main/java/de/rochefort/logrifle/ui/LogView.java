@@ -26,6 +26,7 @@ import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewListener;
@@ -38,7 +39,7 @@ import java.util.Objects;
 
 class LogView {
     private final Panel panel;
-    private final LogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
+    private final LogLineRenderer logLineRenderer;
     private final HighlightsData highlightsData;
     private LogPosition logPosition = new LogPosition(-1,0);
     private @Nullable DataView lastView;
@@ -46,10 +47,13 @@ class LogView {
     private final LogDispatcher logDispatcher;
     private boolean showLineLabels = true;
     private int horizontalScrollPosition = 0;
+    private final Bookmarks bookmarks;
 
-    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData) {
+    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks) {
+        this.logLineRenderer = logLineRenderer;
         this.logDispatcher = logDispatcher;
         this.highlightsData = highlightsData;
+        this.bookmarks = bookmarks;
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
         viewListener = new DataViewListener() {
@@ -83,7 +87,7 @@ class LogView {
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, (showLineLabels ? maxLineLabelLength : 1), horizontalScrollPosition, highlightsData.getHighlights());
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, (showLineLabels ? maxLineLabelLength : 1), horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks);
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -138,8 +142,12 @@ class LogView {
         return this.logPosition.getFocusedLineIndex();
     }
 
+    public int getHorizontalScrollPosition() {
+        return horizontalScrollPosition;
+    }
+
     @Nullable
-    private Line getFocusedLine(){
+    Line getFocusedLine(){
         DataView lastView = this.lastView;
         if (lastView == null) {
             return null;

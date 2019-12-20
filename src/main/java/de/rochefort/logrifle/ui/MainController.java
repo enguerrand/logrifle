@@ -24,6 +24,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewFiltered;
@@ -35,6 +36,7 @@ import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import de.rochefort.logrifle.ui.cmd.Query;
 import de.rochefort.logrifle.data.highlights.Highlight;
 import de.rochefort.logrifle.data.highlights.HighlightsData;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -53,6 +55,7 @@ public class MainController {
     private final LogDispatcher logDispatcher;
     private final ViewsTree viewsTree;
     private final HighlightsData highlightsData;
+    private final Bookmarks bookmarks;
     private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
             TextColor.ANSI.BLACK,
             TextColor.ANSI.BLACK,
@@ -68,12 +71,21 @@ public class MainController {
             TextColor.ANSI.RED
     ));
 
-    public MainController(MainWindow mainWindow, CommandHandler commandHandler, KeyStrokeHandler keyStrokeHandler, LogDispatcher logDispatcher, ViewsTree viewsTree, HighlightsData highlightsData) {
+    public MainController(
+            MainWindow mainWindow,
+            CommandHandler commandHandler,
+            KeyStrokeHandler keyStrokeHandler,
+            LogDispatcher logDispatcher,
+            ViewsTree viewsTree,
+            HighlightsData highlightsData,
+            Bookmarks bookmarks
+    ) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
+        this.bookmarks = bookmarks;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
@@ -126,7 +138,7 @@ public class MainController {
         return find(query, false);
     }
 
-    public ExecutionResult find(Query query, boolean noRecordHistory) {
+    private ExecutionResult find(Query query, boolean noRecordHistory) {
         if (query.getSearchTerm().matches("\\s*")) {
             return new ExecutionResult(false);
         }
@@ -244,6 +256,14 @@ public class MainController {
         return prepareCommand(preparedCommand);
     }
 
+    public ExecutionResult addBookmark() {
+        @Nullable Line focusedLine = mainWindow.getLogView().getFocusedLine();
+        if (focusedLine == null) {
+            return new ExecutionResult(false, "No line is currently focused.");
+        }
+        return bookmarks.add(focusedLine);
+    }
+
     public ExecutionResult findAgain() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);
@@ -315,6 +335,11 @@ public class MainController {
 
     public ExecutionResult toggleSidebar() {
         this.mainWindow.toggleSidebar();
+        return new ExecutionResult(true);
+    }
+
+    public ExecutionResult toggleBookmarks() {
+        this.mainWindow.toggleBookmarksView();
         return new ExecutionResult(true);
     }
 

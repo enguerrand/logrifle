@@ -26,10 +26,12 @@ import org.jetbrains.annotations.Nullable;
 class MainWindowLayout {
     private final TerminalSize logViewSize;
     private final TerminalSize commandBarSize;
+    private final TerminalSize bookmarksSize;
 
-    private MainWindowLayout(TerminalSize logViewSize, TerminalSize commandBarSize) {
+    private MainWindowLayout(TerminalSize logViewSize, TerminalSize commandBarSize, TerminalSize bookmarksSize) {
         this.logViewSize = logViewSize;
         this.commandBarSize = commandBarSize;
+        this.bookmarksSize = bookmarksSize;
     }
 
     TerminalSize getLogViewSize() {
@@ -40,15 +42,34 @@ class MainWindowLayout {
         return commandBarSize;
     }
 
-    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight, int sideBarWidth) {
+    public TerminalSize getBookmarksSize() {
+        return bookmarksSize;
+    }
+
+    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight, int sideBarWidth, int bookmarksCount) {
         if(terminalSize == null) {
             return null;
         }
         TerminalSize cmd = new TerminalSize(terminalSize.getColumns() , commandBarHeight);
-        TerminalSize log = new TerminalSize(terminalSize.getColumns() - sideBarWidth, terminalSize.getRows() - cmd.getRows());
-        return new MainWindowLayout(
-                log,
-                cmd
-        );
+        int rowsMinusCmd = terminalSize.getRows() - cmd.getRows();
+        int logViewWidth = terminalSize.getColumns() - sideBarWidth;
+        TerminalSize bm = computeBookmarksSize(logViewWidth, bookmarksCount, rowsMinusCmd);
+        TerminalSize log = new TerminalSize(logViewWidth, rowsMinusCmd - bm.getRows());
+        return new MainWindowLayout(log, cmd, bm);
+    }
+
+    static TerminalSize computeBookmarksSizeFrom(TerminalSize logViewSize, int mainWindowHeight, int cmdBarHeight, int bookmarksCount) {
+        int rowsMinusCmd = mainWindowHeight - logViewSize.getRows() - cmdBarHeight;
+        return computeBookmarksSize(logViewSize.getColumns(), bookmarksCount, rowsMinusCmd);
+    }
+
+    private static TerminalSize computeBookmarksSize(int logViewWidth, int bookmarksCount, int rowsMinusCmd) {
+        int bookmarksHeight;
+        if (rowsMinusCmd < 2 || bookmarksCount == 0) {
+            bookmarksHeight = 0;
+        } else {
+            bookmarksHeight = Math.min(bookmarksCount + 1, rowsMinusCmd - 2);
+        }
+        return new TerminalSize(logViewWidth, bookmarksHeight);
     }
 }

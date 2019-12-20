@@ -18,15 +18,33 @@
  *
  */
 
-package de.rochefort.logrifle.ui;
+package de.rochefort.logrifle.data.bookmarks;
 
-import com.googlecode.lanterna.gui2.AbstractComponent;
-import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.data.highlights.Highlight;
 
-import java.util.List;
+import java.util.Objects;
 
-public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int totalLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights, Bookmarks bookmarks);
+public class Bookmark {
+    private final Line line;
+
+    public Bookmark(Line line) {
+        this.line = line;
+    }
+
+    public Line getLine() {
+        return line;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bookmark bookmark = (Bookmark) o;
+        return Objects.equals(line, bookmark.line);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(line);
+    }
 }

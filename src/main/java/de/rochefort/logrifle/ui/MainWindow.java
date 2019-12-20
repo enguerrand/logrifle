@@ -32,6 +32,7 @@ import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.ViewsTree;
 import de.rochefort.logrifle.data.highlights.HighlightsData;
@@ -49,10 +50,17 @@ public class MainWindow {
     private final CommandView commandView;
     private final SideBar sideBar;
     private boolean sidebarVisible = true;
+    private final BookmarksView bookmarksView;
+    private final Bookmarks bookmarks;
+    private boolean bookmarksViewVisible = true;
     private final ViewsTree viewsTree;
+    private final HighlightsData highlightsData;
+    private final Panel mainPanel;
 
-    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, LogDispatcher logDispatcher) {
+    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, Bookmarks bookmarks, LogDispatcher logDispatcher) {
         this.viewsTree = viewsTree;
+        this.highlightsData = highlightsData;
+        this.bookmarks = bookmarks;
         window = new KeyStrokeDispatchingWindow("logrifle", UI::runLater);
         window.setHints(Arrays.asList(
                 Window.Hint.FULL_SCREEN,
@@ -61,10 +69,18 @@ public class MainWindow {
                 Window.Hint.NO_POST_RENDERING
         ));
         BorderLayout layoutManager = new BorderLayout();
-        Panel mainPanel = new Panel(layoutManager);
-        logView = new LogView(logDispatcher, highlightsData);
-        mainPanel.addComponent(logView.getPanel());
+        mainPanel = new Panel(layoutManager);
+        BorderLayout logAreaLayout = new BorderLayout();
+        Panel logArea = new Panel(new BorderLayout());
+        DefaultLogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
+        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks);
+        logArea.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
+        bookmarksView = new BookmarksView(bookmarks, logLineRenderer);
+        logArea.addComponent(bookmarksView.getPanel());
+        bookmarksView.getPanel().setLayoutData(BorderLayout.Location.BOTTOM);
+        mainPanel.addComponent(logArea);
+        logArea.setLayoutData(BorderLayout.Location.CENTER);
         sideBar = new SideBar(viewsTree, highlightsData);
         mainPanel.addComponent(sideBar.getPanel());
         sideBar.getPanel().setLayoutData(BorderLayout.Location.LEFT);
@@ -96,9 +112,23 @@ public class MainWindow {
         }
         UI.checkGuiThreadOrThrow();
         int sideBarWidth = sideBar.update(sidebarVisible);
-        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth);
-        logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, viewsTree.getFocusedNode().getDataView());
+        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarksViewVisible ? bookmarks.count() : 0);
+        DataView dataView = viewsTree.getFocusedNode().getDataView();
+        logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
+        TerminalSize availableSpaceForBookmarks;
+        if (mainWindowLayout != null) {
+            availableSpaceForBookmarks = mainWindowLayout.getBookmarksSize();
+        } else {
+            availableSpaceForBookmarks = MainWindowLayout.computeBookmarksSizeFrom(logView.getPanel().getSize(), mainPanel.getSize().getRows(), commandView.getHeight(), bookmarks.count());
+        }
+        bookmarksView.update(
+                bookmarksViewVisible,
+                dataView.getLineCount(),
+                logView.getHorizontalScrollPosition(),
+                highlightsData.getHighlights(),
+                availableSpaceForBookmarks
+        );
     }
 
     void close() throws IOException {
@@ -168,5 +198,9 @@ public class MainWindow {
 
     void toggleSidebar() {
         this.sidebarVisible = !this.sidebarVisible;
+    }
+
+    void toggleBookmarksView(){
+        this.bookmarksViewVisible = !this.bookmarksViewVisible;
     }
 }

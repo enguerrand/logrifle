@@ -18,15 +18,19 @@
  *
  */
 
-package de.rochefort.logrifle.ui;
+package de.rochefort.logrifle.base;
 
-import com.googlecode.lanterna.gui2.AbstractComponent;
-import de.rochefort.logrifle.data.bookmarks.Bookmarks;
-import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.data.highlights.Highlight;
+public class Strings {
+    public static String pad(String s, int length) {
+        return pad(s, length, " ");
+    }
 
-import java.util.List;
-
-public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int totalLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights, Bookmarks bookmarks);
+    public static String pad(String s, int length, String paddingContent) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(s);
+        for (int i = s.length(); i<length ; i++) {
+            sb.append(paddingContent);
+        }
+        return sb.toString();
+    }
 }
