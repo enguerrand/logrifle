@@ -50,6 +50,12 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        KeyMapFactory keyMapFactory = new KeyMapFactory();
+        CommandHandler commandHandler = new CommandHandler();
+        if (Arrays.stream(args).anyMatch(a -> a.equals("-h") || a.equals("--help"))) {
+            commandHandler.printHelp(keyMapFactory.get());
+            System.exit(0);
+        }
         if (args.length == 0) {
             System.err.println("Need path to file!");
             return;
@@ -87,10 +93,9 @@ public class Main {
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, logDispatcher);
-        KeyMapFactory keyMapFactory = new KeyMapFactory();
-        CommandHandler commandHandler = new CommandHandler();
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData);
+        commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
             public boolean onUnhandledKeyStroke(TextGUI textGUI, KeyStroke keyStroke) {

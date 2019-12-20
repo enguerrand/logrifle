@@ -29,7 +29,6 @@ import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewFiltered;
 import de.rochefort.logrifle.data.views.ViewsTree;
 import de.rochefort.logrifle.data.views.ViewsTreeNode;
-import de.rochefort.logrifle.ui.cmd.Command;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
@@ -106,175 +105,28 @@ public class MainController {
                 mainWindow.closeCommandBar();
             }
         });
-
-        commandHandler.register(new Command("prepare", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return prepareCommand(args);
-            }
-        });
-
-        commandHandler.register(new Command("delete-filter", "df") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return deleteFilter();
-            }
-        });
-
-        commandHandler.register(new Command("delete-highlight", "dh") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return deleteHighlight(args);
-            }
-        });
-
-        commandHandler.register(new Command("!filter", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return addFilter(args, true);
-            }
-        });
-
-        commandHandler.register(new Command("filter", "f") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return addFilter(args, false);
-            }
-        });
-
-        commandHandler.register(new Command("edit-filter", "ef") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return editFilter();
-            }
-        });
-
-        commandHandler.register(new Command("edit-highlight", "eh") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return editHighlight(args);
-            }
-        });
-
-        commandHandler.register(new Command("filter-view-up", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return moveFilterUp();
-            }
-        });
-
-        commandHandler.register(new Command("filter-view-down", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return moveFilterDown();
-            }
-        });
-
-        commandHandler.register(new Command("find", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return find(new Query(args, false));
-            }
-        });
-
-        commandHandler.register(new Command("find-again", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return findAgain();
-            }
-        });
-
-        commandHandler.register(new Command("find-again-backwards", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return findAgainBackwards();
-            }
-        });
-
-        commandHandler.register(new Command("find-backwards", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return find(new Query(args, true));
-            }
-        });
-
-        commandHandler.register(new Command("highlight", "h") {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return addHighlight(args);
-            }
-        });
-
-        commandHandler.register(new Command("move-focus", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return moveFocus(args);
-            }
-        });
-
-        commandHandler.register(new Command("quit", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return quit();
-            }
-        });
-
-        commandHandler.register(new Command("refresh", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return refresh();
-            }
-        });
-
-        commandHandler.register(new Command("hscroll", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return scrollHotizontally(args);
-            }
-        });
-
-        commandHandler.register(new Command("scroll", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return scrollVertically(args);
-            }
-        });
-
-        commandHandler.register(new Command("scroll-page", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return scrollPage(args);
-            }
-        });
-
-        commandHandler.register(new Command("toggle-line-labels", null) {
-            @Override
-            protected ExecutionResult execute(String args) {
-                return toggleLineLabels();
-            }
-        });
     }
 
-    private ExecutionResult prepareCommand(String args) {
+    public ExecutionResult prepareCommand(String args) {
         mainWindow.openCommandBar(args);
         return new ExecutionResult(true);
     }
 
-    private ExecutionResult moveFilterUp() {
+    public ExecutionResult moveFilterUp() {
         boolean changed = viewsTree.moveFocusUp();
         return new ExecutionResult(changed, null);
     }
 
-    private ExecutionResult moveFilterDown() {
+    public ExecutionResult moveFilterDown() {
         boolean changed = viewsTree.moveFocusDown();
         return new ExecutionResult(changed, null);
     }
 
-    private ExecutionResult find(Query query) {
+    public ExecutionResult find(Query query) {
         return find(query, false);
     }
 
-    private ExecutionResult find(Query query, boolean noRecordHistory) {
+    public ExecutionResult find(Query query, boolean noRecordHistory) {
         if (query.getSearchTerm().matches("\\s*")) {
             return new ExecutionResult(false);
         }
@@ -311,7 +163,7 @@ public class MainController {
         return new ExecutionResult(false, query + ": pattern not found.");
     }
 
-    private ExecutionResult addFilter(String regex, boolean inverted) {
+    public ExecutionResult addFilter(String regex, boolean inverted) {
         if (regex.isEmpty()) {
             return new ExecutionResult(false, "Missing argument: filter pattern");
         }
@@ -331,14 +183,14 @@ public class MainController {
         return new ExecutionResult(false);
     }
 
-    private ExecutionResult addHighlight(String args) {
+    public ExecutionResult addHighlight(String args) {
         Highlight highlight = new Highlight(args, highlightsFgIterator.next(), highlightsBgIterator.next());
         this.highlightsData.addHighlight(highlight);
         return new ExecutionResult(true);
 
     }
 
-    private ExecutionResult deleteHighlight(String args) {
+    public ExecutionResult deleteHighlight(String args) {
         try {
             int index = Integer.parseInt(args);
             return this.highlightsData.removeHighlight(index);
@@ -347,7 +199,7 @@ public class MainController {
         }
     }
 
-    private ExecutionResult editHighlight(String args) {
+    public ExecutionResult editHighlight(String args) {
         int index;
         try {
             index = Integer.parseInt(args);
@@ -369,13 +221,13 @@ public class MainController {
         return prepareCommand(":highlight " + highlight.getRegex());
     }
 
-    private ExecutionResult deleteFilter() {
+    public ExecutionResult deleteFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         return viewsTree.removeNode(focusedTreeNode);
     }
 
-    private ExecutionResult editFilter() {
+    public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         if (focusedTreeNode.getParent() == null) {
@@ -392,14 +244,14 @@ public class MainController {
         return prepareCommand(preparedCommand);
     }
 
-    private ExecutionResult findAgain() {
+    public ExecutionResult findAgain() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);
         }
         return find(this.queryHistory.getLast());
     }
 
-    private ExecutionResult findAgainBackwards() {
+    public ExecutionResult findAgainBackwards() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);
         }
@@ -407,7 +259,7 @@ public class MainController {
         return find(new Query(last.getSearchTerm(), !last.isBackwards()), true);
     }
 
-    private ExecutionResult moveFocus(String args) {
+    public ExecutionResult moveFocus(String args) {
         try {
             int lineCount = Integer.parseInt(args);
             return this.mainWindow.getLogView().moveFocus(lineCount);
@@ -416,7 +268,7 @@ public class MainController {
         }
     }
 
-    private ExecutionResult quit() {
+    public ExecutionResult quit() {
         try {
             this.mainWindow.close();
         } catch (IOException e) {
@@ -425,12 +277,12 @@ public class MainController {
         return new ExecutionResult(false);
     }
 
-    private ExecutionResult refresh() {
+    public ExecutionResult refresh() {
         this.mainWindow.updateView();
         return new ExecutionResult(true);
     }
 
-    private ExecutionResult scrollHotizontally(String args) {
+    public ExecutionResult scrollHotizontally(String args) {
         try {
             int columnCount = Integer.parseInt(args);
             return this.mainWindow.getLogView().scrollHorizontally(columnCount);
@@ -439,7 +291,7 @@ public class MainController {
         }
     }
 
-    private ExecutionResult scrollVertically(String args) {
+    public ExecutionResult scrollVertically(String args) {
         try {
             int lineCount = Integer.parseInt(args);
             return this.mainWindow.getLogView().scrollVertically(lineCount);
@@ -448,7 +300,7 @@ public class MainController {
         }
     }
 
-    private ExecutionResult scrollPage(String args) {
+    public ExecutionResult scrollPage(String args) {
         try {
             float factor = Float.parseFloat(args);
             return this.mainWindow.getLogView().scrollPage(factor);
@@ -457,7 +309,7 @@ public class MainController {
         }
     }
 
-    private ExecutionResult toggleLineLabels() {
+    public ExecutionResult toggleLineLabels() {
         return this.mainWindow.getLogView().toggleLineLabels();
     }
 

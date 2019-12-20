@@ -20,22 +20,182 @@
 
 package de.rochefort.logrifle.ui.cmd;
 
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
+import de.rochefort.logrifle.ui.MainController;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CommandHandler {
     private final Map<String, Command> commands;
+    private MainController mainController;
 
     public CommandHandler() {
         commands = new HashMap<>();
+        register(new Command("prepare", null, "Opens the command line and adds the provided arguments as a prepared command.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.prepareCommand(args);
+            }
+        });
+
+        register(new Command("delete-filter", "df", "Deletes the currently focused filter.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.deleteFilter();
+            }
+        });
+
+        register(new Command("delete-highlight", "dh", "Deletes the highlight at the index provided as the first argument") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.deleteHighlight(args);
+            }
+        });
+
+        register(new Command("!filter", null, "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.addFilter(args, true);
+            }
+        });
+
+        register(new Command("filter", "f", "Adds a filter that displays lines that match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.addFilter(args, false);
+            }
+        });
+
+        register(new Command("edit-filter", "ef", "Edits the currently focused filter.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.editFilter();
+            }
+        });
+
+        register(new Command("edit-highlight", "eh", "Edits the highlight at the index provided as the first argument") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.editHighlight(args);
+            }
+        });
+
+        register(new Command("filter-view-up", null, "Moves the filter focus up.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.moveFilterUp();
+            }
+        });
+
+        register(new Command("filter-view-down", null, "Moves the filter focus down") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.moveFilterDown();
+            }
+        });
+
+        register(new Command("find", null, "Starts a forward search. (Can also be started using the / key)") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.find(new Query(args, false));
+            }
+        });
+
+        register(new Command("find-again", null, "Finds the next occurrence of the previous match.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.findAgain();
+            }
+        });
+
+        register(new Command("find-again-backwards", null, "Finds the previous occurrence of the previous search.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.findAgainBackwards();
+            }
+        });
+
+        register(new Command("find-backwards", null, "Starts a backwards search. (Can also be started using the ? key)") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.find(new Query(args, true));
+            }
+        });
+
+        register(new Command("highlight", "h", "Adds a highlight to line parts that match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.addHighlight(args);
+            }
+        });
+
+        register(new Command("move-focus", null, "Moves the focus by the increment provided as the first argument. (Negative values move the focus upwards)") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.moveFocus(args);
+            }
+        });
+
+        register(new Command("quit", null, "Closes the application.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.quit();
+            }
+        });
+
+        register(new Command("refresh", null, "Enforces a view update.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.refresh();
+            }
+        });
+
+        register(new Command("hscroll", null, "Scroll horizontally by the increment provided as the first argument. Negative values scroll to the left.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollHotizontally(args);
+            }
+        });
+
+        register(new Command("scroll", null, "Scroll vertically by the increment provided as the first argument. Negative values scroll upwards.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollVertically(args);
+            }
+        });
+
+        register(new Command("scroll-page", null, "Scrolls vertically. The line increment is calculated by multiplying the visible number of lines with the floating point value provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollPage(args);
+            }
+        });
+
+        register(new Command("toggle-line-labels", null, "Toggles the full display of line labels on/off") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.toggleLineLabels();
+            }
+        });
     }
 
-    public void register(Command command) {
+    private void register(Command command) {
         this.commands.put(command.getCommandName(), command);
         command.getCommandShortname().ifPresent(shortName ->
                 this.commands.put(shortName, command));
+    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
     }
 
     /**
@@ -61,5 +221,82 @@ public class CommandHandler {
             args = words.get(1);
         }
         return command.execute(args);
+    }
+
+
+    public void printHelp(Map<KeyStroke, String> keyMap) {
+        List<Command> values = new ArrayList<>(new HashSet<>(this.commands.values()));
+        values.sort(Comparator.comparing(Command::getCommandName));
+        List<HelpEntry> helpEntries = new ArrayList<>();
+        for (Command command : values) {
+            String commandName = command.getCommandName();
+            String commandShortName = command.getCommandShortname().orElse(null);
+            List<KeyStroke> keyStrokes = keyMap.entrySet().stream()
+                    .filter(s -> s.getValue().equals(commandName))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+            helpEntries.add(new HelpEntry(commandName, commandShortName, command.getDescription(), keyStrokes));
+        }
+        int keyLength = helpEntries.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
+        int bindLength = helpEntries.stream().mapToInt(e -> e.getBinds().length()).max().orElse(0);
+        System.out.println("List of available commands:");
+        System.out.println("===========================");
+        for (HelpEntry helpEntry : helpEntries) {
+            System.out.println(helpEntry.render(keyLength, bindLength));
+        }
+    }
+    private static class HelpEntry {
+        private final String commandName;
+        private final @Nullable String commandShortName;
+        private final String description;
+        private final List<KeyStroke> keyBinds;
+
+        private HelpEntry(String commandName, @Nullable String commandShortName, String description, List<KeyStroke> keyBinds) {
+            this.commandName = commandName;
+            this.commandShortName = commandShortName;
+            this.description = description;
+            this.keyBinds = keyBinds;
+        }
+
+        String getKey() {
+            return ":" + commandName + (commandShortName != null ? " | :" + commandShortName : "" );
+        }
+
+        String getBinds() {
+            return "(" + keyBinds.stream().map(this::renderKeyStroke).collect(Collectors.joining(", ")) +")";
+        }
+
+        private String renderKeyStroke(KeyStroke keyStroke) {
+            StringBuilder sb = new StringBuilder();
+            if (keyStroke.isCtrlDown()) {
+                sb.append("CTRL+");
+            }
+            if (keyStroke.isAltDown()) {
+                sb.append("ALT+");
+            }
+            if (keyStroke.getKeyType() == KeyType.Character) {
+                sb.append(keyStroke.getCharacter());
+            } else {
+                sb.append(keyStroke.getKeyType().name());
+            }
+            return sb.toString();
+        }
+
+        String getDescription() {
+            return description;
+        }
+
+        String render(int keyLength, int bindLength) {
+            return pad(getKey(), keyLength) + " " + pad(getBinds(), bindLength) + ": " + getDescription();
+        }
+
+        private String pad(String s, int length) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(s);
+            for (int i = s.length(); i<length ; i++) {
+                sb.append(" ");
+            }
+            return sb.toString();
+        }
     }
 }

@@ -28,10 +28,12 @@ public abstract class Command {
     private final String commandName;
     @Nullable
     private final String commandShortName;
+    private final String description;
 
-    protected Command(String commandName, @Nullable String commandShortName) {
+    protected Command(String commandName, @Nullable String commandShortName, String description) {
         this.commandName = commandName;
         this.commandShortName = commandShortName;
+        this.description = description;
     }
 
     String getCommandName() {
@@ -43,4 +45,8 @@ public abstract class Command {
     }
 
     protected abstract ExecutionResult execute(String args);
+
+    public String getDescription() {
+        return description;
+    }
 }
