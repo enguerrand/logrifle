@@ -31,15 +31,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
     private final Collection<? extends DataView> sourceViews;
     private final RateLimiter updater;
-    private final List<Line> linesCache = new CopyOnWriteArrayList<>();
+    private final List<Line> linesCache = new ArrayList<>();
     private final Map<String, Integer> processedLinesMap = new HashMap<>();
+    private int currentLineIndex = 0;
 
     public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, ScheduledExecutorService timerPool) {
         super(sourceViews.stream()
@@ -90,7 +90,15 @@ public class DataViewMerged extends DataView {
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
-        newLines.sort(Comparator.comparing(Line::getTimestamp));
+        newLines.sort(Comparator.comparing(Line::getTimestamp)
+                /*
+                 * Use the old index from the original logreader to ensure we don't change the order of
+                 * loglines with same timestamps.
+                 */
+                .thenComparing(Line::getIndex));
+
+        // Now apply a new index for the merged view
+        newLines.forEach(line -> line.setIndex(currentLineIndex++));
         linesCache.addAll(newLines);
         fireUpdated();
     }
