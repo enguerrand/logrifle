@@ -25,8 +25,8 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.AbstractComponent;
 import de.rochefort.logrifle.base.Digits;
 import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.ui.highlights.Highlight;
-import de.rochefort.logrifle.ui.highlights.Highlights;
+import de.rochefort.logrifle.data.highlights.Highlight;
+import de.rochefort.logrifle.data.highlights.Highlights;
 
 import java.util.ArrayList;
 import java.util.List;

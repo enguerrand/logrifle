@@ -22,7 +22,7 @@ package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.gui2.AbstractComponent;
 import de.rochefort.logrifle.data.parsing.Line;
-import de.rochefort.logrifle.ui.highlights.Highlight;
+import de.rochefort.logrifle.data.highlights.Highlight;
 
 import java.util.List;
 

@@ -18,7 +18,7 @@
  *
  */
 
-package de.rochefort.logrifle.ui.highlights;
+package de.rochefort.logrifle.data.highlights;
 
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;

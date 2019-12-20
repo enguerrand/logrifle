@@ -1,4 +1,4 @@
-package de.rochefort.logrifle.ui.highlights;
+package de.rochefort.logrifle.data.highlights;
 
 import com.googlecode.lanterna.TextColor;
 import de.rochefort.logrifle.ui.ColoredString;

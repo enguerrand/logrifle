@@ -33,8 +33,8 @@ import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import de.rochefort.logrifle.ui.cmd.Query;
-import de.rochefort.logrifle.ui.highlights.Highlight;
-import de.rochefort.logrifle.ui.highlights.HighlightsData;
+import de.rochefort.logrifle.data.highlights.Highlight;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 
 import java.io.IOException;
 import java.util.Arrays;

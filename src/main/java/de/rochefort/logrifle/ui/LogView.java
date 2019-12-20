@@ -30,7 +30,7 @@ import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewListener;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
-import de.rochefort.logrifle.ui.highlights.HighlightsData;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

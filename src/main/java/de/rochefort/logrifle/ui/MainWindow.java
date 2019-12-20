@@ -34,7 +34,7 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.ViewsTree;
-import de.rochefort.logrifle.ui.highlights.HighlightsData;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;

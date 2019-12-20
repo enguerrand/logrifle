@@ -30,8 +30,8 @@ import com.googlecode.lanterna.gui2.LinearLayout;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.base.Digits;
 import de.rochefort.logrifle.data.views.ViewsTree;
-import de.rochefort.logrifle.ui.highlights.Highlight;
-import de.rochefort.logrifle.ui.highlights.HighlightsData;
+import de.rochefort.logrifle.data.highlights.Highlight;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 
 import java.util.ArrayList;
 import java.util.List;
