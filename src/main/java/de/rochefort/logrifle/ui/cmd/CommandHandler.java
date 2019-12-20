@@ -170,7 +170,7 @@ public class CommandHandler {
         register(new Command("hscroll", null, "Scroll horizontally by the increment provided as the first argument. Negative values scroll to the left.") {
             @Override
             protected ExecutionResult execute(String args) {
-                return mainController.scrollHotizontally(args);
+                return mainController.scrollHorizontally(args);
             }
         });
 
@@ -185,6 +185,27 @@ public class CommandHandler {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.scrollPage(args);
+            }
+        });
+
+        register(new Command("goto", null, "Scrolls to the line number provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollToLine(args);
+            }
+        });
+
+        register(new Command("pos1", null, "Scrolls to the top.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollToTop();
+            }
+        });
+
+        register(new Command("end", null, "Scrolls to the bottom.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollToBottom();
             }
         });
 

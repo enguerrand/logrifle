@@ -302,7 +302,7 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
-    public ExecutionResult scrollHotizontally(String args) {
+    public ExecutionResult scrollHorizontally(String args) {
         try {
             int columnCount = Integer.parseInt(args);
             return this.mainWindow.getLogView().scrollHorizontally(columnCount);
@@ -327,6 +327,23 @@ public class MainController {
         } catch (NumberFormatException e) {
             return new ExecutionResult(false, args + ": Not a valid factor");
         }
+    }
+
+    public ExecutionResult scrollToLine(String args) {
+        try {
+            int index = Integer.parseInt(args);
+            return this.mainWindow.getLogView().scrollToLine(index);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": Not a valid line index");
+        }
+    }
+
+    public ExecutionResult scrollToTop() {
+        return this.mainWindow.getLogView().scrollToStart();
+    }
+
+    public ExecutionResult scrollToBottom() {
+        return this.mainWindow.getLogView().scrollToEnd();
     }
 
     public ExecutionResult toggleLineLabels() {

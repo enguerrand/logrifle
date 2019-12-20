@@ -128,6 +128,23 @@ class LogView {
         return scrollVertically(scrollLineCount);
     }
 
+    ExecutionResult scrollToLine(int index) {
+        int focusedLineIndex = getFocusedLineIndex();
+        return scrollVertically(index - focusedLineIndex);
+    }
+
+    ExecutionResult scrollToStart() {
+        return scrollToLine(0);
+    }
+
+    ExecutionResult scrollToEnd() {
+        DataView lastView = this.lastView;
+        if (lastView == null) {
+            return new ExecutionResult(false);
+        }
+        return scrollToLine(lastView.getLineCount() -1);
+    }
+
     ExecutionResult moveFocus(int lineCountDelta) {
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
         return new ExecutionResult(true);
@@ -142,7 +159,7 @@ class LogView {
         return this.logPosition.getFocusedLineIndex();
     }
 
-    public int getHorizontalScrollPosition() {
+    int getHorizontalScrollPosition() {
         return horizontalScrollPosition;
     }
 

@@ -38,11 +38,14 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.PageDown), "scroll-page 1");
         keyMap.put(new KeyStroke(KeyType.PageUp, false, true), "scroll-page -0.5");
         keyMap.put(new KeyStroke(KeyType.PageDown, false, true), "scroll-page 0.5");
+        keyMap.put(new KeyStroke(KeyType.Home, false, false), "pos1");
+        keyMap.put(new KeyStroke(KeyType.End, false, false), "end");
         keyMap.put(new KeyStroke(KeyType.F4), "toggle-bookmarks-view");
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
         keyMap.put(new KeyStroke(KeyType.F9), "bookmark");
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
+        keyMap.put(new KeyStroke('g', false, false), "prepare :goto ");
         keyMap.put(new KeyStroke('e', false, true), "edit-filter");
         keyMap.put(new KeyStroke('f', true, false), "prepare :filter ");
         keyMap.put(new KeyStroke('b', false, false), "toggle-sidebar");
