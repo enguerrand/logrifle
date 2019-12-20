@@ -142,6 +142,13 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("edit-filter", "ef") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return editFilter();
+            }
+        });
+
         commandHandler.register(new Command("filter-view-up", null) {
             @Override
             protected ExecutionResult execute(String args) {
@@ -337,6 +344,23 @@ public class MainController {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         return viewsTree.removeNode(focusedTreeNode);
+    }
+
+    private ExecutionResult editFilter() {
+        ViewsTree viewsTree = this.viewsTree;
+        ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
+        if (focusedTreeNode.getParent() == null) {
+            return new ExecutionResult(false, "Cannot edit this view!");
+        }
+        String regex = focusedTreeNode.getTitle();
+        String preparedCommand;
+        if (regex.startsWith("!")) {
+            preparedCommand = "!filter " + regex.substring(1);
+        } else {
+            preparedCommand = ":filter " + regex;
+        }
+        viewsTree.removeNode(focusedTreeNode);
+        return prepareCommand(preparedCommand);
     }
 
     private ExecutionResult findAgain() {
