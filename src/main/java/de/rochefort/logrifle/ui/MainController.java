@@ -124,7 +124,7 @@ public class MainController {
         commandHandler.register(new Command("delete-highlight", "dh") {
             @Override
             protected ExecutionResult execute(String args) {
-                return removeHighlight(args);
+                return deleteHighlight(args);
             }
         });
 
@@ -146,6 +146,13 @@ public class MainController {
             @Override
             protected ExecutionResult execute(String args) {
                 return editFilter();
+            }
+        });
+
+        commandHandler.register(new Command("edit-highlight", "eh") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return editHighlight(args);
             }
         });
 
@@ -331,13 +338,35 @@ public class MainController {
 
     }
 
-    private ExecutionResult removeHighlight(String args) {
+    private ExecutionResult deleteHighlight(String args) {
         try {
             int index = Integer.parseInt(args);
             return this.highlightsData.removeHighlight(index);
         } catch (NumberFormatException e) {
             return new ExecutionResult(false, "Not a valid highlight index: " + args);
         }
+    }
+
+    private ExecutionResult editHighlight(String args) {
+        int index;
+        try {
+            index = Integer.parseInt(args);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, "Not a valid highlight index: " + args);
+        }
+        Highlight highlight;
+        try {
+            highlight = this.highlightsData.getHighlights().get(index);
+        } catch (RuntimeException e) {
+            return new ExecutionResult(false, "No highlight found at index " + index);
+        }
+        ExecutionResult executionResult = this.highlightsData.removeHighlight(index);
+        if (!executionResult.isUiUpdateRequired()) {
+            // Due to the previous check this should never happen
+            return executionResult;
+        }
+        // TODO: Would be nice to keep old styles here...
+        return prepareCommand(":highlight " + highlight.getRegex());
     }
 
     private ExecutionResult deleteFilter() {
