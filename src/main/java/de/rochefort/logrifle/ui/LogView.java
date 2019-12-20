@@ -27,11 +27,11 @@ import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.bookmarks.Bookmarks;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewListener;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
-import de.rochefort.logrifle.data.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -129,8 +129,19 @@ class LogView {
     }
 
     ExecutionResult scrollToLine(int index) {
+        DataView lastView = this.lastView;
+        if (lastView == null) {
+            return new ExecutionResult(false);
+        }
         int focusedLineIndex = getFocusedLineIndex();
-        return scrollVertically(index - focusedLineIndex);
+        ExecutionResult executionResult = scrollVertically(index - focusedLineIndex);
+        if (focusedLineIndex != index) {
+            int newOffset = index - Math.min(lastView.getLineCount() - 1, Math.max(0, logPosition.getTopIndex()));
+            this.logPosition = new LogPosition(this.logPosition.getTopIndex(), newOffset);
+            return new ExecutionResult(true);
+        } else {
+            return executionResult;
+        }
     }
 
     ExecutionResult scrollToStart() {

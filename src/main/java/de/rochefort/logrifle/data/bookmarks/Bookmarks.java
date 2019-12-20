@@ -23,8 +23,10 @@ package de.rochefort.logrifle.data.bookmarks;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -53,5 +55,32 @@ public class Bookmarks {
 
     public int count() {
         return bookmarks.size();
+    }
+
+    public Optional<Bookmark> findNext(int fromLineIndex) {
+        if (bookmarks.isEmpty()) {
+            return Optional.empty();
+        }
+        for (Bookmark bookmark : bookmarks) {
+            if (bookmark.getLine().getIndex() > fromLineIndex) {
+                return Optional.of(bookmark);
+            }
+        }
+        return Optional.of(bookmarks.first());
+    }
+
+    public Optional<Bookmark> findPrevious(int fromLineIndex) {
+        if (bookmarks.isEmpty()) {
+            return Optional.empty();
+        }
+        ArrayList<Bookmark> bookmarksList = new ArrayList<>(this.bookmarks);
+        for (int i = bookmarksList.size()-1; i >= 0; i--) {
+            Bookmark bookmark = bookmarksList.get(i);
+            if (bookmark.getLine().getIndex() < fromLineIndex) {
+                return Optional.of(bookmark);
+            }
+
+        }
+        return Optional.of(this.bookmarks.last());
     }
 }

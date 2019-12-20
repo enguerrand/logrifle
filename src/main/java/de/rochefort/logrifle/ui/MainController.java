@@ -24,7 +24,10 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.data.bookmarks.Bookmark;
 import de.rochefort.logrifle.data.bookmarks.Bookmarks;
+import de.rochefort.logrifle.data.highlights.Highlight;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 import de.rochefort.logrifle.data.parsing.Line;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewFiltered;
@@ -34,8 +37,6 @@ import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import de.rochefort.logrifle.ui.cmd.Query;
-import de.rochefort.logrifle.data.highlights.Highlight;
-import de.rochefort.logrifle.data.highlights.HighlightsData;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -344,6 +345,26 @@ public class MainController {
 
     public ExecutionResult scrollToBottom() {
         return this.mainWindow.getLogView().scrollToEnd();
+    }
+
+    public ExecutionResult scrollToNextBookmark() {
+        Bookmark nextBookmark = this.bookmarks.findNext(this.mainWindow.getLogView().getFocusedLineIndex()).orElse(null);
+        if (nextBookmark == null) {
+            return new ExecutionResult(false);
+        }
+
+        int index = nextBookmark.getLine().getIndex();
+        return this.mainWindow.getLogView().scrollToLine(index);
+    }
+
+    public ExecutionResult scrollToPreviousBookmark() {
+        Bookmark nextBookmark = this.bookmarks.findPrevious(this.mainWindow.getLogView().getFocusedLineIndex()).orElse(null);
+        if (nextBookmark == null) {
+            return new ExecutionResult(false);
+        }
+
+        int index = nextBookmark.getLine().getIndex();
+        return this.mainWindow.getLogView().scrollToLine(index);
     }
 
     public ExecutionResult toggleLineLabels() {

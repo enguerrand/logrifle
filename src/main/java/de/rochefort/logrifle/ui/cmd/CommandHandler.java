@@ -55,6 +55,20 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("prev-bookmark", "pb", "Scrolls to the previous bookmark.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollToPreviousBookmark();
+            }
+        });
+
+        register(new Command("next-bookmark", "nb", "Scrolls to the next bookmark.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.scrollToNextBookmark();
+            }
+        });
+
         register(new Command("delete-filter", "df", "Deletes the currently focused filter.") {
             @Override
             protected ExecutionResult execute(String args) {
