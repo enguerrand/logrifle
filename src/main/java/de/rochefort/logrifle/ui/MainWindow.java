@@ -138,7 +138,8 @@ public class MainWindow {
         });
     }
 
-    void openCommandBar(String initialText) {
+    public void openCommandBar(String initialText) {
+        UI.checkGuiThreadOrThrow();
         this.commandView.show(initialText);
         updateView(screen.getTerminalSize());
     }

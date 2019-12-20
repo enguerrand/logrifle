@@ -107,6 +107,13 @@ public class MainController {
             }
         });
 
+        commandHandler.register(new Command("prepare", null) {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return prepareCommand(args);
+            }
+        });
+
         commandHandler.register(new Command("delete-filter", "df") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -232,6 +239,11 @@ public class MainController {
                 return toggleLineLabels();
             }
         });
+    }
+
+    private ExecutionResult prepareCommand(String args) {
+        mainWindow.openCommandBar(args);
+        return new ExecutionResult(true);
     }
 
     private ExecutionResult moveFilterUp() {
