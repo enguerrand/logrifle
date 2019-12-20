@@ -107,126 +107,126 @@ public class MainController {
             }
         });
 
-        commandHandler.register(new Command("delete-filter") {
+        commandHandler.register(new Command("delete-filter", "df") {
             @Override
             protected ExecutionResult execute(String args) {
                 return deleteFilter();
             }
         });
 
-        commandHandler.register(new Command("delete-highlight") {
+        commandHandler.register(new Command("delete-highlight", "dh") {
             @Override
             protected ExecutionResult execute(String args) {
                 return removeHighlight(args);
             }
         });
 
-        commandHandler.register(new Command("!filter") {
+        commandHandler.register(new Command("!filter", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return addFilter(args, true);
             }
         });
 
-        commandHandler.register(new Command("filter") {
+        commandHandler.register(new Command("filter", "f") {
             @Override
             protected ExecutionResult execute(String args) {
                 return addFilter(args, false);
             }
         });
 
-        commandHandler.register(new Command("filter-view-up") {
+        commandHandler.register(new Command("filter-view-up", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return moveFilterUp();
             }
         });
 
-        commandHandler.register(new Command("filter-view-down") {
+        commandHandler.register(new Command("filter-view-down", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return moveFilterDown();
             }
         });
 
-        commandHandler.register(new Command("find") {
+        commandHandler.register(new Command("find", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return find(new Query(args, false));
             }
         });
 
-        commandHandler.register(new Command("find-again") {
+        commandHandler.register(new Command("find-again", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return findAgain();
             }
         });
 
-        commandHandler.register(new Command("find-again-backwards") {
+        commandHandler.register(new Command("find-again-backwards", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return findAgainBackwards();
             }
         });
 
-        commandHandler.register(new Command("find-backwards") {
+        commandHandler.register(new Command("find-backwards", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return find(new Query(args, true));
             }
         });
 
-        commandHandler.register(new Command("highlight") {
+        commandHandler.register(new Command("highlight", "h") {
             @Override
             protected ExecutionResult execute(String args) {
                 return addHighlight(args);
             }
         });
 
-        commandHandler.register(new Command("move-focus") {
+        commandHandler.register(new Command("move-focus", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return moveFocus(args);
             }
         });
 
-        commandHandler.register(new Command("quit") {
+        commandHandler.register(new Command("quit", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return quit();
             }
         });
 
-        commandHandler.register(new Command("refresh") {
+        commandHandler.register(new Command("refresh", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return refresh();
             }
         });
 
-        commandHandler.register(new Command("hscroll") {
+        commandHandler.register(new Command("hscroll", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return scrollHotizontally(args);
             }
         });
 
-        commandHandler.register(new Command("scroll") {
+        commandHandler.register(new Command("scroll", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return scrollVertically(args);
             }
         });
 
-        commandHandler.register(new Command("scroll-page") {
+        commandHandler.register(new Command("scroll-page", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return scrollPage(args);
             }
         });
 
-        commandHandler.register(new Command("toggle-line-labels") {
+        commandHandler.register(new Command("toggle-line-labels", null) {
             @Override
             protected ExecutionResult execute(String args) {
                 return toggleLineLabels();

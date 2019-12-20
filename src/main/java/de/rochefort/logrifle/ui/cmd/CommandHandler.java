@@ -34,6 +34,8 @@ public class CommandHandler {
 
     public void register(Command command) {
         this.commands.put(command.getCommandName(), command);
+        command.getCommandShortname().ifPresent(shortName ->
+                this.commands.put(shortName, command));
     }
 
     /**
@@ -45,7 +47,7 @@ public class CommandHandler {
             return new ExecutionResult(false);
         }
         String commandName = words.get(0);
-        if (commandName.matches("^.\\s*$")) {   // ignore prefix followed by only blanks
+        if (commandName.matches("^\\s*$")) {   // ignore blanks
             return new ExecutionResult(false);
         }
         Command command = commands.get(commandName);

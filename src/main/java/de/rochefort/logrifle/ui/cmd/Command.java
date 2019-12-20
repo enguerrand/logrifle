@@ -20,15 +20,26 @@
 
 package de.rochefort.logrifle.ui.cmd;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
+
 public abstract class Command {
     private final String commandName;
+    @Nullable
+    private final String commandShortName;
 
-    protected Command(String commandName) {
+    protected Command(String commandName, @Nullable String commandShortName) {
         this.commandName = commandName;
+        this.commandShortName = commandShortName;
     }
 
-    public String getCommandName() {
+    String getCommandName() {
         return commandName;
+    }
+
+    Optional<String> getCommandShortname() {
+        return Optional.ofNullable(commandShortName);
     }
 
     protected abstract ExecutionResult execute(String args);
