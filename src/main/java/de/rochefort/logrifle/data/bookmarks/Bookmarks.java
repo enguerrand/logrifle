@@ -34,9 +34,14 @@ import java.util.TreeSet;
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
 
-    public ExecutionResult add(Line line) {
-        boolean added = this.bookmarks.add(new Bookmark(line));
-        return new ExecutionResult(added);
+    public ExecutionResult toggle(Line line) {
+        Bookmark bookmark = new Bookmark(line);
+        if (this.bookmarks.contains(bookmark)) {
+            this.bookmarks.remove(bookmark);
+        } else {
+            this.bookmarks.add(bookmark);
+        }
+        return new ExecutionResult(true);
     }
 
     public ExecutionResult remove(Bookmark bookmark) {

@@ -51,7 +51,7 @@ public class CommandHandler {
         register(new Command("bookmark", "b", "Bookmarks the currently focused line.") {
             @Override
             protected ExecutionResult execute(String args) {
-                return mainController.addBookmark();
+                return mainController.toggleBookmark();
             }
         });
 

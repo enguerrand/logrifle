@@ -257,12 +257,12 @@ public class MainController {
         return prepareCommand(preparedCommand);
     }
 
-    public ExecutionResult addBookmark() {
+    public ExecutionResult toggleBookmark() {
         @Nullable Line focusedLine = mainWindow.getLogView().getFocusedLine();
         if (focusedLine == null) {
             return new ExecutionResult(false, "No line is currently focused.");
         }
-        return bookmarks.add(focusedLine);
+        return bookmarks.toggle(focusedLine);
     }
 
     public ExecutionResult findAgain() {
