@@ -52,7 +52,7 @@ class BookmarksView {
         panel = new Panel(layout);
     }
 
-    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex) {
+    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex, int lineLabelLength) {
         if (!shown || availableSpace.getRows() < TITLE_HEIGHT) {
             panel.removeAllComponents();
         } else {
@@ -79,7 +79,7 @@ class BookmarksView {
                     break;
                 }
                 Line line = bookmark.getLine();
-                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, 0, beginColumn, highlights, this.bookmarks);
+                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks);
                 bookmarksPanel.addComponent(bookmarkComponent);
             }
         }

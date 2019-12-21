@@ -82,15 +82,18 @@ class LogView {
         this.logPosition = this.logPosition.ensureValid(maxLineCount);
         List<Line> lines = dataView.getLines(this.logPosition.getTopIndex(), Math.max(0, rows));
 
-        int maxLineLabelLength = dataView.getMaxLineLabelLength();
-
+        int lineLabelLength = getLineLabelLength(dataView.getMaxLineLabelLength());
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, (showLineLabels ? maxLineLabelLength : 1), horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks);
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks);
             panel.addComponent(label);
         }
         this.lastView = dataView;
+    }
+
+    int getLineLabelLength(int maxLineLabelLength) {
+        return showLineLabels ? maxLineLabelLength : 1;
     }
 
     private void updateListenerRegistrationIfNeeded(DataView dataView) {
