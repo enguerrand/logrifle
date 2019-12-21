@@ -215,7 +215,7 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("pos1", null, "Scrolls to the top.") {
+        register(new Command("home", null, "Scrolls to the top.") {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.scrollToTop();

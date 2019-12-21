@@ -38,7 +38,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.PageDown), "scroll-page 1");
         keyMap.put(new KeyStroke(KeyType.PageUp, false, true), "scroll-page -0.5");
         keyMap.put(new KeyStroke(KeyType.PageDown, false, true), "scroll-page 0.5");
-        keyMap.put(new KeyStroke(KeyType.Home, false, false), "pos1");
+        keyMap.put(new KeyStroke(KeyType.Home, false, false), "home");
         keyMap.put(new KeyStroke(KeyType.End, false, false), "end");
         keyMap.put(new KeyStroke(KeyType.F4), "toggle-bookmarks-view");
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
