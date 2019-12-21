@@ -59,8 +59,12 @@ class LogView {
         viewListener = new DataViewListener() {
             @Override
             public void onUpdated(DataView source) {
-                UI.runLater(() ->
-                        update(null, source));
+                UI.runLater(() -> {
+                    if (!Objects.equals(source, lastView)) {
+                        return;
+                    }
+                    update(null, source);
+                });
             }
         };
     }
