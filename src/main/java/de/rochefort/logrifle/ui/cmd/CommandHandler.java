@@ -222,7 +222,7 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("end", null, "Scrolls to the bottom.") {
+        register(new Command("end", null, "Scrolls to the bottom and sets \"follow-tail\" to true.") {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.scrollToBottom();
@@ -247,6 +247,13 @@ public class CommandHandler {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.toggleSidebar();
+            }
+        });
+
+        register(new Command("toggle-follow-tail", "tail", "Toggles whether or not the current view's tail is followed.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.toggleFollowTail();
             }
         });
     }

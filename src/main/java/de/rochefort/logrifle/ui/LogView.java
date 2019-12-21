@@ -48,6 +48,7 @@ class LogView {
     private boolean showLineLabels = true;
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
+    private boolean followTail = true;
 
     LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks) {
         this.logLineRenderer = logLineRenderer;
@@ -62,6 +63,9 @@ class LogView {
                 UI.runLater(() -> {
                     if (!Objects.equals(source, lastView)) {
                         return;
+                    }
+                    if (followTail) {
+                        scrollToLine(source.getLineCount() - getPanel().getSize().getRows());
                     }
                     update(null, source);
                 });
@@ -160,7 +164,8 @@ class LogView {
         if (lastView == null) {
             return new ExecutionResult(false);
         }
-        return scrollToLine(lastView.getLineCount() -1);
+        this.followTail = true;
+        return scrollToLine(lastView.getLineCount() - getPanel().getSize().getRows());
     }
 
     ExecutionResult moveFocus(int lineCountDelta) {
@@ -170,6 +175,16 @@ class LogView {
 
     ExecutionResult toggleLineLabels() {
         this.showLineLabels = !this.showLineLabels;
+        return new ExecutionResult(true);
+    }
+
+    ExecutionResult toggleFollowTail() {
+        if (this.followTail) {
+            this.followTail = false;
+        } else {
+            // This implicitly activates follow tail
+            scrollToEnd();
+        }
         return new ExecutionResult(true);
     }
 

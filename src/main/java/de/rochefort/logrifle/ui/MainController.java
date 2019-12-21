@@ -391,6 +391,10 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
+    public ExecutionResult toggleFollowTail() {
+        return this.mainWindow.getLogView().toggleFollowTail();
+    }
+
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
         if (query.isBackwards()) {
             return focusedLineIndex == 0;

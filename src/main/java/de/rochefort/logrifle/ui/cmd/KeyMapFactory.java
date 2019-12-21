@@ -51,6 +51,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
         keyMap.put(new KeyStroke('g', false, false), "prepare :goto ");
         keyMap.put(new KeyStroke('e', false, true), "edit-filter");
+        keyMap.put(new KeyStroke('f', false, false), "toggle-follow-tail");
         keyMap.put(new KeyStroke('f', true, false), "prepare :filter ");
         keyMap.put(new KeyStroke('b', false, false), "toggle-sidebar");
         keyMap.put(new KeyStroke('l', false, false), "toggle-line-labels");
