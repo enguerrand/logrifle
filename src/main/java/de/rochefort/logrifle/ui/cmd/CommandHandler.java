@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CommandHandler {
     private final Map<String, Command> commands;
@@ -295,14 +294,9 @@ public class CommandHandler {
         for (Command command : values) {
             String commandName = command.getCommandName();
             String commandShortName = command.getCommandShortname().orElse(null);
-            List<KeyStroke> keyStrokes = keyMap.entrySet().stream()
-                    .filter(s -> s.getValue().equals(commandName))
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-            helpEntries.add(new HelpEntry(commandName, commandShortName, command.getDescription(), keyStrokes));
+            helpEntries.add(new HelpEntry(commandName, commandShortName, command.getDescription()));
         }
         int keyLength = helpEntries.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
-        int bindLength = helpEntries.stream().mapToInt(e -> e.getBinds().length()).max().orElse(0);
         System.out.println("Synopsis:");
         System.out.println("===========================");
         System.out.println("java -jar logrifle.jar -h | --help | logfile1 [ logfile2 [ ... logfileN ] ]");
@@ -310,31 +304,59 @@ public class CommandHandler {
         System.out.println("List of available commands:");
         System.out.println("===========================");
         for (HelpEntry helpEntry : helpEntries) {
-            System.out.println(helpEntry.render(keyLength, bindLength));
+            System.out.println(helpEntry.render(keyLength));
+        }
+        System.out.println("");
+        System.out.println("List of available keybinds:");
+        System.out.println("===========================");
+        List<KeyBind> binds = new ArrayList<>();
+        for (Map.Entry<KeyStroke, String> keyMapping : keyMap.entrySet()) {
+            binds.add(new KeyBind(keyMapping.getKey(), keyMapping.getValue()));
+        }
+        binds.sort(Comparator.comparing(KeyBind::getKey));
+        int bindLength = binds.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
+        for (KeyBind bind : binds) {
+            System.out.println(bind.render(bindLength));
         }
     }
     private static class HelpEntry {
         private final String commandName;
         private final @Nullable String commandShortName;
         private final String description;
-        private final List<KeyStroke> keyBinds;
 
-        private HelpEntry(String commandName, @Nullable String commandShortName, String description, List<KeyStroke> keyBinds) {
+        private HelpEntry(String commandName, @Nullable String commandShortName, String description) {
             this.commandName = commandName;
             this.commandShortName = commandShortName;
             this.description = description;
-            this.keyBinds = keyBinds;
         }
 
         String getKey() {
             return ":" + commandName + (commandShortName != null ? " | :" + commandShortName : "" );
         }
 
-        String getBinds() {
-            return "(" + keyBinds.stream().map(this::renderKeyStroke).collect(Collectors.joining(", ")) +")";
+        String render(int keyLength) {
+            return Strings.pad(getKey(), keyLength) + " => " + description;
+        }
+    }
+
+    private static class KeyBind {
+        private final String key;
+        private final String mapping;
+
+        private KeyBind(KeyStroke keyStroke, String mapping) {
+            this.key = renderKeyStroke(keyStroke);
+            this.mapping = mapping;
         }
 
-        private String renderKeyStroke(KeyStroke keyStroke) {
+        String getKey() {
+            return key;
+        }
+
+        String render(int keyLength) {
+            return Strings.pad(getKey(), keyLength) + " => :" + mapping;
+        }
+
+        private static String renderKeyStroke(KeyStroke keyStroke) {
             StringBuilder sb = new StringBuilder();
             if (keyStroke.isCtrlDown()) {
                 sb.append("CTRL+");
@@ -348,14 +370,6 @@ public class CommandHandler {
                 sb.append(keyStroke.getKeyType().name());
             }
             return sb.toString();
-        }
-
-        String getDescription() {
-            return description;
-        }
-
-        String render(int keyLength, int bindLength) {
-            return Strings.pad(getKey(), keyLength) + " " + Strings.pad(getBinds(), bindLength) + ": " + getDescription();
         }
     }
 }
