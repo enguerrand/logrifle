@@ -28,5 +28,9 @@ import de.rochefort.logrifle.data.highlights.Highlight;
 import java.util.List;
 
 public interface LogLineRenderer {
-    AbstractComponent<?> render(Line line, int totalLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights, Bookmarks bookmarks);
+    /**
+     *
+     * @param lineIndexHot true if the line to display is the last line a "follow-tail" view
+     */
+    AbstractComponent<?> render(Line line, int totalLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights, Bookmarks bookmarks, boolean lineIndexHot);
 }

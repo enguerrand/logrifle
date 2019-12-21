@@ -41,7 +41,8 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             int lineLabelLength,
             int beginColumn,
             List<Highlight> highlights,
-            Bookmarks bookmarks
+            Bookmarks bookmarks,
+            boolean lineIndexHot
     ) {
         int digitCount = Digits.getDigitCount(totalLineCount);
         String lineLabel = "";
@@ -58,7 +59,8 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         List<ColoredString> coloredStrings = new ArrayList<>();
         coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
         boolean bookmarked = bookmarks.isLineBookmarked(line);
-        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), TextColor.ANSI.CYAN, bookmarked ? TextColor.ANSI.RED: null));
+        TextColor.ANSI lineNumberColor = lineIndexHot ? TextColor.ANSI.RED : TextColor.ANSI.CYAN;
+        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
         } else {
