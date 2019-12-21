@@ -71,7 +71,7 @@ class MainWindowLayout {
         if (rowsMinusCmd < BookmarksView.TITLE_HEIGHT) {
             bookmarksHeight = 0;
         } else {
-            bookmarksHeight = Math.min(bookmarksCount + BookmarksView.TITLE_HEIGHT, (int)(rowsMinusCmd * MAX_BOOKMARKS_RATIO) - BookmarksView.TITLE_HEIGHT);
+            bookmarksHeight = Math.min(bookmarksCount + BookmarksView.TITLE_HEIGHT, (int)(rowsMinusCmd * MAX_BOOKMARKS_RATIO));
         }
         return new TerminalSize(logViewWidth, bookmarksHeight);
     }
