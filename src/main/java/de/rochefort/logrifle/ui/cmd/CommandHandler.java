@@ -55,6 +55,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("bookmark-move-focus", "bmf", "Bookmarks the currently focused line and moves the focus by the increment provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args) {
+                return mainController.toggleBookmarkAndMoveFocus(args);
+            }
+        });
+
         register(new Command("prev-bookmark", "pb", "Scrolls to the previous bookmark.") {
             @Override
             protected ExecutionResult execute(String args) {
@@ -188,7 +195,7 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("scroll", null, "Scroll vertically by the increment provided as the first argument. Negative values scroll upwards.") {
+        register(new Command("scroll", null, "Scrolls vertically by the increment provided as the first argument. Negative values scroll upwards.") {
             @Override
             protected ExecutionResult execute(String args) {
                 return mainController.scrollVertically(args);

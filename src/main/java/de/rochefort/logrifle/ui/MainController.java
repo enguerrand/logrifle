@@ -265,6 +265,16 @@ public class MainController {
         return bookmarks.toggle(focusedLine);
     }
 
+    public ExecutionResult toggleBookmarkAndMoveFocus(String args) {
+        @Nullable Line focusedLine = mainWindow.getLogView().getFocusedLine();
+        if (focusedLine == null) {
+            return new ExecutionResult(false, "No line is currently focused.");
+        }
+        ExecutionResult toggleResult = bookmarks.toggle(focusedLine);
+        ExecutionResult moveFocusResult = moveFocus(args);
+        return ExecutionResult.merged(toggleResult, moveFocusResult);
+    }
+
     public ExecutionResult findAgain() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);

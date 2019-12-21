@@ -44,7 +44,9 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
         keyMap.put(new KeyStroke(KeyType.F6), "prev-bookmark");
         keyMap.put(new KeyStroke(KeyType.F7), "next-bookmark");
+        keyMap.put(new KeyStroke(KeyType.F8), "bookmark-move-focus -1");
         keyMap.put(new KeyStroke(KeyType.F9), "bookmark");
+        keyMap.put(new KeyStroke(KeyType.F10), "bookmark-move-focus 1");
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
         keyMap.put(new KeyStroke('g', false, false), "prepare :goto ");

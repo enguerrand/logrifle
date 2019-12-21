@@ -45,4 +45,19 @@ public class ExecutionResult {
     public Optional<String> getUserMessage() {
         return Optional.ofNullable(userMessage);
     }
+
+    public static ExecutionResult merged(ExecutionResult ... results) {
+        if (results == null || results.length == 0) {
+            throw new IllegalArgumentException("Need at least one result to merge!");
+        }
+        boolean updateRequired = false;
+        String userMessage = null;
+        for (ExecutionResult result : results) {
+            updateRequired |= result.uiUpdateRequired;
+            if (result.userMessage != null) {
+                userMessage = userMessage == null ? result.userMessage : userMessage + " / " + result.userMessage;
+            }
+        }
+        return new ExecutionResult(updateRequired, userMessage);
+    }
 }
