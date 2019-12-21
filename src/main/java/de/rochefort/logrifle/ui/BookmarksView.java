@@ -33,6 +33,9 @@ import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.highlights.Highlight;
 import de.rochefort.logrifle.data.parsing.Line;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 class BookmarksView {
@@ -49,7 +52,7 @@ class BookmarksView {
         panel = new Panel(layout);
     }
 
-    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace) {
+    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex) {
         if (!shown || availableSpace.getRows() < TITLE_HEIGHT) {
             panel.removeAllComponents();
         } else {
@@ -64,20 +67,74 @@ class BookmarksView {
             panel.addComponent(bookmarksPanel);
             bookmarksPanel.setLayoutData(BorderLayout.Location.BOTTOM);
 
-            int index = 0;
-            for (Bookmark bookmark : bookmarks.getAll()) {
-                if (startAtIndex > index) {
+            updateStartIndexIfNeeded(focusedLineIndex, availableSpace.getRows() - TITLE_HEIGHT);
+
+            ArrayList<Bookmark> bookmarkArrayList = new ArrayList<>(bookmarks.getAll());
+            for (int i = 0; i < bookmarkArrayList.size(); i++) {
+                Bookmark bookmark = bookmarkArrayList.get(i);
+                if (startAtIndex > i) {
                     continue;
                 }
-                if (index >= availableSpace.getRows() - TITLE_HEIGHT) {
+                if (i - startAtIndex >= availableSpace.getRows() - TITLE_HEIGHT) {
                     break;
                 }
-                index++;
                 Line line = bookmark.getLine();
                 AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, false, 0, beginColumn, highlights, this.bookmarks);
                 bookmarksPanel.addComponent(bookmarkComponent);
             }
         }
+    }
+
+    private void updateStartIndexIfNeeded(int focusedLineIndex, int visibleBookmarksCount) {
+        List<Integer> mustSees = computeMustSees(focusedLineIndex);
+        if (mustSees.isEmpty()) {
+            return;
+        }
+        ensureVisible(visibleBookmarksCount, mustSees.get(0));
+        if (visibleBookmarksCount == 1 || mustSees.size() == 1) {
+            return;
+        }
+        ensureVisible(visibleBookmarksCount, mustSees.get(1));
+
+    }
+
+    private void ensureVisible(int rows, int index) {
+        if (index < startAtIndex) {
+            startAtIndex = index;
+        } else if (index >= startAtIndex + rows) {
+            startAtIndex = index - rows + 1;
+        }
+    }
+
+    private List<Integer> computeMustSees(int focusedLineIndex) {
+        ArrayList<Bookmark> bookmarksAsList = new ArrayList<>(this.bookmarks.getAll());
+        if (bookmarksAsList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Bookmark last = null;
+        List<Integer> mustSees = new ArrayList<>();
+        for (int i = 0; i < bookmarksAsList.size(); i++) {
+            Bookmark bookmark = bookmarksAsList.get(i);
+
+            int currentIndex = bookmark.getLine().getIndex();
+            if (currentIndex == focusedLineIndex) {
+                mustSees.add(i);
+                break;
+            }
+            if (currentIndex > focusedLineIndex && (last == null || last.getLine().getIndex() < currentIndex )) {
+                mustSees.add(i);
+                if (last != null) {
+                    mustSees.add(i-1);
+                }
+                break;
+            }
+            last = bookmark;
+        }
+        if (mustSees.isEmpty()) {
+            mustSees.add(bookmarksAsList.size() -1);
+        }
+        mustSees.sort(Comparator.naturalOrder());
+        return mustSees;
     }
 
     public Panel getPanel() {

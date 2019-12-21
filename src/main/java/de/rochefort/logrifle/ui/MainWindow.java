@@ -127,7 +127,8 @@ public class MainWindow {
                 dataView.getLineCount(),
                 logView.getHorizontalScrollPosition(),
                 highlightsData.getHighlights(),
-                availableSpaceForBookmarks
+                availableSpaceForBookmarks,
+                logView.getFocusedLineIndex()
         );
     }
 
