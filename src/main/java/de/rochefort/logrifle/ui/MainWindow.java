@@ -112,7 +112,7 @@ public class MainWindow {
         }
         UI.checkGuiThreadOrThrow();
         int sideBarWidth = sideBar.update(sidebarVisible);
-        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarksViewVisible ? bookmarks.count() : 0);
+        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarks.count(), bookmarksViewVisible);
         DataView dataView = viewsTree.getFocusedNode().getDataView();
         logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);

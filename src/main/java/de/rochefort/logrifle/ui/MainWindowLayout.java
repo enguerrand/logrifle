@@ -46,14 +46,16 @@ class MainWindowLayout {
         return bookmarksSize;
     }
 
-    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight, int sideBarWidth, int bookmarksCount) {
+    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight, int sideBarWidth, int bookmarksCount, boolean bookmarksViewVisible) {
         if(terminalSize == null) {
             return null;
         }
         TerminalSize cmd = new TerminalSize(terminalSize.getColumns() , commandBarHeight);
         int rowsMinusCmd = terminalSize.getRows() - cmd.getRows();
         int logViewWidth = terminalSize.getColumns() - sideBarWidth;
-        TerminalSize bm = computeBookmarksSize(logViewWidth, bookmarksCount, rowsMinusCmd);
+        TerminalSize bm = bookmarksViewVisible
+                ? computeBookmarksSize(logViewWidth, bookmarksCount, rowsMinusCmd)
+                : new TerminalSize(logViewWidth, 0);
         TerminalSize log = new TerminalSize(logViewWidth, rowsMinusCmd - bm.getRows());
         return new MainWindowLayout(log, cmd, bm);
     }
@@ -65,10 +67,10 @@ class MainWindowLayout {
 
     private static TerminalSize computeBookmarksSize(int logViewWidth, int bookmarksCount, int rowsMinusCmd) {
         int bookmarksHeight;
-        if (rowsMinusCmd < 2 || bookmarksCount == 0) {
+        if (rowsMinusCmd < BookmarksView.TITLE_HEIGHT) {
             bookmarksHeight = 0;
         } else {
-            bookmarksHeight = Math.min(bookmarksCount + 1, rowsMinusCmd - 2);
+            bookmarksHeight = Math.min(bookmarksCount + BookmarksView.TITLE_HEIGHT, rowsMinusCmd - BookmarksView.TITLE_HEIGHT);
         }
         return new TerminalSize(logViewWidth, bookmarksHeight);
     }

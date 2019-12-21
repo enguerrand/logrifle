@@ -36,7 +36,7 @@ import de.rochefort.logrifle.data.parsing.Line;
 import java.util.List;
 
 class BookmarksView {
-    private static final int TITLE_HEIGHT = 1;
+    public static final int TITLE_HEIGHT = 1;
     private final Bookmarks bookmarks;
     private final LogLineRenderer logLineRenderer;
     private final Panel panel;
@@ -50,7 +50,7 @@ class BookmarksView {
     }
 
     void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace) {
-        if (!shown || availableSpace.getRows() <= TITLE_HEIGHT) {
+        if (!shown || availableSpace.getRows() < TITLE_HEIGHT) {
             panel.removeAllComponents();
         } else {
             String title = "=== Bookmarks ";
