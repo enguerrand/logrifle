@@ -24,6 +24,7 @@ import com.googlecode.lanterna.TerminalSize;
 import org.jetbrains.annotations.Nullable;
 
 class MainWindowLayout {
+    private static final double MAX_BOOKMARKS_RATIO = 0.5;
     private final TerminalSize logViewSize;
     private final TerminalSize commandBarSize;
     private final TerminalSize bookmarksSize;
@@ -70,7 +71,7 @@ class MainWindowLayout {
         if (rowsMinusCmd < BookmarksView.TITLE_HEIGHT) {
             bookmarksHeight = 0;
         } else {
-            bookmarksHeight = Math.min(bookmarksCount + BookmarksView.TITLE_HEIGHT, rowsMinusCmd - BookmarksView.TITLE_HEIGHT);
+            bookmarksHeight = Math.min(bookmarksCount + BookmarksView.TITLE_HEIGHT, (int)(rowsMinusCmd * MAX_BOOKMARKS_RATIO) - BookmarksView.TITLE_HEIGHT);
         }
         return new TerminalSize(logViewWidth, bookmarksHeight);
     }
