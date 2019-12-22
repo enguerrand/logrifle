@@ -35,7 +35,9 @@ import de.rochefort.logrifle.ui.MainController;
 import de.rochefort.logrifle.ui.MainWindow;
 import de.rochefort.logrifle.ui.MainWindowListener;
 import de.rochefort.logrifle.ui.TextColorIterator;
+import de.rochefort.logrifle.ui.UI;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
+import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import de.rochefort.logrifle.ui.cmd.KeyMapFactory;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -44,6 +46,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -67,6 +70,9 @@ public class Main {
         parser.addArgument("logfile")
                 .nargs("*")
                 .help("Path to logfile");
+        parser.addArgument("-c", "--commands-file")
+                .type(String.class)
+                .help("File to read commands from");
         Namespace parserResult = parser.parseArgsOrFail(args);
 
         if (parserResult.getBoolean("help")) {
@@ -81,6 +87,11 @@ public class Main {
             System.err.println("Error: Arguments missing! Need at least one logfile!");
             parser.printUsage();
             return;
+        }
+        List<String> commands = new ArrayList<>();
+        String commandsFile = parserResult.getString("commands_file");
+        if (commandsFile != null) {
+            commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
         }
 
         ExecutorService workerPool = Executors.newCachedThreadPool();
@@ -130,6 +141,22 @@ public class Main {
                 System.exit(0);
             }
         });
-        mainWindow.updateView();
+        UI.awaitInitialized().thenRun(
+                () -> {
+                    UI.runLater(mainWindow::updateView);
+                    for (String command : commands) {
+                        if (command.isEmpty()) {
+                            continue;
+                        }
+                        UI.runLater(() -> {
+                            ExecutionResult result = commandHandler.handle(command.substring(1), true);
+                            if (result.isUiUpdateRequired()) {
+                                mainWindow.updateView();
+                            }
+                            result.getUserMessage().ifPresent(System.err::println);
+                        });
+                    }
+                }
+        );
     }
 }

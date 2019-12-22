@@ -44,7 +44,7 @@ public abstract class Command {
         return Optional.ofNullable(commandShortName);
     }
 
-    protected abstract ExecutionResult execute(String args);
+    protected abstract ExecutionResult execute(String args, boolean blocking);
 
     public String getDescription() {
         return description;

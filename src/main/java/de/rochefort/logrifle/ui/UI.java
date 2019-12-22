@@ -23,21 +23,28 @@ package de.rochefort.logrifle.ui;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class UI {
     private static TextGUIThread THREAD = null;
+    private final static CompletableFuture<Void> INITIALIZED_FUTURE = new CompletableFuture<>();
 
     public static void initialize(TextGUIThread textGUIThread) {
         if (THREAD != null) {
             throw new IllegalStateException("Double initialization");
         }
         THREAD = textGUIThread;
+        INITIALIZED_FUTURE.complete(null);
     }
 
     public static void checkGuiThreadOrThrow() {
         if (THREAD == null || !Objects.equals(Thread.currentThread(), THREAD.getThread())) {
             throw new IllegalStateException("This method must be called on the gui thread!");
         }
+    }
+
+    public static CompletableFuture<Void> awaitInitialized() {
+        return INITIALIZED_FUTURE;
     }
 
     public static void runLater(Runnable runnable) {

@@ -44,6 +44,8 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class MainController {
@@ -176,7 +178,7 @@ public class MainController {
         return new ExecutionResult(false, query + ": pattern not found.");
     }
 
-    public ExecutionResult addFilter(String regex, boolean inverted) {
+    public ExecutionResult addFilter(String regex, boolean inverted, boolean blocking) {
         if (regex.isEmpty()) {
             return new ExecutionResult(false, "Missing argument: filter pattern");
         }
@@ -184,16 +186,39 @@ public class MainController {
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
         DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
-        logDispatcher.execute(() -> {
-            focusedView.addListener(dataViewFiltered);
-            dataViewFiltered.onUpdated(focusedView);
-            UI.runLater(() -> {
-	            ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
-	            viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
-	            mainWindow.updateView();
-            });
-        });
-        return new ExecutionResult(false);
+        Runnable treeUpdater = () -> {
+            ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
+            viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
+        };
+        CompletableFuture<Void> f = CompletableFuture.supplyAsync(
+                () -> {
+                    focusedView.addListener(dataViewFiltered);
+                    dataViewFiltered.onUpdated(focusedView);
+                    if (!blocking) {
+                        UI.runLater(
+                                () -> {
+                                    treeUpdater.run();
+                                    mainWindow.updateView();
+                                }
+                        );
+                    }
+                    return null;
+                },
+                logDispatcher
+        );
+        if (!blocking) {
+            return new ExecutionResult(false);
+        }
+        try {
+            f.get();
+            treeUpdater.run();
+            return new ExecutionResult(true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new ExecutionResult(false, "Thread was interrupted!");
+        } catch (ExecutionException e) {
+            return new ExecutionResult(false, e.getCause().toString());
+        }
     }
 
     public ExecutionResult addHighlight(String args) {

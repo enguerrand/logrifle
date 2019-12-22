@@ -42,217 +42,217 @@ public class CommandHandler {
         commands = new HashMap<>();
         register(new Command("prepare", null, "Opens the command line and adds the provided arguments as a prepared command.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.prepareCommand(args);
             }
         });
 
         register(new Command("bookmark", "b", "Bookmarks the currently focused line.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleBookmark();
             }
         });
 
         register(new Command("bookmark-move-focus", "bmf", "Bookmarks the currently focused line and moves the focus by the increment provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleBookmarkAndMoveFocus(args);
             }
         });
 
         register(new Command("prev-bookmark", "pb", "Scrolls to the previous bookmark.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollToPreviousBookmark();
             }
         });
 
         register(new Command("next-bookmark", "nb", "Scrolls to the next bookmark.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollToNextBookmark();
             }
         });
 
         register(new Command("delete-filter", "df", "Deletes the currently focused filter.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.deleteFilter();
             }
         });
 
         register(new Command("delete-highlight", "dh", "Deletes the highlight at the index provided as the first argument") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.deleteHighlight(args);
             }
         });
 
         register(new Command("!filter", null, "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
-                return mainController.addFilter(args, true);
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.addFilter(args, true, blocking);
             }
         });
 
         register(new Command("filter", "f", "Adds a filter that displays lines that match the regex provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
-                return mainController.addFilter(args, false);
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.addFilter(args, false, blocking);
             }
         });
 
         register(new Command("edit-filter", "ef", "Edits the currently focused filter.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.editFilter();
             }
         });
 
         register(new Command("edit-highlight", "eh", "Edits the highlight at the index provided as the first argument") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.editHighlight(args);
             }
         });
 
         register(new Command("filter-view-up", null, "Moves the filter focus up.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.moveFilterUp();
             }
         });
 
         register(new Command("filter-view-down", null, "Moves the filter focus down") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.moveFilterDown();
             }
         });
 
         register(new Command("find", null, "Starts a forward search. (Can also be started using the / key)") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.find(new Query(args, false));
             }
         });
 
         register(new Command("find-again", null, "Finds the next occurrence of the previous match.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.findAgain();
             }
         });
 
         register(new Command("find-again-backwards", null, "Finds the previous occurrence of the previous search.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.findAgainBackwards();
             }
         });
 
         register(new Command("find-backwards", null, "Starts a backwards search. (Can also be started using the ? key)") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.find(new Query(args, true));
             }
         });
 
         register(new Command("highlight", "h", "Adds a highlight to line parts that match the regex provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.addHighlight(args);
             }
         });
 
         register(new Command("move-focus", null, "Moves the focus by the increment provided as the first argument. (Negative values move the focus upwards)") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.moveFocus(args);
             }
         });
 
         register(new Command("quit", null, "Closes the application.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.quit();
             }
         });
 
         register(new Command("refresh", null, "Enforces a view update.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.refresh();
             }
         });
 
         register(new Command("hscroll", null, "Scroll horizontally by the increment provided as the first argument. Negative values scroll to the left.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollHorizontally(args);
             }
         });
 
         register(new Command("scroll", null, "Scrolls vertically by the increment provided as the first argument. Negative values scroll upwards.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollVertically(args);
             }
         });
 
         register(new Command("scroll-page", null, "Scrolls vertically. The line increment is calculated by multiplying the visible number of lines with the floating point value provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollPage(args);
             }
         });
 
         register(new Command("goto", null, "Scrolls to the line number provided as the first argument.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollToLine(args);
             }
         });
 
         register(new Command("home", null, "Scrolls to the top.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollToTop();
             }
         });
 
         register(new Command("end", null, "Scrolls to the bottom and sets \"follow-tail\" to true.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.scrollToBottom();
             }
         });
 
         register(new Command("toggle-bookmarks-view", null, "Toggles the bookmarks view visibility.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleBookmarks();
             }
         });
 
         register(new Command("toggle-line-labels", null, "Toggles the full display of line labels on/off") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleLineLabels();
             }
         });
 
         register(new Command("toggle-sidebar", null, "Toggles the sidebar visibility.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleSidebar();
             }
         });
 
         register(new Command("toggle-follow-tail", "tail", "Toggles whether or not the current view's tail is followed.") {
             @Override
-            protected ExecutionResult execute(String args) {
+            protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.toggleFollowTail();
             }
         });
@@ -272,6 +272,10 @@ public class CommandHandler {
      * @return whether the ui should be updated as a result of this command execution
      */
     public ExecutionResult handle(String commandLine) {
+        return handle(commandLine, false);
+    }
+
+    public ExecutionResult handle(String commandLine, boolean blocking) {
         List<String> words = Arrays.asList(commandLine.split("\\s+", 2));
         if (words.isEmpty()) {
             return new ExecutionResult(false);
@@ -290,7 +294,7 @@ public class CommandHandler {
         } else {
             args = words.get(1);
         }
-        return command.execute(args);
+        return command.execute(args, blocking);
     }
 
 
