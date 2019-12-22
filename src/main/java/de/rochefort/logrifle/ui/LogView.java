@@ -45,7 +45,7 @@ class LogView {
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
     private final LogDispatcher logDispatcher;
-    private boolean showLineLabels = true;
+    private boolean showLineLabels = false;
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
     private boolean followTail = true;
