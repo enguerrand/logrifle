@@ -25,6 +25,7 @@ import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.rochefort.logrifle.base.LogDispatcher;
 import de.rochefort.logrifle.data.bookmarks.Bookmarks;
+import de.rochefort.logrifle.data.highlights.HighlightsData;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.rochefort.logrifle.data.views.DataView;
@@ -37,7 +38,10 @@ import de.rochefort.logrifle.ui.TextColorIterator;
 import de.rochefort.logrifle.ui.cmd.CommandHandler;
 import de.rochefort.logrifle.ui.cmd.KeyMapFactory;
 import de.rochefort.logrifle.ui.cmd.KeyStrokeHandler;
-import de.rochefort.logrifle.data.highlights.HighlightsData;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -48,24 +52,37 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
-        if (Arrays.stream(args).anyMatch(a -> a.equals("-h") || a.equals("--help"))) {
-            commandHandler.printHelp(keyMapFactory.get());
+        ArgumentParser parser = ArgumentParsers.newFor("logrifle")
+                .addHelp(false)
+                .build();
+        parser.addArgument("-h", "--help")
+                .action(Arguments.storeTrue())
+                .help("Print this help and exit");
+        parser.addArgument("logfile")
+                .nargs("*")
+                .help("Path to logfile");
+        Namespace parserResult = parser.parseArgsOrFail(args);
+
+        if (parserResult.getBoolean("help")) {
+            parser.printHelp();
+            System.out.print(commandHandler.getHelp(keyMapFactory.get()));
             System.exit(0);
         }
-        if (args.length == 0) {
-            System.err.println("Need path to file!");
+        List<Path> logfiles = parserResult.getList("logfile").stream()
+                .map(f -> Paths.get((String)f))
+                .collect(Collectors.toList());
+        if (logfiles.isEmpty()) {
+            System.err.println("Error: Arguments missing! Need at least one logfile!");
+            parser.printUsage();
             return;
         }
-        List<Path> logfiles = new ArrayList<>();
-        for (String arg : args) {
-            Path path = Paths.get(arg);
-            logfiles.add(path);
-        }
+
         ExecutorService workerPool = Executors.newCachedThreadPool();
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
 

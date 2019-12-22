@@ -294,7 +294,7 @@ public class CommandHandler {
     }
 
 
-    public void printHelp(Map<KeyStroke, String> keyMap) {
+    public String getHelp(Map<KeyStroke, String> keyMap) {
         List<Command> values = new ArrayList<>(new HashSet<>(this.commands.values()));
         values.sort(Comparator.comparing(Command::getCommandName));
         List<HelpEntry> helpEntries = new ArrayList<>();
@@ -304,18 +304,17 @@ public class CommandHandler {
             helpEntries.add(new HelpEntry(commandName, commandShortName, command.getDescription()));
         }
         int keyLength = helpEntries.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
-        System.out.println("Synopsis:");
-        System.out.println("===========================");
-        System.out.println("java -jar logrifle.jar -h | --help | logfile1 [ logfile2 [ ... logfileN ] ]");
-        System.out.println("");
-        System.out.println("List of available commands:");
-        System.out.println("===========================");
+        String sep = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder();
+        sb.append(sep);
+        sb.append("List of available commands:"+sep);
+        sb.append("==========================="+sep);
         for (HelpEntry helpEntry : helpEntries) {
-            System.out.println(helpEntry.render(keyLength));
+            sb.append(helpEntry.render(keyLength)+sep);
         }
-        System.out.println("");
-        System.out.println("List of available keybinds:");
-        System.out.println("===========================");
+        sb.append("\n");
+        sb.append("List of available keybinds:\n");
+        sb.append("===========================\n");
         List<KeyBind> binds = new ArrayList<>();
         for (Map.Entry<KeyStroke, String> keyMapping : keyMap.entrySet()) {
             binds.add(new KeyBind(keyMapping.getKey(), keyMapping.getValue()));
@@ -323,8 +322,9 @@ public class CommandHandler {
         binds.sort(Comparator.comparing(KeyBind::getKey));
         int bindLength = binds.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
         for (KeyBind bind : binds) {
-            System.out.println(bind.render(bindLength));
+            sb.append(bind.render(bindLength)+"\n");
         }
+        return sb.toString();
     }
     private static class HelpEntry {
         private final String commandName;
