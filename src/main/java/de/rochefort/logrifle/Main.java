@@ -28,6 +28,7 @@ import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.highlights.HighlightsData;
 import de.rochefort.logrifle.data.parsing.LineParser;
 import de.rochefort.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.rochefort.logrifle.data.parsing.TimeStampFormat;
 import de.rochefort.logrifle.data.views.DataView;
 import de.rochefort.logrifle.data.views.DataViewMerged;
 import de.rochefort.logrifle.data.views.ViewsTree;
@@ -73,6 +74,7 @@ public class Main {
 
         ArgumentParser parser = ArgumentParsers.newFor("logrifle")
                 .addHelp(false)
+                .defaultFormatWidth(100)
                 .build();
         parser.addArgument("-h", "--help")
                 .action(Arguments.storeTrue())
@@ -83,6 +85,12 @@ public class Main {
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
+        parser.addArgument("-r", "--timestamp-regex")
+                .type(String.class)
+                .help("Regular expression to find timestamps in log lines. Defaults to " + TimeStampFormat.DEFAULT_TIME_MATCH_REGEX);
+        parser.addArgument("-f", "--timestamp-format")
+                .type(String.class)
+                .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
         Namespace parserResult = parser.parseArgsOrFail(args);
 
         if (parserResult.getBoolean("help")) {
@@ -108,7 +116,9 @@ public class Main {
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
 
         LogDispatcher logDispatcher = new LogDispatcher();
-        LineParser lineParser = new LineParserTimestampedTextImpl();
+        String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
+        String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         DataView rootView;
         List<LogReader> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
