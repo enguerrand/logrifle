@@ -29,18 +29,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineParserTimestampedTextImpl implements LineParser {
-    private static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
-    private static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
     private final Pattern timeStampPattern;
     private final DateTimeFormatter dateFormatter;
 
     public LineParserTimestampedTextImpl() {
-        this(null, null);
+        this(new TimeStampFormat(null, null));
     }
 
-    public LineParserTimestampedTextImpl(String timestampRegex, String dateFormat) {
-        this.timeStampPattern = Pattern.compile(timestampRegex != null ? timestampRegex : DEFAULT_TIME_MATCH_REGEX);
-        this.dateFormatter = DateTimeFormatter.ofPattern(dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT);
+    public LineParserTimestampedTextImpl(TimeStampFormat timeStampFormat) {
+        this.timeStampPattern = Pattern.compile(timeStampFormat.getRegex());
+        this.dateFormatter = DateTimeFormatter.ofPattern(timeStampFormat.getFormat());
     }
 
     @Override
