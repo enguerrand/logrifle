@@ -44,23 +44,33 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 public class Main {
+    private static final String DEFAULTS_FILE =
+            System.getProperty("user.home") + System.getProperty("file.separator") + ".logriflerc";
+
     public static void main(String[] args) throws IOException {
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
+
+        Properties defaults = loadDefaults();
+
         ArgumentParser parser = ArgumentParsers.newFor("logrifle")
                 .addHelp(false)
                 .build();
@@ -88,8 +98,8 @@ public class Main {
             parser.printUsage();
             return;
         }
+        String commandsFile = getOption(defaults, parserResult, "commands_file");
         List<String> commands = new ArrayList<>();
-        String commandsFile = parserResult.getString("commands_file");
         if (commandsFile != null) {
             commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
         }
@@ -158,5 +168,23 @@ public class Main {
                     }
                 }
         );
+    }
+
+    @NotNull
+    private static Properties loadDefaults() {
+        Properties defaults = new Properties();
+        try (InputStream input = new FileInputStream(DEFAULTS_FILE)) {
+            defaults.load(input);
+        } catch (IOException ignored) {
+        }
+        return defaults;
+    }
+
+    private static String getOption(Properties defaults, Namespace parserResult, String name) {
+        String value = parserResult.getString(name);
+        if (value != null) {
+            return value;
+        }
+        return defaults.getProperty(name);
     }
 }

@@ -299,6 +299,15 @@ public class CommandHandler {
 
 
     public String getHelp(Map<KeyStroke, String> keyMap) {
+        String sep = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder();
+        sb.append(sep);
+        sb.append("Options that can be applied on the command line can also be provided through a configuration file located in the user's home directory.");
+        sb.append(sep);
+        sb.append("The name of this file should be .logriflerc");
+        sb.append(sep);
+        sb.append("Options can be specified in the format of java properties (i.e. key = value) using the long command line option name with dashes (-) replaced by underscores (_).");
+        sb.append(sep);
         List<Command> values = new ArrayList<>(new HashSet<>(this.commands.values()));
         values.sort(Comparator.comparing(Command::getCommandName));
         List<HelpEntry> helpEntries = new ArrayList<>();
@@ -308,8 +317,6 @@ public class CommandHandler {
             helpEntries.add(new HelpEntry(commandName, commandShortName, command.getDescription()));
         }
         int keyLength = helpEntries.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
-        String sep = System.getProperty("line.separator");
-        StringBuilder sb = new StringBuilder();
         sb.append(sep);
         sb.append("List of available commands:"+sep);
         sb.append("==========================="+sep);
