@@ -61,14 +61,16 @@ public class LogReader extends DataView {
              */
             @Override
             public void handle(String s) {
-                LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex++, s, getTitle(), getViewColor());
+                LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex, s, getTitle(), getViewColor());
                 if (parseResult.isNewLine()) {
                     lines.add(parseResult.getParsedLine());
+	                currentLineIndex++;
                 } else {
                     Line last;
                     if (lines.isEmpty()) {
-                        last = Line.initialTextLineOf(currentLineIndex++, s, getTitle(), getViewColor());
+                        last = Line.initialTextLineOf(currentLineIndex, s, getTitle(), getViewColor());
                         lines.add(last);
+	                    currentLineIndex++;
                     } else {
                         last = lines.get(lines.size() - 1);
                     }
