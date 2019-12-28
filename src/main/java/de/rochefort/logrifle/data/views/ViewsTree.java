@@ -45,6 +45,7 @@ public class ViewsTree {
         }
         moveFocusPrev();
         parent.removeChild(node);
+        node.destroy();
         return new ExecutionResult(true);
     }
 

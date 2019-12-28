@@ -25,24 +25,44 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ViewsTreeNode {
+    private final int navIndex;
+    private static final Map<Integer, ViewsTreeNode> NAV_INDEX_LOOKUP = new ConcurrentHashMap<>();
     @Nullable
     private final ViewsTreeNode parent;
     private final List<ViewsTreeNode> children;
     private final DataView dataView;
 
     public ViewsTreeNode(@Nullable ViewsTreeNode parent, DataView dataView) {
+        this.navIndex = computeNavIndex(this);
         this.parent = parent;
         this.dataView = dataView;
         this.children = new ArrayList<>();
+    }
+
+    private static int computeNavIndex(ViewsTreeNode node) {
+        boolean found = false;
+        int i = 0;
+        while (!found) {
+            i++;
+            ViewsTreeNode present = NAV_INDEX_LOOKUP.putIfAbsent(i, node);
+            found = present == null;
+        }
+        return i;
+    }
+
+    public int getNavIndex() {
+        return navIndex;
     }
 
     void addChild(ViewsTreeNode child) {
         this.children.add(child);
     }
 
-    public void removeChild(ViewsTreeNode child) {
+    void removeChild(ViewsTreeNode child) {
         this.children.remove(child);
     }
 
@@ -60,5 +80,12 @@ public class ViewsTreeNode {
 
     public DataView getDataView() {
         return dataView;
+    }
+
+    void destroy() {
+        ViewsTreeNode.NAV_INDEX_LOOKUP.remove(getNavIndex());
+        for (ViewsTreeNode child : children) {
+            child.destroy();
+        }
     }
 }

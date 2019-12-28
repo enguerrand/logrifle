@@ -29,12 +29,15 @@ import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LinearLayout;
 import com.googlecode.lanterna.gui2.Panel;
 import de.rochefort.logrifle.base.Digits;
-import de.rochefort.logrifle.data.views.ViewsTree;
+import de.rochefort.logrifle.base.Strings;
 import de.rochefort.logrifle.data.highlights.Highlight;
 import de.rochefort.logrifle.data.highlights.HighlightsData;
+import de.rochefort.logrifle.data.views.ViewsTree;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class SideBar {
     public static final String FILTERS_TITLE = "Views Tree";
@@ -94,23 +97,32 @@ class SideBar {
     }
 
     private int updateViewsTree() {
+        final AtomicInteger maxLength = new AtomicInteger(0);
+        final AtomicInteger nodeCount = new AtomicInteger(0);
         this.viewsContentPanel.removeAllComponents();
-        final List<Label> labels = new ArrayList<>();
         this.viewsTree.walk((node, recursionDepth, focused) -> {
+            nodeCount.incrementAndGet();
             String text = buildText(node.getTitle(), recursionDepth);
-            Label label = new Label(text);
-            labels.add(label);
-            viewsContentPanel.addComponent(label);
+            String prefixText = node.getNavIndex() + ") ";
+            String prefix = Strings.pad(prefixText, 5, true);
+            maxLength.updateAndGet(prev -> Math.max(prev, prefix.length() + text.length()));
+            ColoredString navIndex;
+            ColoredString title;
             if (focused) {
-                label.setForegroundColor(TextColor.ANSI.YELLOW);
-                label.addStyle(SGR.BOLD);
+                navIndex = new ColoredString(prefix, TextColor.ANSI.BLUE, null, SGR.BOLD);
+                title = new ColoredString(text, TextColor.ANSI.YELLOW, null, SGR.BOLD);
+            } else {
+                navIndex = new ColoredString(prefix, TextColor.ANSI.BLUE, null);
+                title = new ColoredString(text, null, null);
             }
+            Collection<ColoredString> textComponents = Arrays.asList(
+                navIndex,
+                title
+            );
+            MultiColoredLabel label = new MultiColoredLabel(textComponents);
+            viewsContentPanel.addComponent(label.asComponent());
         });
-        int maxLength = 0;
-        for (Label label : labels) {
-            maxLength = Math.max(maxLength, label.getText().length());
-        }
-        return maxLength;
+        return maxLength.get();
     }
 
     private void updateHighlights() {

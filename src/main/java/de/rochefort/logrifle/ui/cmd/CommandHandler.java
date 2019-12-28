@@ -367,7 +367,7 @@ public class CommandHandler {
         }
 
         String render(int keyLength) {
-            return Strings.pad(getKey(), keyLength) + " => " + description;
+            return Strings.pad(getKey(), keyLength, false) + " => " + description;
         }
     }
 
@@ -385,7 +385,7 @@ public class CommandHandler {
         }
 
         String render(int keyLength) {
-            return Strings.pad(getKey(), keyLength) + " => :" + mapping;
+            return Strings.pad(getKey(), keyLength, false) + " => :" + mapping;
         }
 
         private static String renderKeyStroke(KeyStroke keyStroke) {

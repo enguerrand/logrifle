@@ -21,15 +21,20 @@
 package de.rochefort.logrifle.base;
 
 public class Strings {
-    public static String pad(String s, int length) {
-        return pad(s, length, " ");
+    public static String pad(String s, int length, boolean beginning) {
+        return pad(s, length, " ", beginning);
     }
 
-    public static String pad(String s, int length, String paddingContent) {
+    public static String pad(String s, int length, String paddingContent, boolean beginning) {
         StringBuilder sb = new StringBuilder();
-        sb.append(s);
+        if (!beginning) {
+            sb.append(s);
+        }
         for (int i = s.length(); i<length ; i++) {
             sb.append(paddingContent);
+        }
+        if (beginning) {
+            sb.append(s);
         }
         return sb.toString();
     }
