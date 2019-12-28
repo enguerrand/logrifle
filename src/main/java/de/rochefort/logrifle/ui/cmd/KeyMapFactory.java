@@ -62,6 +62,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('j', false, false), "filter-view-next");
         keyMap.put(new KeyStroke('k', false, false), "filter-view-prev");
         keyMap.put(new KeyStroke('l', false, false), "filter-view-down");
+        keyMap.put(new KeyStroke('J', false, false, true), "prepare :jump ");
         keyMap.put(new KeyStroke(KeyType.Delete, false, false), "delete-filter");
     }
 

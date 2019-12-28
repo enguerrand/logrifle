@@ -105,6 +105,16 @@ public class ViewsTree {
         return false;
     }
 
+    public boolean moveFocusTo(int navIndex) {
+        ViewsTreeNode viewsTreeNode = ViewsTreeNode.NAV_INDEX_LOOKUP.get(navIndex);
+        if (viewsTreeNode == null) {
+            return false;
+        } else {
+            this.focusedNode = viewsTreeNode;
+            return true;
+        }
+    }
+
     public void walk(Walker walker){
         walkImpl(walker, this.rootNode, 0);
     }

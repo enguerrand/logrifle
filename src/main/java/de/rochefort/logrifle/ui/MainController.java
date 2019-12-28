@@ -147,6 +147,17 @@ public class MainController {
         return new ExecutionResult(changed, null);
     }
 
+    public ExecutionResult moveFilterTo(String args) {
+        try {
+            int navIndex = Integer.parseInt(args);
+            boolean changed = viewsTree.moveFocusTo(navIndex);
+            String userMessage = changed ? null : navIndex + ": no such view found!";
+            return new ExecutionResult(changed, userMessage);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, args + ": not a valid view index!");
+        }
+    }
+
     public ExecutionResult find(Query query) {
         return find(query, false);
     }

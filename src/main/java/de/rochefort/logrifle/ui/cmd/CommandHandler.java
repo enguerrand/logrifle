@@ -145,6 +145,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("jump", null, "Jumps to the view with the index given as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.moveFilterTo(args);
+            }
+        });
+
         register(new Command("find", null, "Starts a forward search. (Can also be started using the / key)") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
