@@ -127,13 +127,23 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
-    public ExecutionResult moveFilterUp() {
-        boolean changed = viewsTree.moveFocusUp();
+    public ExecutionResult moveFilterPrev() {
+        boolean changed = viewsTree.moveFocusPrev();
         return new ExecutionResult(changed, null);
     }
 
-    public ExecutionResult moveFilterDown() {
-        boolean changed = viewsTree.moveFocusDown();
+    public ExecutionResult moveFilterNext() {
+        boolean changed = viewsTree.moveFocusNext();
+        return new ExecutionResult(changed, null);
+    }
+
+    public ExecutionResult moveFilterParent() {
+        boolean changed = viewsTree.moveFocusParent();
+        return new ExecutionResult(changed, null);
+    }
+
+    public ExecutionResult moveFilterFirstChild() {
+        boolean changed = viewsTree.moveFocusFirstChild();
         return new ExecutionResult(changed, null);
     }
 

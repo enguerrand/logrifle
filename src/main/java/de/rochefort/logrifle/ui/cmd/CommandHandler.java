@@ -117,17 +117,31 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("filter-view-up", null, "Moves the filter focus up.") {
+        register(new Command("filter-view-prev", null, "Moves the filter focus to the previous view on the same level.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.moveFilterUp();
+                return mainController.moveFilterPrev();
             }
         });
 
-        register(new Command("filter-view-down", null, "Moves the filter focus down") {
+        register(new Command("filter-view-next", null, "Moves the filter focus to the previous view on the same level.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.moveFilterDown();
+                return mainController.moveFilterNext();
+            }
+        });
+
+        register(new Command("filter-view-up", null, "Moves the filter focus to the parent level.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.moveFilterParent();
+            }
+        });
+
+        register(new Command("filter-view-down", null, "Moves the filter focus to the first child view") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.moveFilterFirstChild();
             }
         });
 

@@ -43,7 +43,7 @@ public class ViewsTree {
         if (parent == null) {
             return new ExecutionResult(false, "Cannot delete the root view");
         }
-        moveFocusUp();
+        moveFocusPrev();
         parent.removeChild(node);
         return new ExecutionResult(true);
     }
@@ -52,7 +52,28 @@ public class ViewsTree {
         return focusedNode;
     }
 
-    public boolean moveFocusUp() {
+    public boolean moveFocusParent() {
+        ViewsTreeNode parent = focusedNode.getParent();
+        if (parent == null) {
+            return false;
+        } else {
+            focusedNode = parent;
+            return true;
+        }
+    }
+
+    public boolean moveFocusFirstChild() {
+        ViewsTreeNode current = this.focusedNode;
+        List<ViewsTreeNode> children = current.getChildren();
+        if (children.isEmpty()) {
+            return false;
+        } else {
+            focusedNode = children.get(0);
+            return true;
+        }
+    }
+
+    public boolean moveFocusPrev() {
         ViewsTreeNode parent = focusedNode.getParent();
         if (parent == null) {
             return false;
@@ -67,13 +88,8 @@ public class ViewsTree {
         return true;
     }
 
-    public boolean moveFocusDown() {
+    public boolean moveFocusNext() {
         ViewsTreeNode current = this.focusedNode;
-        List<ViewsTreeNode> children = current.getChildren();
-        if (!children.isEmpty()) {
-            focusedNode = children.get(0);
-            return true;
-        }
         ViewsTreeNode parent = current.getParent();
         while (parent != null) {
             List<ViewsTreeNode> sameLevel = parent.getChildren();

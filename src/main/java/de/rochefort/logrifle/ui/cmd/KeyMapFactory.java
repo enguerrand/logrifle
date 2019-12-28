@@ -54,12 +54,14 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('f', false, false), "toggle-follow-tail");
         keyMap.put(new KeyStroke('f', true, false), "prepare :filter ");
         keyMap.put(new KeyStroke('b', false, false), "toggle-sidebar");
-        keyMap.put(new KeyStroke('l', false, false), "toggle-line-labels");
+        keyMap.put(new KeyStroke('L', false, false, true), "toggle-line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
         keyMap.put(new KeyStroke('q', false, false), "quit");
-        keyMap.put(new KeyStroke(KeyType.ArrowUp, false, true), "filter-view-up");
-        keyMap.put(new KeyStroke(KeyType.ArrowDown, false, true), "filter-view-down");
+        keyMap.put(new KeyStroke('h', false, false), "filter-view-up");
+        keyMap.put(new KeyStroke('j', false, false), "filter-view-next");
+        keyMap.put(new KeyStroke('k', false, false), "filter-view-prev");
+        keyMap.put(new KeyStroke('l', false, false), "filter-view-down");
         keyMap.put(new KeyStroke(KeyType.Delete, false, false), "delete-filter");
     }
 
