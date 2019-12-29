@@ -79,7 +79,7 @@ class BookmarksView {
                     break;
                 }
                 Line line = bookmark.getLine();
-                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks, false);
+                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks, false, false);
                 bookmarksPanel.addComponent(bookmarkComponent);
             }
         }

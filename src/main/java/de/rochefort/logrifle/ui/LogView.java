@@ -96,7 +96,7 @@ class LogView {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
             boolean hot = followTail && i == lines.size() - 1;
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot);
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, false);
             panel.addComponent(label);
         }
         this.lastView = dataView;
