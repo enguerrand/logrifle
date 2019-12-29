@@ -278,10 +278,10 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("end", null, "Scrolls to the bottom and sets \"follow-tail\" to true.") {
+        register(new Command("end", null, "Moves the focus to the last line and sets \"follow-tail\" to true.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.scrollToBottom();
+                return mainController.moveFocusToEnd();
             }
         });
 

@@ -73,7 +73,7 @@ public class MainWindow {
         BorderLayout logAreaLayout = new BorderLayout();
         Panel logArea = new Panel(new BorderLayout());
         DefaultLogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
-        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks);
+        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, true);
         logArea.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
         bookmarksView = new BookmarksView(bookmarks, logLineRenderer);

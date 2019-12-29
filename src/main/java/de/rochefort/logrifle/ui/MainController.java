@@ -402,8 +402,8 @@ public class MainController {
         return this.mainWindow.getLogView().scrollToStart();
     }
 
-    public ExecutionResult scrollToBottom() {
-        return this.mainWindow.getLogView().scrollToEnd();
+    public ExecutionResult moveFocusToEnd() {
+        return this.mainWindow.getLogView().moveFocusToEnd();
     }
 
     public ExecutionResult scrollToNextBookmark() {

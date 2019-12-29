@@ -115,4 +115,9 @@ class LogPosition {
         int top = Math.max(0, nextFocusIndex - this.focusOffset);
         return new LogPosition(top, nextFocusIndex - top);
     }
+
+    boolean isBefore(LogPosition other) {
+        return (this.getTopIndex() < other.getTopIndex() ||
+                (this.getTopIndex() == other.getTopIndex() && this.getFocusOffset() < other.getFocusOffset()));
+    }
 }

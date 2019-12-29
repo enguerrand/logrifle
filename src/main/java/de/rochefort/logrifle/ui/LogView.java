@@ -48,15 +48,16 @@ class LogView {
     private boolean showLineLabels = false;
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
-    private boolean followTail = true;
+    private boolean followTail;
 
-    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks) {
+    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail) {
         this.logLineRenderer = logLineRenderer;
         this.logDispatcher = logDispatcher;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         LayoutManager layout = new GridLayout(1);
         panel = new Panel(layout);
+        this.followTail = followTail;
         viewListener = new DataViewListener() {
             @Override
             public void onUpdated(DataView source) {
@@ -64,8 +65,8 @@ class LogView {
                     if (!Objects.equals(source, lastView)) {
                         return;
                     }
-                    if (followTail) {
-                        scrollToLine(source.getLineCount() - getPanel().getSize().getRows());
+                    if (LogView.this.followTail) {
+                        moveFocusToEnd();
                     }
                     update(null, source);
                 });
@@ -123,7 +124,11 @@ class LogView {
     }
 
     ExecutionResult scrollVertically(int lineCountDelta) {
+        LogPosition old = this.logPosition;
         this.logPosition = this.logPosition.scroll(lineCountDelta);
+        if (this.logPosition.isBefore(old)) {
+            this.followTail = false;
+        }
         return new ExecutionResult(true);
     }
 
@@ -132,7 +137,7 @@ class LogView {
         if (panel == null) {
             return new ExecutionResult(false);
         }
-        int visibleLineCount = panel.getSize().getRows();
+        int visibleLineCount = getVisibleLinesCount();
         int scrollLineCount;
         scrollLineCount = (int) (factor > 0
                 ? Math.ceil(factor * visibleLineCount)
@@ -145,33 +150,42 @@ class LogView {
         if (lastView == null) {
             return new ExecutionResult(false);
         }
-        int focusedLineIndex = getFocusedLineIndex();
-        ExecutionResult executionResult = scrollVertically(index - focusedLineIndex);
+        LogPosition oldLogPosition = this.logPosition;
+        int focusedLineIndex = oldLogPosition.getFocusedLineIndex();
+        ExecutionResult executionResult;
+        executionResult = scrollVertically(index - focusedLineIndex);
         if (focusedLineIndex != index) {
-            int newOffset = index - Math.min(lastView.getLineCount() - 1, Math.max(0, logPosition.getTopIndex()));
+            int newOffset = index - Math.min(lastView.getLineCount() - 1, Math.max(0, this.logPosition.getTopIndex()));
             this.logPosition = new LogPosition(this.logPosition.getTopIndex(), newOffset);
-            return new ExecutionResult(true);
-        } else {
-            return executionResult;
+            executionResult = new ExecutionResult(true);
         }
+        return executionResult;
     }
 
     ExecutionResult scrollToStart() {
         return scrollToLine(0);
     }
 
-    ExecutionResult scrollToEnd() {
+    ExecutionResult moveFocusToEnd() {
         DataView lastView = this.lastView;
         if (lastView == null) {
             return new ExecutionResult(false);
         }
         this.followTail = true;
-        return scrollToLine(lastView.getLineCount() - getPanel().getSize().getRows());
+        this.logPosition = new LogPosition(0, lastView.getLineCount() - 1);
+        return new ExecutionResult(true);
     }
 
     ExecutionResult moveFocus(int lineCountDelta) {
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
+        if (lineCountDelta <= 0) {
+            this.followTail = false;
+        }
         return new ExecutionResult(true);
+    }
+
+    private int getVisibleLinesCount() {
+        return panel.getSize().getRows();
     }
 
     ExecutionResult toggleLineLabels() {
@@ -184,7 +198,7 @@ class LogView {
             this.followTail = false;
         } else {
             // This implicitly activates follow tail
-            scrollToEnd();
+            moveFocusToEnd();
         }
         return new ExecutionResult(true);
     }
