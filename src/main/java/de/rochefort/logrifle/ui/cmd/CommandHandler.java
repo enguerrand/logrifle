@@ -89,17 +89,31 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("!filter", null, "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
+        register(new Command("!ifilter", "!if", "Adds a filter that displays lines that do not case-insensitively match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addFilter(args, true, blocking);
+                return mainController.addFilter(args, true, true, blocking);
+            }
+        });
+
+        register(new Command("!filter", "!f", "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.addFilter(args, true, false, blocking);
             }
         });
 
         register(new Command("filter", "f", "Adds a filter that displays lines that match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addFilter(args, false, blocking);
+                return mainController.addFilter(args, false, false, blocking);
+            }
+        });
+
+        register(new Command("ifilter", "if", "Adds a filter that displays lines that case-insensitively match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.addFilter(args, false, true, blocking);
             }
         });
 
@@ -152,10 +166,17 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("ifind", null, "Starts a case insensitive a forward search.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.find(new Query(args, false, true));
+            }
+        });
+
         register(new Command("find", null, "Starts a forward search. (Can also be started using the / key)") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.find(new Query(args, false));
+                return mainController.find(new Query(args, false, false));
             }
         });
 
@@ -176,14 +197,28 @@ public class CommandHandler {
         register(new Command("find-backwards", null, "Starts a backwards search. (Can also be started using the ? key)") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.find(new Query(args, true));
+                return mainController.find(new Query(args, true, false));
+            }
+        });
+
+        register(new Command("ifind-backwards", null, "Starts a case-insensitive backwards search.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.find(new Query(args, true, true));
             }
         });
 
         register(new Command("highlight", "h", "Adds a highlight to line parts that match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addHighlight(args);
+                return mainController.addHighlight(args, false);
+            }
+        });
+
+        register(new Command("ihighlight", "ih", "Adds a highlight to line parts that case-insensitively match the regex provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.addHighlight(args, true);
             }
         });
 

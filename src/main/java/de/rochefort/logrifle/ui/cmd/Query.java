@@ -20,14 +20,16 @@
 
 package de.rochefort.logrifle.ui.cmd;
 
+import de.rochefort.logrifle.base.Patterns;
+
 import java.util.Objects;
 
 public class Query {
     private final String searchTerm;
     private final boolean backwards;
 
-    public Query(String searchTerm, boolean backwards) {
-        this.searchTerm = searchTerm;
+    public Query(String searchTerm, boolean backwards, boolean caseInsensitive) {
+        this.searchTerm = caseInsensitive ? Patterns.makeCaseInsensitive(searchTerm) : searchTerm;
         this.backwards = backwards;
     }
 

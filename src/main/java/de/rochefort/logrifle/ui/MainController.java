@@ -24,6 +24,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.rochefort.logrifle.base.LogDispatcher;
+import de.rochefort.logrifle.base.Patterns;
 import de.rochefort.logrifle.data.bookmarks.Bookmark;
 import de.rochefort.logrifle.data.bookmarks.Bookmarks;
 import de.rochefort.logrifle.data.highlights.Highlight;
@@ -102,9 +103,9 @@ public class MainController {
                 if (prefix.equals(COMMAND_PREFIX)) {
                     result = commandHandler.handle(command);
                 } else if (prefix.equals(FIND_PREFIX)) {
-                    result = find(new Query(command, false));
+                    result = find(new Query(command, false, false));
                 } else if (prefix.equals(FIND_BACKWARDS_PREFIX)) {
-                    result = find(new Query(command, true));
+                    result = find(new Query(command, true, false));
                 } else {
                     return;
                 }
@@ -199,10 +200,11 @@ public class MainController {
         return new ExecutionResult(false, query + ": pattern not found.");
     }
 
-    public ExecutionResult addFilter(String regex, boolean inverted, boolean blocking) {
-        if (regex.isEmpty()) {
+    public ExecutionResult addFilter(String args, boolean inverted, boolean caseInsensitive, boolean blocking) {
+        if (args.isEmpty()) {
             return new ExecutionResult(false, "Missing argument: filter pattern");
         }
+        String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
@@ -242,8 +244,9 @@ public class MainController {
         }
     }
 
-    public ExecutionResult addHighlight(String args) {
-        Highlight highlight = new Highlight(args, highlightsFgIterator.next(), highlightsBgIterator.next());
+    public ExecutionResult addHighlight(String args, boolean caseInsensitive) {
+        String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
+        Highlight highlight = new Highlight(regex, highlightsFgIterator.next(), highlightsBgIterator.next());
         this.highlightsData.addHighlight(highlight);
         return new ExecutionResult(true);
 
@@ -333,7 +336,7 @@ public class MainController {
             return new ExecutionResult(false);
         }
         Query last = this.queryHistory.getLast();
-        return find(new Query(last.getSearchTerm(), !last.isBackwards()), true);
+        return find(new Query(last.getSearchTerm(), !last.isBackwards(), false), true);
     }
 
     public ExecutionResult moveFocus(String args) {
