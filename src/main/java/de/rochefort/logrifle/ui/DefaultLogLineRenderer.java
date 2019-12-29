@@ -60,7 +60,14 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         List<ColoredString> coloredStrings = new ArrayList<>();
         coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
         boolean bookmarked = bookmarks.isLineBookmarked(line);
-        TextColor.ANSI lineNumberColor = lineIndexHot ? TextColor.ANSI.RED : TextColor.ANSI.CYAN;
+        TextColor.ANSI lineNumberColor;
+        if (lineIndexHot) {
+            lineNumberColor = TextColor.ANSI.RED;
+        } else if (line.getAdditionalLines().isEmpty()) {
+            lineNumberColor = TextColor.ANSI.CYAN;
+        } else {
+            lineNumberColor = TextColor.ANSI.MAGENTA;
+        }
         coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
@@ -69,16 +76,18 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         }
         Panel wrapper = new Panel(new GridLayout(1));
         wrapper.addComponent(new MultiColoredLabel(coloredStrings).asComponent());
-        for (String additionalLine : line.getAdditionalLines()) {
-            String scrolledAdditionalLine = getScrolledString(beginColumn, ADDITIONAL_LINE_INDENT + additionalLine);
-            String displayedText = Strings.pad(
-                    scrolledAdditionalLine,
-                    lineLabelLength + digitCount + 2 + scrolledAdditionalLine.length(),
-                    true
-            );
-            Label additionalLineLabel = new Label(displayedText);
-            additionalLineLabel.setLabelWidth(null);
-            wrapper.addComponent(additionalLineLabel);
+        if (showAdditionalLines) {
+            for (String additionalLine : line.getAdditionalLines()) {
+                String scrolledAdditionalLine = getScrolledString(beginColumn, ADDITIONAL_LINE_INDENT + additionalLine);
+                String displayedText = Strings.pad(
+                        scrolledAdditionalLine,
+                        lineLabelLength + digitCount + 2 + scrolledAdditionalLine.length(),
+                        true
+                );
+                Label additionalLineLabel = new Label(displayedText);
+                additionalLineLabel.setLabelWidth(null);
+                wrapper.addComponent(additionalLineLabel);
+            }
         }
         return wrapper;
     }

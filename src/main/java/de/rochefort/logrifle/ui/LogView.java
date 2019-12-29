@@ -49,6 +49,7 @@ class LogView {
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
     private boolean followTail;
+    private @Nullable Line lineInDetailView = null;
 
     LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail) {
         this.logLineRenderer = logLineRenderer;
@@ -96,7 +97,11 @@ class LogView {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
             boolean hot = followTail && i == lines.size() - 1;
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, false);
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, line.equals(lineInDetailView));
+            int height = label.getPreferredSize().getRows();
+            if (height > 1) {
+                i += height - 1;
+            }
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -124,6 +129,7 @@ class LogView {
     }
 
     ExecutionResult scrollVertically(int lineCountDelta) {
+        this.lineInDetailView = null;
         LogPosition old = this.logPosition;
         this.logPosition = this.logPosition.scroll(lineCountDelta);
         if (this.logPosition.isBefore(old)) {
@@ -162,11 +168,21 @@ class LogView {
         return executionResult;
     }
 
+    ExecutionResult toggleDetailLine() {
+        if (lineInDetailView != null) {
+            lineInDetailView = null;
+        } else {
+            lineInDetailView = getFocusedLine();
+        }
+        return new ExecutionResult(true);
+    }
+
     ExecutionResult scrollToStart() {
         return scrollToLine(0);
     }
 
     ExecutionResult moveFocusToEnd() {
+        this.lineInDetailView = null;
         DataView lastView = this.lastView;
         if (lastView == null) {
             return new ExecutionResult(false);
@@ -177,6 +193,7 @@ class LogView {
     }
 
     ExecutionResult moveFocus(int lineCountDelta) {
+        this.lineInDetailView = null;
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
         if (lineCountDelta <= 0) {
             this.followTail = false;

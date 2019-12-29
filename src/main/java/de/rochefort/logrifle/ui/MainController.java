@@ -348,6 +348,10 @@ public class MainController {
         }
     }
 
+    public ExecutionResult toggleDetail() {
+        return this.mainWindow.getLogView().toggleDetailLine();
+    }
+
     public ExecutionResult quit() {
         try {
             this.mainWindow.close();

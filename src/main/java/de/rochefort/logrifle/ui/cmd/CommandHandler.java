@@ -229,6 +229,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("detail", "d", "Toggles complete display (including additional lines such as stack traces) for the currently focused line. Detailed display is deactivated upon focus loss.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleDetail();
+            }
+        });
+
         register(new Command("quit", null, "Closes the application.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

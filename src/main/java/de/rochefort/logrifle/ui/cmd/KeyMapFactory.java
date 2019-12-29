@@ -50,6 +50,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
         keyMap.put(new KeyStroke('e', true, false), "scroll 1");
         keyMap.put(new KeyStroke('g', false, false), "prepare :goto ");
+        keyMap.put(new KeyStroke('d', false, false), "detail");
         keyMap.put(new KeyStroke('e', false, true), "edit-filter");
         keyMap.put(new KeyStroke('f', false, false), "toggle-follow-tail");
         keyMap.put(new KeyStroke('f', true, false), "prepare :filter ");
