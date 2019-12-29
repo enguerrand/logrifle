@@ -57,7 +57,7 @@ public class MainWindow {
     private final HighlightsData highlightsData;
     private final Panel mainPanel;
 
-    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, Bookmarks bookmarks, LogDispatcher logDispatcher) {
+    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, Bookmarks bookmarks, LogDispatcher logDispatcher, boolean followTail) {
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
@@ -73,7 +73,7 @@ public class MainWindow {
         BorderLayout logAreaLayout = new BorderLayout();
         Panel logArea = new Panel(new BorderLayout());
         DefaultLogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
-        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, true);
+        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, followTail);
         logArea.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
         bookmarksView = new BookmarksView(bookmarks, logLineRenderer);

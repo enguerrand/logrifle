@@ -85,10 +85,13 @@ public class Main {
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
+        parser.addArgument("-f", "--follow")
+                .type(Boolean.class)
+                .help("Initially follow tail? Defaults to false");
         parser.addArgument("-r", "--timestamp-regex")
                 .type(String.class)
                 .help("Regular expression to find timestamps in log lines. Defaults to " + TimeStampFormat.DEFAULT_TIME_MATCH_REGEX);
-        parser.addArgument("-f", "--timestamp-format")
+        parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
         Namespace parserResult = parser.parseArgsOrFail(args);
@@ -111,6 +114,8 @@ public class Main {
         if (commandsFile != null) {
             commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
         }
+
+        boolean followTail = getBooleanOption(defaults, parserResult, "follow", false);
 
         ExecutorService workerPool = Executors.newCachedThreadPool();
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
@@ -142,7 +147,7 @@ public class Main {
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
         Bookmarks bookmarks = new Bookmarks();
-        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher);
+        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
         commandHandler.setMainController(mainController);
@@ -196,5 +201,17 @@ public class Main {
             return value;
         }
         return defaults.getProperty(name);
+    }
+
+    private static boolean getBooleanOption(Properties defaults, Namespace parserResult, String name, boolean fallBack) {
+        Boolean value = parserResult.getBoolean(name);
+        if (value != null) {
+            return value;
+        }
+        String defaultValue = defaults.getProperty(name);
+        if (defaultValue == null) {
+            return fallBack;
+        }
+        return "true".equals(defaultValue);
     }
 }
