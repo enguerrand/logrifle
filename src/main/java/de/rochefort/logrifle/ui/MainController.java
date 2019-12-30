@@ -173,7 +173,7 @@ public class MainController {
         }
         Pattern p = Pattern.compile(query.getSearchTerm());
         LogView logView = this.mainWindow.getLogView();
-        int focusedLineIndex = logView.getFocusedLineIndex();
+        int focusedLineIndex = logView.getFocusedLineIndexInView();
         DataView dataView = this.mainWindow.getDataView();
         List<Line> allLines = dataView.getAllLines();
         if (isEofReached(query, focusedLineIndex, allLines)) {
@@ -393,10 +393,10 @@ public class MainController {
         }
     }
 
-    public ExecutionResult scrollToLine(String args) {
+    public ExecutionResult gotoLine(String args) {
         try {
             int index = Integer.parseInt(args);
-            return this.mainWindow.getLogView().scrollToLine(index);
+            return this.mainWindow.getLogView().gotoLine(index);
         } catch (NumberFormatException e) {
             return new ExecutionResult(false, args + ": Not a valid line index");
         }
@@ -411,23 +411,21 @@ public class MainController {
     }
 
     public ExecutionResult scrollToNextBookmark() {
-        Bookmark nextBookmark = this.bookmarks.findNext(this.mainWindow.getLogView().getFocusedLineIndex()).orElse(null);
+        int lineIndexOfBookmark = this.mainWindow.getLogView().getGlobalIndexOfFocusedLineOrZero();
+        Bookmark nextBookmark = this.bookmarks.findNext(lineIndexOfBookmark).orElse(null);
         if (nextBookmark == null) {
             return new ExecutionResult(false);
         }
-
-        int index = nextBookmark.getLine().getIndex();
-        return this.mainWindow.getLogView().scrollToLine(index);
+        return this.mainWindow.getLogView().scrollToLine(nextBookmark.getLine());
     }
 
     public ExecutionResult scrollToPreviousBookmark() {
-        Bookmark nextBookmark = this.bookmarks.findPrevious(this.mainWindow.getLogView().getFocusedLineIndex()).orElse(null);
-        if (nextBookmark == null) {
+        int lineIndexOfBookmark = this.mainWindow.getLogView().getGlobalIndexOfFocusedLineOrZero();
+        Bookmark prevBookmark = this.bookmarks.findPrevious(lineIndexOfBookmark).orElse(null);
+        if (prevBookmark == null) {
             return new ExecutionResult(false);
         }
-
-        int index = nextBookmark.getLine().getIndex();
-        return this.mainWindow.getLogView().scrollToLine(index);
+        return this.mainWindow.getLogView().scrollToLine(prevBookmark.getLine());
     }
 
     public ExecutionResult toggleLineLabels() {

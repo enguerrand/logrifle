@@ -151,7 +151,33 @@ class LogView {
         return scrollVertically(scrollLineCount);
     }
 
-    ExecutionResult scrollToLine(int index) {
+    ExecutionResult scrollToLine(Line line) {
+        DataView lastView = this.lastView;
+        if (lastView == null) {
+            return new ExecutionResult(false);
+        }
+        int indexInLastView = lastView.indexOfClosestTo(line.getIndex(), getFocusedLineIndexInView());
+        if (indexInLastView < 0) {
+            return new ExecutionResult(false);
+        } else {
+            return scrollToLine(indexInLastView);
+        }
+    }
+
+    ExecutionResult gotoLine(int lineIndex) {
+        DataView lastView = this.lastView;
+        if (lastView == null) {
+            return new ExecutionResult(false);
+        }
+        int index = lastView.indexOfClosestTo(lineIndex, getFocusedLineIndexInView());
+        if (index < 0) {
+            return new ExecutionResult(false);
+        } else {
+            return scrollToLine(index);
+        }
+    }
+
+    ExecutionResult scrollToLine(int indexInCurrentView) {
         DataView lastView = this.lastView;
         if (lastView == null) {
             return new ExecutionResult(false);
@@ -159,9 +185,9 @@ class LogView {
         LogPosition oldLogPosition = this.logPosition;
         int focusedLineIndex = oldLogPosition.getFocusedLineIndex();
         ExecutionResult executionResult;
-        executionResult = scrollVertically(index - focusedLineIndex);
-        if (focusedLineIndex != index) {
-            int newOffset = index - Math.min(lastView.getLineCount() - 1, Math.max(0, this.logPosition.getTopIndex()));
+        executionResult = scrollVertically(indexInCurrentView - focusedLineIndex);
+        if (focusedLineIndex != indexInCurrentView) {
+            int newOffset = indexInCurrentView - Math.min(lastView.getLineCount() - 1, Math.max(0, this.logPosition.getTopIndex()));
             this.logPosition = new LogPosition(this.logPosition.getTopIndex(), newOffset);
             executionResult = new ExecutionResult(true);
         }
@@ -220,12 +246,20 @@ class LogView {
         return new ExecutionResult(true);
     }
 
-    int getFocusedLineIndex(){
+    int getFocusedLineIndexInView(){
         return this.logPosition.getFocusedLineIndex();
     }
 
     int getHorizontalScrollPosition() {
         return horizontalScrollPosition;
+    }
+
+    int getGlobalIndexOfFocusedLineOrZero() {
+        @Nullable Line focusedLine = getFocusedLine();
+        if (focusedLine == null) {
+            return 0;
+        }
+        return focusedLine.getIndex();
     }
 
     @Nullable
@@ -234,7 +268,7 @@ class LogView {
         if (lastView == null) {
             return null;
         }
-        int focusedLineIndex = getFocusedLineIndex();
+        int focusedLineIndex = getFocusedLineIndexInView();
         if (focusedLineIndex < 0) {
             return null;
         }

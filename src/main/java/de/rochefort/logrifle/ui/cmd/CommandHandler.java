@@ -274,7 +274,7 @@ public class CommandHandler {
         register(new Command("goto", null, "Scrolls to the line number provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.scrollToLine(args);
+                return mainController.gotoLine(args);
             }
         });
 

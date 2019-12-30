@@ -93,6 +93,22 @@ public abstract class DataView implements DataViewListener {
     }
     public abstract int getLineCount();
     public abstract List<Line> getAllLines();
+    public int indexOfClosestTo(int indexToHit, int startSearchAt) {
+        List<Line> allLines = getAllLines();
+        Line from = allLines.get(startSearchAt);
+        if (indexToHit == from.getIndex()) {
+            return startSearchAt;
+        }
+        int delta = indexToHit > from.getIndex() ? 1 : -1;
+
+        for (int i = startSearchAt; i >= 0 && i < allLines.size(); i += delta) {
+            Line l = allLines.get(i);
+            if ((delta > 0 && l.getIndex() >= indexToHit) || (delta < 0 && l.getIndex() <= indexToHit)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     protected LogDispatcher getLogDispatcher() {
         return logDispatcher;
