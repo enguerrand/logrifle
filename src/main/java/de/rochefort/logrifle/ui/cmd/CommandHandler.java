@@ -257,6 +257,20 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("lstart", null, "Scroll horizontally to the currently focused line's beginning.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.scrollToLineStart();
+            }
+        });
+
+        register(new Command("lend", null, "Scroll horizontally to the currently focused line's end.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.scrollToLineEnd();
+            }
+        });
+
         register(new Command("scroll", null, "Scrolls vertically by the increment provided as the first argument. Negative values scroll upwards.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

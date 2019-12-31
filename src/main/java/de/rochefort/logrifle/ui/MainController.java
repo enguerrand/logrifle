@@ -375,6 +375,14 @@ public class MainController {
         }
     }
 
+    public ExecutionResult scrollToLineEnd() {
+        return this.mainWindow.getLogView().scrollToLineEnd();
+    }
+
+    public ExecutionResult scrollToLineStart() {
+        return this.mainWindow.getLogView().scrollToLineStart();
+    }
+
     public ExecutionResult scrollVertically(String args) {
         try {
             int lineCount = Integer.parseInt(args);

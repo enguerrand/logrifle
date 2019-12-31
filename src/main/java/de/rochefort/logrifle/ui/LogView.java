@@ -34,6 +34,7 @@ import de.rochefort.logrifle.data.views.DataViewListener;
 import de.rochefort.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -126,6 +127,29 @@ class LogView {
         int currentHorizontalScrollPosition = this.horizontalScrollPosition;
         this.horizontalScrollPosition = Math.max(0, currentHorizontalScrollPosition + columnCountDelta);
         return new ExecutionResult(this.horizontalScrollPosition != currentHorizontalScrollPosition);
+    }
+
+    ExecutionResult scrollToLineStart() {
+        if (horizontalScrollPosition == 0) {
+            return new ExecutionResult(false);
+        }
+        this.horizontalScrollPosition = 0;
+        return new ExecutionResult(true);
+    }
+
+    ExecutionResult scrollToLineEnd() {
+        Line focusedLine = getFocusedLine();
+        DataView lastView = this.lastView;
+        if (focusedLine == null || lastView == null) {
+            return new ExecutionResult(false);
+        }
+        int marginWidth = ((GridLayout)panel.getLayoutManager()).getHorizontalSpacing();
+        int columnsAvailable = panel.getSize().getColumns() - 2 * marginWidth;
+        int lineLabelLength = getLineLabelLength(lastView.getMaxLineLabelLength());
+        AbstractComponent<?> renderedLine = logLineRenderer.render(focusedLine, lastView.getLineCount(), false, lineLabelLength, 0, Collections.emptyList(), this.bookmarks, false, false);
+        int lineLength = renderedLine.getPreferredSize().getColumns();
+        this.horizontalScrollPosition = Math.max(0, lineLength - columnsAvailable);
+        return new ExecutionResult(true);
     }
 
     ExecutionResult scrollVertically(int lineCountDelta) {
