@@ -261,6 +261,7 @@ class LogView {
     }
 
     ExecutionResult toggleFollowTail() {
+        this.lineInDetailView = null;
         if (this.followTail) {
             this.followTail = false;
         } else {
