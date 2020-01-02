@@ -222,6 +222,7 @@ class LogView {
         if (lineInDetailView != null) {
             lineInDetailView = null;
         } else {
+        	this.followTail = false;
             lineInDetailView = getFocusedLine();
         }
         return new ExecutionResult(true);
