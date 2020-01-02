@@ -72,6 +72,25 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('l', false, false), "filter-view-down");
         keyMap.put(new KeyStroke('J', false, false, true), "prepare :jump ");
         keyMap.put(new KeyStroke(KeyType.Delete, false, false), "delete-filter");
+
+        fixShiftKeyStrokeLookup();
+    }
+
+    /*
+     * In event handlers the shift-down information does not seem to get delivered.
+     * This is compensated for here by adding an additional entry with the same keystroke but shiftDown=false.
+     * No information gets lost because the characters are still uppercase.
+     */
+    private void fixShiftKeyStrokeLookup() {
+        HashMap<KeyStroke, String> orig = new HashMap<>(keyMap);
+        for (Map.Entry<KeyStroke, String> entry : orig.entrySet()) {
+            KeyStroke key = entry.getKey();
+            if (key.isShiftDown()) {
+                if (key.getKeyType() == KeyType.Character) {
+                    keyMap.put(new KeyStroke(key.getCharacter(), key.isCtrlDown(), key.isAltDown(), false), entry.getValue());
+                }
+            }
+        }
     }
 
     public Map<KeyStroke, String> get() {
