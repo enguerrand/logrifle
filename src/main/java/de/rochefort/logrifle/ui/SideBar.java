@@ -79,13 +79,14 @@ class SideBar {
         return panel;
     }
 
-    int update(boolean show) {
+    int update(boolean show, int maxWindowWidth) {
         UI.checkGuiThreadOrThrow();
+        int maxSidebarWidth = (int) Math.min(30, ((maxWindowWidth - 2) * 0.5));
         if (show) {
             filtersTitleLabel.setText(FILTERS_TITLE);
             highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
-            updateHighlights();
-            int maxLabelLength = updateViewsTree();
+            updateHighlights(maxSidebarWidth);
+            int maxLabelLength = updateViewsTree(maxSidebarWidth);
             return maxLabelLength;
         } else {
             filtersTitleLabel.setText("");
@@ -96,16 +97,23 @@ class SideBar {
         }
     }
 
-    private int updateViewsTree() {
+    private int updateViewsTree(int maxWidth) {
         final AtomicInteger maxLength = new AtomicInteger(0);
         final AtomicInteger nodeCount = new AtomicInteger(0);
         this.viewsContentPanel.removeAllComponents();
         this.viewsTree.walk((node, recursionDepth, focused) -> {
             nodeCount.incrementAndGet();
-            String text = buildText(node.getTitle(), recursionDepth);
             String prefixText = node.getNavIndex() + ") ";
             String prefix = Strings.pad(prefixText, 5, true);
-            maxLength.updateAndGet(prev -> Math.max(prev, prefix.length() + text.length()));
+            String text;
+            if (prefix.length() > maxWidth) {
+                prefix = truncateString(prefix, maxWidth);
+                text = "";
+            } else {
+                text = truncateString(buildText(node.getTitle(), recursionDepth, maxWidth), maxWidth - prefix.length());
+            }
+            int length = prefix.length() + text.length();
+            maxLength.updateAndGet(prev -> Math.max(prev, length));
             ColoredString navIndex;
             ColoredString title;
             if (focused) {
@@ -125,18 +133,18 @@ class SideBar {
         return maxLength.get();
     }
 
-    private void updateHighlights() {
+    private void updateHighlights(int maxLength) {
         this.highlightsContentPanel.removeAllComponents();
         List<Highlight> highlights = this.highlightsData.getHighlights();
         int digitCount = Digits.getDigitCount(highlights.size());
         for (int i = 0; i < highlights.size(); i++) {
             Highlight highlight = highlights.get(i);
-            this.highlightsContentPanel.addComponent(renderHighlight(highlight, i, digitCount));
+            this.highlightsContentPanel.addComponent(renderHighlight(highlight, i, digitCount, maxLength));
         }
     }
 
-    private String buildText(String title, int recursionDepth) {
-        title = truncateString(title);
+    private String buildText(String title, int recursionDepth, int maxLength) {
+        title = truncateString(title, maxLength);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < recursionDepth; i++) {
             sb.append("  ");
@@ -148,16 +156,19 @@ class SideBar {
         return sb.toString();
     }
 
-    private String truncateString(String s) {
-        if (s.length() > 30) {
-            s = s.substring(0, 28) + "...";
+    private String truncateString(String s, int maxLength) {
+        if (s.length() > maxLength) {
+            if (maxLength < 3) {
+                return "";
+            }
+            s = s.substring(0, maxLength - 1) + "...";
         }
         return s;
     }
 
-    private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount) {
+    private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount, int maxLength) {
         Panel p = new Panel(new GridLayout(1));
-        Label l = new Label(truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex())));
+        Label l = new Label(truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
         if (highlight.getFgColor() != null) {
             l.setForegroundColor(highlight.getFgColor());
         }

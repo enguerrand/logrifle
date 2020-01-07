@@ -21,7 +21,6 @@
 package de.rochefort.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
-import org.jetbrains.annotations.Nullable;
 
 class MainWindowLayout {
     private static final double MAX_BOOKMARKS_RATIO = 0.5;
@@ -47,9 +46,9 @@ class MainWindowLayout {
         return bookmarksSize;
     }
 
-    static MainWindowLayout compute(@Nullable TerminalSize terminalSize, int commandBarHeight, int sideBarWidth, int bookmarksCount, boolean bookmarksViewVisible) {
-        if(terminalSize == null) {
-            return null;
+    static MainWindowLayout compute(TerminalSize terminalSize, int commandBarHeight, int sideBarWidth, int bookmarksCount, boolean bookmarksViewVisible) {
+        if (sideBarWidth >= terminalSize.getColumns()) {
+            throw new IllegalStateException("Side bar is too large: "+sideBarWidth+" >= " + terminalSize.getColumns());
         }
         TerminalSize cmd = new TerminalSize(terminalSize.getColumns() , commandBarHeight);
         int rowsMinusCmd = terminalSize.getRows() - cmd.getRows();

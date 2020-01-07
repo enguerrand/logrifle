@@ -111,8 +111,16 @@ public class MainWindow {
             return;
         }
         UI.checkGuiThreadOrThrow();
-        int sideBarWidth = sideBar.update(sidebarVisible);
-        @Nullable MainWindowLayout mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarks.count(), bookmarksViewVisible);
+        @Nullable MainWindowLayout mainWindowLayout;
+        if (newTerminalSize != null) {
+            int sideBarWidth = sideBar.update(sidebarVisible, newTerminalSize.getColumns());
+            if (sideBarWidth >= newTerminalSize.getColumns()) {
+                throw new IllegalStateException("Side bar is too large: "+sideBarWidth+" >= " + newTerminalSize.getColumns());
+            }
+            mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarks.count(), bookmarksViewVisible);
+        } else {
+            mainWindowLayout = null;
+        }
         DataView dataView = viewsTree.getFocusedNode().getDataView();
         logView.update(mainWindowLayout != null ? mainWindowLayout.getLogViewSize() : null, dataView);
         commandView.update(mainWindowLayout != null ? mainWindowLayout.getCommandBarSize() : null);
