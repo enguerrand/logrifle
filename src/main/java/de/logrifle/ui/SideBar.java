@@ -49,6 +49,10 @@ class SideBar {
     private final HighlightsData highlightsData;
     private final Label filtersTitleLabel;
     private final Label highlightsTitleLabel;
+    // only access on ui thread
+    private int maxAbsoluteWidth = 30;
+    // only access on ui thread
+    private double maxRelativeWidth = 0.5;
 
     SideBar(ViewsTree viewsTree, HighlightsData highlightsData) {
         this.viewsTree = viewsTree;
@@ -85,7 +89,7 @@ class SideBar {
 
     int update(boolean show, int maxWindowWidth) {
         UI.checkGuiThreadOrThrow();
-        int maxSidebarWidth = (int) Math.min(30, ((maxWindowWidth - 2) * 0.5));
+        int maxSidebarWidth = (int) Math.min(maxAbsoluteWidth, (maxWindowWidth * maxRelativeWidth));
         if (show) {
             filtersTitleLabel.setText(FILTERS_TITLE);
             highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
@@ -178,5 +182,15 @@ class SideBar {
         }
         p.addComponent(l);
         return p;
+    }
+
+    public void setMaxAbsoluteWidth(int maxAbsoluteWidth) {
+        UI.checkGuiThreadOrThrow();
+        this.maxAbsoluteWidth = maxAbsoluteWidth;
+    }
+
+    public void setMaxRelativeWidth(double maxRelativeWidth) {
+        UI.checkGuiThreadOrThrow();
+        this.maxRelativeWidth = maxRelativeWidth;
     }
 }

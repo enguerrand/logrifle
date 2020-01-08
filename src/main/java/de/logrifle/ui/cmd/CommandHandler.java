@@ -327,6 +327,20 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("sidebar-max-cols", null, "Sets the sidebar's maximum width in columns.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.setMaxSidebarWidthColums(args);
+            }
+        });
+
+        register(new Command("sidebar-max-ratio", null, "Sets the sidebar's maximum width relative to the full window width.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.setMaxSidebarWidthRatio(args);
+            }
+        });
+
         register(new Command("toggle-follow-tail", "tail", "Toggles whether or not the current view's tail is followed.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

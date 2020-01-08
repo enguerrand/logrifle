@@ -202,6 +202,10 @@ public class MainWindow {
         return viewsTree.getFocusedNode().getDataView();
     }
 
+    SideBar getSideBar() {
+        return sideBar;
+    }
+
     public ViewsTree getViewsTree() {
         return viewsTree;
     }

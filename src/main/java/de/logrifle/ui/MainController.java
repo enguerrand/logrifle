@@ -454,6 +454,34 @@ public class MainController {
         return this.mainWindow.getLogView().toggleFollowTail();
     }
 
+    public ExecutionResult setMaxSidebarWidthColums(String arg) {
+        int columns;
+        try {
+            columns = Integer.parseInt(arg);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, "Not a valid column count: "+arg);
+        }
+        if (columns < 0) {
+            return new ExecutionResult(false, "Need a value >= 0!");
+        }
+        this.mainWindow.getSideBar().setMaxAbsoluteWidth(columns);
+        return new ExecutionResult(true);
+    }
+
+    public ExecutionResult setMaxSidebarWidthRatio(String arg) {
+        double ratio;
+        try {
+            ratio = Double.parseDouble(arg);
+        } catch (NumberFormatException e) {
+            return new ExecutionResult(false, "Not a valid column ratio: "+arg);
+        }
+        if (ratio < 0 || ratio > 1) {
+            return new ExecutionResult(false, "Need a value between 0 and 1!");
+        }
+        this.mainWindow.getSideBar().setMaxRelativeWidth(ratio);
+        return new ExecutionResult(true);
+    }
+
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
         if (query.isBackwards()) {
             return focusedLineIndex == 0;
