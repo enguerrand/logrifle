@@ -38,4 +38,13 @@ public class Strings {
         }
         return sb.toString();
     }
+
+    public static String truncateString(String s, int maxLength) {
+        if (s.length() > maxLength) {
+            String truncationPlaceholder = "...";
+            int truncationPlaceholderLength = Math.min(truncationPlaceholder.length(), maxLength);
+            s = s.substring(0, Math.max(0, maxLength - 3)) + truncationPlaceholder.substring(0, truncationPlaceholderLength);
+        }
+        return s;
+    }
 }

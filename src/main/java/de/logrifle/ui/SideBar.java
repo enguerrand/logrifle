@@ -107,10 +107,10 @@ class SideBar {
             String prefix = Strings.pad(prefixText, 5, true);
             String text;
             if (prefix.length() > maxWidth) {
-                prefix = truncateString(prefix, maxWidth);
+                prefix = Strings.truncateString(prefix, maxWidth);
                 text = "";
             } else {
-                text = truncateString(buildText(node.getTitle(), recursionDepth, maxWidth), maxWidth - prefix.length());
+                text = Strings.truncateString(buildText(node.getTitle(), recursionDepth, maxWidth), maxWidth - prefix.length());
             }
             int length = prefix.length() + text.length();
             maxLength.updateAndGet(prev -> Math.max(prev, length));
@@ -144,7 +144,7 @@ class SideBar {
     }
 
     private String buildText(String title, int recursionDepth, int maxLength) {
-        title = truncateString(title, maxLength);
+        title = Strings.truncateString(title, maxLength);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < recursionDepth; i++) {
             sb.append("  ");
@@ -156,23 +156,13 @@ class SideBar {
         return sb.toString();
     }
 
-    private String truncateString(String s, int maxLength) {
-        if (s.length() > maxLength) {
-            if (maxLength < 3) {
-                return "";
-            }
-            s = s.substring(0, maxLength - 1) + "...";
-        }
-        return s;
-    }
-
     private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount, int maxLength) {
         GridLayout layoutManager = new GridLayout(1);
         layoutManager.setHorizontalSpacing(0);
         layoutManager.setLeftMarginSize(0);
         layoutManager.setRightMarginSize(0);
         Panel p = new Panel(layoutManager);
-        Label l = new Label(truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
+        Label l = new Label(Strings.truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
         if (highlight.getFgColor() != null) {
             l.setForegroundColor(highlight.getFgColor());
         }
