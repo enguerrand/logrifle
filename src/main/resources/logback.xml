@@ -9,7 +9,7 @@
         </encoder>
     </appender>
 
-    <logger name="de.rochefort.logrifle" level="debug" additivity="false">
+    <logger name="de.logrifle" level="debug" additivity="false">
         <appender-ref ref="FILE-ENGINE" />
     </logger>
 

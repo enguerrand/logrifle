@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.rochefort</groupId>
+    <groupId>de.logrifle</groupId>
     <artifactId>logrifle</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
@@ -82,7 +82,7 @@
                     <finalName>${project.artifactId}</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>de.rochefort.logrifle.Main</mainClass>
+                            <mainClass>de.logrifle.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
