@@ -167,7 +167,11 @@ class SideBar {
     }
 
     private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount, int maxLength) {
-        Panel p = new Panel(new GridLayout(1));
+        GridLayout layoutManager = new GridLayout(1);
+        layoutManager.setHorizontalSpacing(0);
+        layoutManager.setLeftMarginSize(0);
+        layoutManager.setRightMarginSize(0);
+        Panel p = new Panel(layoutManager);
         Label l = new Label(truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
         if (highlight.getFgColor() != null) {
             l.setForegroundColor(highlight.getFgColor());
