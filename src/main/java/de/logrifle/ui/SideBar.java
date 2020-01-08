@@ -59,7 +59,11 @@ class SideBar {
         filtersTitleLabel.addStyle(SGR.BOLD);
         viewsPanel.addComponent(filtersTitleLabel);
         filtersTitleLabel.setLayoutData(BorderLayout.Location.TOP);
-        this.viewsContentPanel = new Panel(new GridLayout(1));
+        GridLayout viewsContentLayout = new GridLayout(1);
+        this.viewsContentPanel = new Panel(viewsContentLayout);
+        viewsContentLayout.setHorizontalSpacing(0);
+        viewsContentLayout.setLeftMarginSize(0);
+        viewsContentLayout.setRightMarginSize(0);
         viewsPanel.addComponent(this.viewsContentPanel);
         this.viewsContentPanel.setLayoutData(BorderLayout.Location.CENTER);
         Panel highlightsPanel = new Panel(new BorderLayout());
