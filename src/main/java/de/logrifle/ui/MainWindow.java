@@ -57,7 +57,15 @@ public class MainWindow {
     private final HighlightsData highlightsData;
     private final Panel mainPanel;
 
-    public MainWindow(ViewsTree viewsTree, HighlightsData highlightsData, Bookmarks bookmarks, LogDispatcher logDispatcher, boolean followTail) {
+    public MainWindow(
+            ViewsTree viewsTree,
+            HighlightsData highlightsData,
+            Bookmarks bookmarks,
+            LogDispatcher logDispatcher,
+            boolean followTail,
+            int maxAbsoluteSidebarWidth,
+            double maxRelativeSidebarWidth
+    ) {
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
@@ -81,7 +89,7 @@ public class MainWindow {
         bookmarksView.getPanel().setLayoutData(BorderLayout.Location.BOTTOM);
         mainPanel.addComponent(logArea);
         logArea.setLayoutData(BorderLayout.Location.CENTER);
-        sideBar = new SideBar(viewsTree, highlightsData);
+        sideBar = new SideBar(viewsTree, highlightsData, maxAbsoluteSidebarWidth, maxRelativeSidebarWidth);
         mainPanel.addComponent(sideBar.getPanel());
         sideBar.getPanel().setLayoutData(BorderLayout.Location.LEFT);
         commandView = new CommandView();

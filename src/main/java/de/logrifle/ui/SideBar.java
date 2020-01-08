@@ -39,9 +39,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class SideBar {
-    public static final String FILTERS_TITLE = "Views Tree";
-    public static final String HIGHLIGHTS_TITLE = "Highlights";
+public class SideBar {
+    private static final String FILTERS_TITLE = "Views Tree";
+    private static final String HIGHLIGHTS_TITLE = "Highlights";
+    public static final int DEFAULT_MAX_ABSOLUTE_WIDTH = 30;
+    public static final double DEFAULT_MAX_RELATIVE_WIDTH = 0.5;
     private final Panel panel;
     private final Panel viewsContentPanel;
     private final Panel highlightsContentPanel;
@@ -50,11 +52,13 @@ class SideBar {
     private final Label filtersTitleLabel;
     private final Label highlightsTitleLabel;
     // only access on ui thread
-    private int maxAbsoluteWidth = 30;
+    private int maxAbsoluteWidth;
     // only access on ui thread
-    private double maxRelativeWidth = 0.5;
+    private double maxRelativeWidth;
 
-    SideBar(ViewsTree viewsTree, HighlightsData highlightsData) {
+    SideBar(ViewsTree viewsTree, HighlightsData highlightsData, int maxAbsoluteWidth, double maxRelativeWidth) {
+        this.maxAbsoluteWidth = maxAbsoluteWidth;
+        this.maxRelativeWidth = maxRelativeWidth;
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.panel = new Panel(new BorderLayout());

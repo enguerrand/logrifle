@@ -35,6 +35,7 @@ import de.logrifle.data.views.ViewsTree;
 import de.logrifle.ui.MainController;
 import de.logrifle.ui.MainWindow;
 import de.logrifle.ui.MainWindowListener;
+import de.logrifle.ui.SideBar;
 import de.logrifle.ui.TextColorIterator;
 import de.logrifle.ui.UI;
 import de.logrifle.ui.cmd.CommandHandler;
@@ -94,6 +95,12 @@ public class Main {
         parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
+        parser.addArgument("--sidebar-max-cols")
+                .type(Integer.class)
+                .help("The sidebar's initial maximum size in columns. Defaults to " + SideBar.DEFAULT_MAX_ABSOLUTE_WIDTH);
+        parser.addArgument("--sidebar-max-ratio")
+                .type(Double.class)
+                .help("The sidebar's initial maximum size relative to the full window width. Defaults to " + SideBar.DEFAULT_MAX_RELATIVE_WIDTH);
         Namespace parserResult = parser.parseArgsOrFail(args);
 
         if (parserResult.getBoolean("help")) {
@@ -116,6 +123,9 @@ public class Main {
         }
 
         boolean followTail = getBooleanOption(defaults, parserResult, "follow", false);
+
+        int maxSidebarWidthCols = getIntegerOption(defaults, parserResult, "sidebar_max_cols", SideBar.DEFAULT_MAX_ABSOLUTE_WIDTH);
+        double maxSidebarWidthRatio = getDoubleOption(defaults, parserResult, "sidebar_max_ratio", SideBar.DEFAULT_MAX_RELATIVE_WIDTH);
 
         ExecutorService workerPool = Executors.newCachedThreadPool();
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
@@ -147,7 +157,7 @@ public class Main {
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
         Bookmarks bookmarks = new Bookmarks();
-        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail);
+        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
         commandHandler.setMainController(mainController);
@@ -213,5 +223,29 @@ public class Main {
             return fallBack;
         }
         return "true".equals(defaultValue);
+    }
+
+    private static int getIntegerOption(Properties defaults, Namespace parserResult, String name, int fallBack) {
+        Integer value = parserResult.getInt(name);
+        if (value != null) {
+            return value;
+        }
+        String defaultValue = defaults.getProperty(name);
+        if (defaultValue == null) {
+            return fallBack;
+        }
+        return Integer.parseInt(defaultValue);
+    }
+
+    private static double getDoubleOption(Properties defaults, Namespace parserResult, String name, double fallBack) {
+        Double value = parserResult.getDouble(name);
+        if (value != null) {
+            return value;
+        }
+        String defaultValue = defaults.getProperty(name);
+        if (defaultValue == null) {
+            return fallBack;
+        }
+        return Double.parseDouble(defaultValue);
     }
 }
