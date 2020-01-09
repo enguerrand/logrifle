@@ -23,6 +23,7 @@ package de.logrifle;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
+import de.logrifle.base.DefaultUncaughtExceptionHandler;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
@@ -68,6 +69,8 @@ public class Main {
             System.getProperty("user.home") + System.getProperty("file.separator") + ".logriflerc";
 
     public static void main(String[] args) throws IOException {
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(null));
+
         KeyMapFactory keyMapFactory = new KeyMapFactory();
         CommandHandler commandHandler = new CommandHandler();
 

@@ -31,6 +31,7 @@ import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import de.logrifle.base.DefaultUncaughtExceptionHandler;
 import de.logrifle.data.views.DataView;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
@@ -165,6 +166,7 @@ public class MainWindow {
                 }
                 DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
                 screen = terminalFactory.createScreen();
+                Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(screen));
                 screen.startScreen();
                 final WindowBasedTextGUI textGUI = new MultiWindowTextGUI(screen);
                 UI.initialize(textGUI.getGUIThread());
