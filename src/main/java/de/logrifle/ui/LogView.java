@@ -256,7 +256,7 @@ class LogView {
         return panel.getSize().getRows();
     }
 
-    ExecutionResult toggleLineLabels() {
+    ExecutionResult cycleLineLabelDisplayMode() {
         this.lineLabelDisplayMode = this.lineLabelDisplayMode.next();
         return new ExecutionResult(true);
     }

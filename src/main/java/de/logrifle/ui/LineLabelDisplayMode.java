@@ -21,16 +21,18 @@
 package de.logrifle.ui;
 
 public enum LineLabelDisplayMode {
-    NONE(0, 0),
-    SHORT(1, 1),
-    LONG(2, Integer.MAX_VALUE);
+    NONE(0, 0, "none"),
+    SHORT(1, 1, "short (label truncated to one character)"),
+    LONG(2, Integer.MAX_VALUE, "full");
 
     private final int index;
     private final int maxLength;
+    private final String description;
 
-    LineLabelDisplayMode(int index, int maxLength) {
+    LineLabelDisplayMode(int index, int maxLength, String description) {
         this.index = index;
         this.maxLength = maxLength;
+        this.description = description;
     }
 
     public LineLabelDisplayMode next() {
@@ -52,5 +54,9 @@ public enum LineLabelDisplayMode {
 
     public int getMaxLength() {
         return maxLength;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

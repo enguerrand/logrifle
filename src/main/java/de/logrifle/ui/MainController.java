@@ -436,8 +436,8 @@ public class MainController {
         return this.mainWindow.getLogView().scrollToLine(prevBookmark.getLine());
     }
 
-    public ExecutionResult toggleLineLabels() {
-        return this.mainWindow.getLogView().toggleLineLabels();
+    public ExecutionResult cycleLineLabelDisplayMode() {
+        return this.mainWindow.getLogView().cycleLineLabelDisplayMode();
     }
 
     public ExecutionResult toggleSidebar() {

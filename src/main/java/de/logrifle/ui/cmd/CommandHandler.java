@@ -22,6 +22,7 @@ package de.logrifle.ui.cmd;
 
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import de.logrifle.base.Strings;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CommandHandler {
     private final Map<String, Command> commands;
@@ -313,10 +315,10 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("toggle-line-labels", null, "Toggles the full display of line labels on/off") {
+        register(new Command("line-labels", null, "Cycles through line label display modes: " + Arrays.stream(LineLabelDisplayMode.values()).map(LineLabelDisplayMode::getDescription).collect(Collectors.joining(", "))) {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.toggleLineLabels();
+                return mainController.cycleLineLabelDisplayMode();
             }
         });
 

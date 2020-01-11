@@ -62,7 +62,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('i', false, false), "prepare :ifilter ");
         keyMap.put(new KeyStroke('I', false, false, true), "prepare :!ifilter ");
         keyMap.put(new KeyStroke('b', false, false), "toggle-sidebar");
-        keyMap.put(new KeyStroke('L', false, false, true), "toggle-line-labels");
+        keyMap.put(new KeyStroke('L', false, false, true), "line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
         keyMap.put(new KeyStroke('q', false, false), "quit");
