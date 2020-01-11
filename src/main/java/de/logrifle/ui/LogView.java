@@ -46,7 +46,7 @@ class LogView {
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
     private final LogDispatcher logDispatcher;
-    private boolean showLineLabels = false;
+    private LineLabelDisplayMode lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
     private boolean followTail;
@@ -109,7 +109,7 @@ class LogView {
     }
 
     int getLineLabelLength(int maxLineLabelLength) {
-        return showLineLabels ? maxLineLabelLength : 1;
+        return Math.min(this.lineLabelDisplayMode.getMaxLength(), maxLineLabelLength);
     }
 
     private void updateListenerRegistrationIfNeeded(DataView dataView) {
@@ -257,7 +257,7 @@ class LogView {
     }
 
     ExecutionResult toggleLineLabels() {
-        this.showLineLabels = !this.showLineLabels;
+        this.lineLabelDisplayMode = this.lineLabelDisplayMode.next();
         return new ExecutionResult(true);
     }
 
