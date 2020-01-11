@@ -45,13 +45,14 @@ class LogView {
     private @Nullable DataView lastView;
     private final DataViewListener viewListener;
     private final LogDispatcher logDispatcher;
-    private LineLabelDisplayMode lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
+    private LineLabelDisplayMode lineLabelDisplayMode;
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
     private boolean followTail;
     private @Nullable Line lineInDetailView = null;
 
-    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail) {
+    LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail, LineLabelDisplayMode initialLineLabelDisplayMode) {
+        lineLabelDisplayMode = initialLineLabelDisplayMode;
         this.logLineRenderer = logLineRenderer;
         this.logDispatcher = logDispatcher;
         this.highlightsData = highlightsData;

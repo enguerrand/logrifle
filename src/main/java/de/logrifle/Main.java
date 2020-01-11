@@ -33,6 +33,7 @@ import de.logrifle.data.parsing.TimeStampFormat;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
+import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import de.logrifle.ui.MainWindow;
 import de.logrifle.ui.MainWindowListener;
@@ -151,16 +152,19 @@ public class Main {
         for (Path logfile : logfiles) {
             logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, timerPool, logDispatcher));
         }
+        LineLabelDisplayMode lineLabelDisplayMode;
         if (logReaders.size() == 1) {
             rootView = logReaders.get(0);
+            lineLabelDisplayMode = LineLabelDisplayMode.NONE;
         } else {
             rootView = new DataViewMerged(logReaders, logDispatcher, timerPool);
+            lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
         }
 
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
         Bookmarks bookmarks = new Bookmarks();
-        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio);
+        MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
         commandHandler.setMainController(mainController);

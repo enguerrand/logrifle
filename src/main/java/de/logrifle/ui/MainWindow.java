@@ -65,7 +65,7 @@ public class MainWindow {
             LogDispatcher logDispatcher,
             boolean followTail,
             int maxAbsoluteSidebarWidth,
-            double maxRelativeSidebarWidth
+            double maxRelativeSidebarWidth, LineLabelDisplayMode initialLineLabelDisplayMode
     ) {
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
@@ -82,7 +82,7 @@ public class MainWindow {
         BorderLayout logAreaLayout = new BorderLayout();
         Panel logArea = new Panel(logAreaLayout);
         DefaultLogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
-        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, followTail);
+        logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, followTail, initialLineLabelDisplayMode);
         logArea.addComponent(logView.getPanel());
         logView.getPanel().setLayoutData(BorderLayout.Location.CENTER);
         bookmarksView = new BookmarksView(bookmarks, logLineRenderer);
