@@ -37,7 +37,7 @@ public class Line {
     Line(int index, String raw, long timestamp, String lineLabel, TextColor labelColor) {
         this.index = index;
         this.timestamp = timestamp;
-        this.raw = raw;
+        this.raw = sanitize(raw);
         this.lineLabel = lineLabel;
         this.labelColor = labelColor;
     }
@@ -71,7 +71,11 @@ public class Line {
     }
 
     public void appendAdditionalLine(String text){
-        additionalLines.add(text);
+        additionalLines.add(sanitize(text));
+    }
+
+    private String sanitize(String raw) {
+        return raw.replaceAll("\t", "    ");
     }
 
     @Override
