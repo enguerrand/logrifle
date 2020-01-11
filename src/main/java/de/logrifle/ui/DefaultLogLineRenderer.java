@@ -23,7 +23,6 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.AbstractComponent;
-import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
 import de.logrifle.base.Digits;
@@ -53,7 +52,7 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
-            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length()));
+            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length())) + " ";
         }
         String lineText = line.getRaw();
         lineText = getScrolledString(beginColumn, lineText);
@@ -68,13 +67,14 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         } else {
             lineNumberColor = TextColor.ANSI.MAGENTA;
         }
-        coloredStrings.add(new ColoredString(String.format(" %" + digitCount + "d ", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
+        coloredStrings.add(new ColoredString(String.format("%" + digitCount + "d", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
+        coloredStrings.add(new ColoredString(" ", null, null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
         } else {
             coloredStrings.addAll(Highlights.applyHighlights(lineText, highlights));
         }
-        Panel wrapper = new Panel(new GridLayout(1));
+        Panel wrapper = new Panel(new ZeroMarginsGridLayout(1));
         wrapper.addComponent(new MultiColoredLabel(coloredStrings).asComponent());
         if (showAdditionalLines) {
             for (String additionalLine : line.getAdditionalLines()) {

@@ -22,7 +22,6 @@ package de.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Interactable;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LayoutManager;
@@ -43,7 +42,7 @@ class CommandView implements InteractableKeystrokeListener {
     private int height = 0;
 
     CommandView() {
-        LayoutManager layout = new GridLayout(1);
+        LayoutManager layout = new ZeroMarginsGridLayout(1);
         panel = new Panel(layout);
         TextBox.DefaultTextBoxRenderer renderer = new TextBox.DefaultTextBoxRenderer();
         renderer.setUnusedSpaceCharacter(' ');

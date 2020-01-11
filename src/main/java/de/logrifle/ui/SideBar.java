@@ -23,16 +23,14 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.BorderLayout;
-import com.googlecode.lanterna.gui2.Direction;
 import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Label;
-import com.googlecode.lanterna.gui2.LinearLayout;
 import com.googlecode.lanterna.gui2.Panel;
-import de.logrifle.data.views.ViewsTree;
 import de.logrifle.base.Digits;
 import de.logrifle.base.Strings;
 import de.logrifle.data.highlights.Highlight;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.views.ViewsTree;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +53,8 @@ public class SideBar {
     private int maxAbsoluteWidth;
     // only access on ui thread
     private double maxRelativeWidth;
+    private final GridLayout viewsContentLayout;
+    private final GridLayout highlightsLayout;
 
     SideBar(ViewsTree viewsTree, HighlightsData highlightsData, int maxAbsoluteWidth, double maxRelativeWidth) {
         this.maxAbsoluteWidth = maxAbsoluteWidth;
@@ -67,24 +67,28 @@ public class SideBar {
         filtersTitleLabel.addStyle(SGR.BOLD);
         viewsPanel.addComponent(filtersTitleLabel);
         filtersTitleLabel.setLayoutData(BorderLayout.Location.TOP);
-        GridLayout viewsContentLayout = new GridLayout(1);
+        viewsContentLayout = new ZeroMarginsGridLayout(1);
         this.viewsContentPanel = new Panel(viewsContentLayout);
-        viewsContentLayout.setHorizontalSpacing(0);
-        viewsContentLayout.setLeftMarginSize(0);
-        viewsContentLayout.setRightMarginSize(0);
         viewsPanel.addComponent(this.viewsContentPanel);
         this.viewsContentPanel.setLayoutData(BorderLayout.Location.CENTER);
         Panel highlightsPanel = new Panel(new BorderLayout());
         highlightsTitleLabel = new Label(HIGHLIGHTS_TITLE);
         highlightsTitleLabel.addStyle(SGR.BOLD);
         highlightsPanel.addComponent(highlightsTitleLabel);
-        this.highlightsContentPanel = new Panel(new LinearLayout(Direction.VERTICAL));
+        highlightsLayout = new ZeroMarginsGridLayout(1);
+        this.highlightsContentPanel = new Panel(highlightsLayout);
         highlightsPanel.addComponent(this.highlightsContentPanel);
         this.highlightsContentPanel.setLayoutData(BorderLayout.Location.CENTER);
         this.panel.addComponent(viewsPanel);
         this.panel.addComponent(highlightsPanel);
         viewsPanel.setLayoutData(BorderLayout.Location.TOP);
         highlightsPanel.setLayoutData(BorderLayout.Location.BOTTOM);
+        setRightMargin(1);
+    }
+
+    private void setRightMargin(int columns) {
+        viewsContentLayout.setRightMarginSize(columns);
+        highlightsLayout.setRightMarginSize(columns);
     }
 
     Panel getPanel() {
@@ -95,12 +99,14 @@ public class SideBar {
         UI.checkGuiThreadOrThrow();
         int maxSidebarWidth = (int) Math.min(maxAbsoluteWidth, (maxWindowWidth * maxRelativeWidth));
         if (show) {
+            setRightMargin(Math.min(maxWindowWidth, 1));
             filtersTitleLabel.setText(FILTERS_TITLE);
             highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
             updateHighlights(maxSidebarWidth);
             int maxLabelLength = updateViewsTree(maxSidebarWidth);
             return maxLabelLength;
         } else {
+            setRightMargin(0);
             filtersTitleLabel.setText("");
             highlightsTitleLabel.setText("");
             this.highlightsContentPanel.removeAllComponents();
@@ -169,10 +175,7 @@ public class SideBar {
     }
 
     private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount, int maxLength) {
-        GridLayout layoutManager = new GridLayout(1);
-        layoutManager.setHorizontalSpacing(0);
-        layoutManager.setLeftMarginSize(0);
-        layoutManager.setRightMarginSize(0);
+        GridLayout layoutManager = new ZeroMarginsGridLayout(1);
         Panel p = new Panel(layoutManager);
         Label l = new Label(Strings.truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
         if (highlight.getFgColor() != null) {

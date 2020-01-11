@@ -23,13 +23,12 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.GridLayout;
-import com.googlecode.lanterna.gui2.LayoutManager;
 import com.googlecode.lanterna.gui2.Panel;
-import de.logrifle.data.views.DataView;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewListener;
 import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +56,7 @@ class LogView {
         this.logDispatcher = logDispatcher;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
-        LayoutManager layout = new GridLayout(1);
+        GridLayout layout = new ZeroMarginsGridLayout(1);
         panel = new Panel(layout);
         this.followTail = followTail;
         viewListener = new DataViewListener() {

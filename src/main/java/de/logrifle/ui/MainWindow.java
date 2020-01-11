@@ -80,7 +80,7 @@ public class MainWindow {
         BorderLayout layoutManager = new BorderLayout();
         mainPanel = new Panel(layoutManager);
         BorderLayout logAreaLayout = new BorderLayout();
-        Panel logArea = new Panel(new BorderLayout());
+        Panel logArea = new Panel(logAreaLayout);
         DefaultLogLineRenderer logLineRenderer = new DefaultLogLineRenderer();
         logView = new LogView(logDispatcher, highlightsData, logLineRenderer, bookmarks, followTail);
         logArea.addComponent(logView.getPanel());

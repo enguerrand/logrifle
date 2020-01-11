@@ -24,7 +24,6 @@ import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.BorderLayout;
-import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
 import de.logrifle.base.Strings;
@@ -57,13 +56,13 @@ class BookmarksView {
             panel.removeAllComponents();
         } else {
             String title = "=== Bookmarks ";
-            String padded = Strings.pad(title, Math.max(0, availableSpace.getColumns() - 3), "=", false);
+            String padded = Strings.pad(title, Math.max(0, availableSpace.getColumns() - 1), "=", false);
             Label titleLabel = new Label(padded);
             titleLabel.addStyle(SGR.BOLD);
 
             panel.addComponent(titleLabel);
             titleLabel.setLayoutData(BorderLayout.Location.TOP);
-            Panel bookmarksPanel = new Panel(new GridLayout(1));
+            Panel bookmarksPanel = new Panel(new ZeroMarginsGridLayout(1));
             panel.addComponent(bookmarksPanel);
             bookmarksPanel.setLayoutData(BorderLayout.Location.BOTTOM);
 
