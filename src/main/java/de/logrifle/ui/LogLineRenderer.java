@@ -32,5 +32,16 @@ public interface LogLineRenderer {
      *
      * @param lineIndexHot true if the line to display is the last line a "follow-tail" view
      */
-    AbstractComponent<?> render(Line line, int totalLineCount, boolean focused, int lineLabelLength, int beginColumn, List<Highlight> highlights, Bookmarks bookmarks, boolean lineIndexHot, boolean showAdditionalLines);
+    AbstractComponent<?> render(
+            Line line,
+            int totalLineCount,
+            boolean focused,
+            int lineLabelLength,
+            int beginColumn,
+            List<Highlight> highlights,
+            Bookmarks bookmarks,
+            boolean lineIndexHot,
+            LineDetailViewState lineDetailViewState,
+            int maxRenderableLineCount
+    );
 }

@@ -146,8 +146,8 @@ public class MainWindow {
                 highlightsData.getHighlights(),
                 availableSpaceForBookmarks,
                 logView.getFocusedLineIndexInView(),
-                logView.getLineLabelLength(dataView.getMaxLineLabelLength())
-        );
+                logView.getLineLabelLength(dataView.getMaxLineLabelLength()),
+                logView.getLineDetailViewState());
     }
 
     void close() throws IOException {

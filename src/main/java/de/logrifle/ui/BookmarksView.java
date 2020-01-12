@@ -51,8 +51,9 @@ class BookmarksView {
         panel = new Panel(layout);
     }
 
-    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex, int lineLabelLength) {
-        if (!shown || availableSpace.getRows() < TITLE_HEIGHT) {
+    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex, int lineLabelLength, LineDetailViewState lineDetailViewState) {
+        int maxRowsCount = availableSpace.getRows();
+        if (!shown || maxRowsCount < TITLE_HEIGHT) {
             panel.removeAllComponents();
         } else {
             String title = "=== Bookmarks ";
@@ -66,7 +67,7 @@ class BookmarksView {
             panel.addComponent(bookmarksPanel);
             bookmarksPanel.setLayoutData(BorderLayout.Location.BOTTOM);
 
-            updateStartIndexIfNeeded(focusedLineIndex, availableSpace.getRows() - TITLE_HEIGHT);
+            updateStartIndexIfNeeded(focusedLineIndex, maxRowsCount - TITLE_HEIGHT);
 
             ArrayList<Bookmark> bookmarkArrayList = new ArrayList<>(bookmarks.getAll());
             for (int i = 0; i < bookmarkArrayList.size(); i++) {
@@ -74,11 +75,11 @@ class BookmarksView {
                 if (startAtIndex > i) {
                     continue;
                 }
-                if (i - startAtIndex >= availableSpace.getRows() - TITLE_HEIGHT) {
+                if (i - startAtIndex >= maxRowsCount - TITLE_HEIGHT) {
                     break;
                 }
                 Line line = bookmark.getLine();
-                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks, false, false);
+                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks, false, LineDetailViewState.IGNORED, maxRowsCount);
                 bookmarksPanel.addComponent(bookmarkComponent);
             }
         }

@@ -49,7 +49,7 @@ class LogView {
     private int horizontalScrollPosition = 0;
     private final Bookmarks bookmarks;
     private boolean followTail;
-    private @Nullable Line lineInDetailView = null;
+    private final LineDetailViewState lineDetailViewState = new LineDetailViewState();
 
     LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail, LineLabelDisplayMode initialLineLabelDisplayMode) {
         lineLabelDisplayMode = initialLineLabelDisplayMode;
@@ -94,15 +94,15 @@ class LogView {
         List<Line> lines = dataView.getLines(this.logPosition.getTopIndex(), Math.max(0, rows));
 
         int lineLabelLength = getLineLabelLength(dataView.getMaxLineLabelLength());
-        for (int i = 0; i < lines.size(); i++) {
+        this.lineDetailViewState.updateScrollPosition(rows);
+        int topLinesCountToSkip = this.lineDetailViewState.getTopLinesCountToSkip(lines);
+        int maxRenderableLineCount = this.lineDetailViewState.computeRenderableLineCount(lines, rows);
+        int maxLineIndex = Math.min(maxRenderableLineCount + topLinesCountToSkip, lines.size());
+        for (int i = topLinesCountToSkip; i < maxLineIndex; i++) {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
             boolean hot = followTail && i == lines.size() - 1;
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, line.equals(lineInDetailView));
-            int height = label.getPreferredSize().getRows();
-            if (height > 1) {
-                i += height - 1;
-            }
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, this.lineDetailViewState, rows);
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -146,14 +146,18 @@ class LogView {
         int marginWidth = ((GridLayout)panel.getLayoutManager()).getHorizontalSpacing();
         int columnsAvailable = panel.getSize().getColumns() - 2 * marginWidth;
         int lineLabelLength = getLineLabelLength(lastView.getMaxLineLabelLength());
-        AbstractComponent<?> renderedLine = logLineRenderer.render(focusedLine, lastView.getLineCount(), false, lineLabelLength, 0, Collections.emptyList(), this.bookmarks, false, false);
+        AbstractComponent<?> renderedLine = logLineRenderer.render(focusedLine, lastView.getLineCount(), false, lineLabelLength, 0, Collections.emptyList(), this.bookmarks, false, LineDetailViewState.IGNORED, 1);
         int lineLength = renderedLine.getPreferredSize().getColumns();
         this.horizontalScrollPosition = Math.max(0, lineLength - columnsAvailable);
         return new ExecutionResult(true);
     }
 
     ExecutionResult scrollVertically(int lineCountDelta) {
-        this.lineInDetailView = null;
+        int rows = panel.getSize().getRows();
+        if (this.lineDetailViewState.isActive() && this.lineDetailViewState.needsScrolling(rows)) {
+            return this.lineDetailViewState.scroll(lineCountDelta, rows);
+        }
+        this.lineDetailViewState.reset();
         LogPosition old = this.logPosition;
         this.logPosition = this.logPosition.scroll(lineCountDelta);
         if (this.logPosition.isBefore(old)) {
@@ -219,11 +223,9 @@ class LogView {
     }
 
     ExecutionResult toggleDetailLine() {
-        if (lineInDetailView != null) {
-            lineInDetailView = null;
-        } else {
+        boolean nowActive = this.lineDetailViewState.toggle(getFocusedLine());
+        if (nowActive) {
         	this.followTail = false;
-            lineInDetailView = getFocusedLine();
         }
         return new ExecutionResult(true);
     }
@@ -233,7 +235,7 @@ class LogView {
     }
 
     ExecutionResult moveFocusToEnd() {
-        this.lineInDetailView = null;
+        this.lineDetailViewState.reset();
         DataView lastView = this.lastView;
         if (lastView == null) {
             return new ExecutionResult(false);
@@ -244,7 +246,11 @@ class LogView {
     }
 
     ExecutionResult moveFocus(int lineCountDelta) {
-        this.lineInDetailView = null;
+        int rows = panel.getSize().getRows();
+        if (this.lineDetailViewState.isActive() && this.lineDetailViewState.needsScrolling(rows)) {
+            return this.lineDetailViewState.scroll(lineCountDelta, rows);
+        }
+        this.lineDetailViewState.reset();
         this.logPosition = this.logPosition.moveFocus(lineCountDelta);
         if (lineCountDelta <= 0) {
             this.followTail = false;
@@ -262,7 +268,7 @@ class LogView {
     }
 
     ExecutionResult toggleFollowTail() {
-        this.lineInDetailView = null;
+        this.lineDetailViewState.reset();
         if (this.followTail) {
             this.followTail = false;
         } else {
@@ -299,5 +305,9 @@ class LogView {
             return null;
         }
         return lastView.getLine(focusedLineIndex);
+    }
+
+    public LineDetailViewState getLineDetailViewState() {
+        return lineDetailViewState;
     }
 }

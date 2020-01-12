@@ -47,7 +47,9 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             List<Highlight> highlights,
             Bookmarks bookmarks,
             boolean lineIndexHot,
-            boolean showAdditionalLines) {
+            LineDetailViewState lineDetailViewState,
+            int maxRenderableLineCount
+    ) {
         int digitCount = Digits.getDigitCount(totalLineCount);
         String lineLabel = "";
         if (lineLabelLength > 0) {
@@ -75,19 +77,20 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             coloredStrings.addAll(Highlights.applyHighlights(lineText, highlights));
         }
         Panel wrapper = new Panel(new ZeroMarginsGridLayout(1));
-        wrapper.addComponent(new MultiColoredLabel(coloredStrings).asComponent());
-        if (showAdditionalLines) {
-            for (String additionalLine : line.getAdditionalLines()) {
-                String scrolledAdditionalLine = getScrolledString(beginColumn, ADDITIONAL_LINE_INDENT + additionalLine);
-                String displayedText = Strings.pad(
-                        scrolledAdditionalLine,
-                        lineLabelLength + digitCount + 2 + scrolledAdditionalLine.length(),
-                        true
-                );
-                Label additionalLineLabel = new Label(displayedText);
-                additionalLineLabel.setLabelWidth(null);
-                wrapper.addComponent(additionalLineLabel);
-            }
+        if (lineDetailViewState.isMainLineVisible(line)) {
+            wrapper.addComponent(new MultiColoredLabel(coloredStrings).asComponent());
+        }
+        List<String> additionalLinesToRender = lineDetailViewState.getAdditionalLinesToRender(line, maxRenderableLineCount);
+        for (String additionalLine : additionalLinesToRender) {
+            String scrolledAdditionalLine = getScrolledString(beginColumn, ADDITIONAL_LINE_INDENT + additionalLine);
+            String displayedText = Strings.pad(
+                    scrolledAdditionalLine,
+                    lineLabelLength + digitCount + 2 + scrolledAdditionalLine.length(),
+                    true
+            );
+            Label additionalLineLabel = new Label(displayedText);
+            additionalLineLabel.setLabelWidth(null);
+            wrapper.addComponent(additionalLineLabel);
         }
         return wrapper;
     }
