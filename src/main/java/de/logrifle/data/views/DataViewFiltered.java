@@ -42,7 +42,7 @@ public class DataViewFiltered extends DataView {
     }
 
     private boolean lineMatches(Line l) {
-        boolean patternMatches = pattern.matcher(l.getRaw()).find();
+        boolean patternMatches = l.contains(pattern);
         return inverted != patternMatches;
     }
 

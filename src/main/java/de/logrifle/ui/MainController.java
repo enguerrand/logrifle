@@ -181,16 +181,16 @@ public class MainController {
         }
         if (query.isBackwards()) {
             for (int i = focusedLineIndex - 1; i >= 0; i--) {
-                String raw = allLines.get(i).getRaw();
-                if (p.matcher(raw).find()) {
+                Line line = allLines.get(i);
+                if (line.contains(p)) {
                     logView.scrollVertically(i - focusedLineIndex);
                     return new ExecutionResult(true);
                 }
             }
         } else {
             for (int i = focusedLineIndex + 1; i < allLines.size(); i++) {
-                String raw = allLines.get(i).getRaw();
-                if (p.matcher(raw).find()) {
+                Line line = allLines.get(i);
+                if (line.contains(p)) {
                     logView.scrollVertically(i - focusedLineIndex);
                     return new ExecutionResult(true);
                 }

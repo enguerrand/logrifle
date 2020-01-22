@@ -25,6 +25,7 @@ import com.googlecode.lanterna.TextColor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class Line {
     private int index;
@@ -72,6 +73,14 @@ public class Line {
 
     public void appendAdditionalLine(String text){
         additionalLines.add(sanitize(text));
+    }
+
+    public boolean contains(Pattern pattern) {
+        if (pattern.matcher(getRaw()).find()) {
+            return true;
+        }
+        return getAdditionalLines().stream()
+                .anyMatch(additionalLine -> pattern.matcher(additionalLine).find());
     }
 
     private String sanitize(String raw) {
