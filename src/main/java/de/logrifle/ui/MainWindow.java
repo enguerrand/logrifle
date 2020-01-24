@@ -32,10 +32,10 @@ import com.googlecode.lanterna.gui2.WindowListenerAdapter;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.logrifle.base.DefaultUncaughtExceptionHandler;
-import de.logrifle.data.views.DataView;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.ViewsTree;
 import org.jetbrains.annotations.Nullable;
 
@@ -181,8 +181,11 @@ public class MainWindow {
                     }
                 });
                 textGUI.addWindowAndWait(window);
-            } catch (IOException | RuntimeException e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            } catch (RuntimeException e) {
+                Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e);
+                throw e;
             } finally {
                 callback.onClosed();
             }
