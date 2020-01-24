@@ -70,7 +70,7 @@ public class DataViewMerged extends DataView {
 
     @Override
     public List<Line> getAllLines() {
-        return linesCache;
+        return new ArrayList<>(linesCache);
     }
 
     @Override
