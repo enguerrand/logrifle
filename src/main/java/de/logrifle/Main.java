@@ -25,6 +25,8 @@ import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import de.logrifle.base.DefaultUncaughtExceptionHandler;
 import de.logrifle.base.LogDispatcher;
+import de.logrifle.base.RateLimiterFactory;
+import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.parsing.LineParser;
@@ -157,7 +159,9 @@ public class Main {
             rootView = logReaders.get(0);
             lineLabelDisplayMode = LineLabelDisplayMode.NONE;
         } else {
-            rootView = new DataViewMerged(logReaders, logDispatcher, timerPool);
+            RateLimiterFactory factory = (task, singleThreadedExecutor) ->
+                    new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
+            rootView = new DataViewMerged(logReaders, logDispatcher, factory);
             lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
         }
 

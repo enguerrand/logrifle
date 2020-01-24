@@ -23,7 +23,7 @@ package de.logrifle;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.data.views.DataView;
 import de.logrifle.base.LogDispatcher;
-import de.logrifle.base.RateLimiter;
+import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParseResult;
 import de.logrifle.data.parsing.LineParser;
@@ -43,12 +43,12 @@ public class LogReader extends DataView {
     private final List<Line> lines = new ArrayList<>();
     private final LineParser lineParser;
     private final Tailer tailer;
-    private final RateLimiter dispatcher;
+    private final RateLimiterImpl dispatcher;
     private int currentLineIndex = 0;
 
     LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
-        this.dispatcher = new RateLimiter(this::fireUpdated, logDispatcher, timerPool, 150);
+        this.dispatcher = new RateLimiterImpl(this::fireUpdated, logDispatcher, timerPool, 150);
         this.lineParser = lineParser;
         TailerListener tailerListener = new TailerListenerAdapter() {
             @Override

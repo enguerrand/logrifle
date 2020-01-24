@@ -20,6 +20,8 @@
 
 package de.logrifle.base;
 
-public interface RateLimiter {
-    void requestExecution();
+import java.util.concurrent.Executor;
+
+public interface RateLimiterFactory {
+    RateLimiter newRateLimiter(Runnable task, Executor singleThreadedExecutor);
 }

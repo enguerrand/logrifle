@@ -23,6 +23,7 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiter;
+import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.Line;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
@@ -39,9 +39,8 @@ public class DataViewMerged extends DataView {
     private final RateLimiter updater;
     private final List<Line> linesCache = new ArrayList<>();
     private final Map<String, Integer> processedLinesMap = new HashMap<>();
-    private int currentLineIndex = 0;
 
-    public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, ScheduledExecutorService timerPool) {
+    public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, RateLimiterFactory factory) {
         super(sourceViews.stream()
                 .map(DataView::getTitle)
                 .collect(Collectors.joining(" + ")),
@@ -52,7 +51,7 @@ public class DataViewMerged extends DataView {
                         .max(Comparator.comparing(x -> x))
                         .orElse(0));
         this.sourceViews = sourceViews;
-        this.updater = new RateLimiter(this::handleUpdate, logDispatcher, timerPool, 150);
+        this.updater = factory.newRateLimiter(this::handleUpdate, logDispatcher);
         logDispatcher.execute(() -> {
             for (DataView sourceView : sourceViews) {
                 sourceView.addListener(this);
@@ -90,16 +89,14 @@ public class DataViewMerged extends DataView {
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
-        newLines.sort(Comparator.comparing(Line::getTimestamp)
-                /*
-                 * Use the old index from the original logreader to ensure we don't change the order of
-                 * loglines with same timestamps.
-                 */
-                .thenComparing(Line::getIndex));
 
         // Now apply a new index for the merged view
-        newLines.forEach(line -> line.setIndex(currentLineIndex++));
         linesCache.addAll(newLines);
+        linesCache.sort(Comparator.comparing(Line::getTimestamp));
+        for (int i = 0; i < linesCache.size(); i++) {
+            Line line = linesCache.get(i);
+            line.setIndex(i);
+        }
         fireUpdated();
     }
 }

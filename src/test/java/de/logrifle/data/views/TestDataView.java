@@ -18,8 +18,34 @@
  *
  */
 
-package de.logrifle.base;
+package de.logrifle.data.views;
 
-public interface RateLimiter {
-    void requestExecution();
+import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.LogDispatcher;
+import de.logrifle.data.parsing.Line;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class TestDataView extends DataView {
+    private final List<Line> lines = new ArrayList<>();
+
+    public TestDataView(LogDispatcher dispatcher, String title) {
+        super(title, TextColor.ANSI.DEFAULT, dispatcher, 1);
+    }
+
+    @Override
+    public int getLineCount() {
+        return lines.size();
+    }
+
+    @Override
+    public List<Line> getAllLines() {
+        return lines;
+    }
+
+    @Override
+    public void onUpdated(DataView source) {
+
+    }
 }
