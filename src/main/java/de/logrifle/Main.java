@@ -101,6 +101,9 @@ public class Main {
         parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
+        parser.addArgument("-v", "--version")
+                .action(Arguments.storeTrue())
+                .help("Print version info and exit");
         parser.addArgument("--sidebar-max-cols")
                 .type(Integer.class)
                 .help("The sidebar's initial maximum size in columns. Defaults to " + SideBar.DEFAULT_MAX_ABSOLUTE_WIDTH);
@@ -112,6 +115,11 @@ public class Main {
         if (parserResult.getBoolean("help")) {
             parser.printHelp();
             System.out.print(commandHandler.getHelp(keyMapFactory.get()));
+            System.exit(0);
+        }
+        if (parserResult.getBoolean("version")) {
+            BuildProperties buildProperties = new BuildProperties();
+            System.out.println("logrifle version " + buildProperties.getVersion());
             System.exit(0);
         }
         List<Path> logfiles = parserResult.getList("logfile").stream()
