@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CommandHandler {
@@ -421,7 +422,10 @@ public class CommandHandler {
         sb.append("===========================\n");
         List<KeyBind> binds = new ArrayList<>();
         for (Map.Entry<KeyStroke, String> keyMapping : keyMap.entrySet()) {
-            binds.add(new KeyBind(keyMapping.getKey(), keyMapping.getValue()));
+            KeyBind bind = new KeyBind(keyMapping.getKey(), keyMapping.getValue());
+            if (!binds.contains(bind)) {
+                binds.add(bind);
+            }
         }
         binds.sort(Comparator.comparing(KeyBind::getKey));
         int bindLength = binds.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
@@ -481,6 +485,20 @@ public class CommandHandler {
                 sb.append(keyStroke.getKeyType().name());
             }
             return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            KeyBind keyBind = (KeyBind) o;
+            return Objects.equals(key, keyBind.key) &&
+                    Objects.equals(mapping, keyBind.mapping);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, mapping);
         }
     }
 }
