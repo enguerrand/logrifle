@@ -30,6 +30,18 @@ function get_user_input_path(){
     echo ${input:-${fallback}}
 }
 
+function print_source_info() {
+cat << EOF
+
+## Sources
+This tarball only contains pre-compiled binaries.
+
+The full source code is available on
+
+https://github.com/enguerrand/logrifle
+
+EOF
+}
 
 function print_default_changelog(){
 cat << EOF
@@ -65,7 +77,8 @@ released="${dst}/released.txt"
 changes="${dst}/changes.php"
 version=$(tail -n +2 pom.xml | grep version | head -n 1 | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/g')
 build_name="logrifle-${version}"
-build_dir=${dst}/${version}
+build_dir=${dst}/${build_name}
+tarball=${build_name}.tar.gz
 
 mkdir -pv ${dst}
 
@@ -81,8 +94,10 @@ rm -rfv ${dst}/*
 
 mkdir -pv ${build_dir}
 cp -vt ${build_dir}/ ${license} ${third} ${readme} ${jar}
-tar -cvzf ${dst}/${build_name}.tar.gz ${build_dir}
+print_source_info >> ${build_dir}/${readme}
+(cd ${dst} && tar -cvzf ${tarball} ${build_name})
 rm -rfv ${build_dir}
+(cd ${dst} && sha256sum ${tarball} > sha256sum.txt)
 date > ${released}
 mv ${changelog_template} ${changes}
 echo ""
@@ -99,4 +114,6 @@ if [ -d "${release_dir}" ]; then
 fi
 
 rsync -av ${dst}/ "${final_dst}${version}"
+chmod 755 "${final_dst}${version}"
+chmod 644 "${final_dst}${version}/"*
 echo "Done. The release folder is now at ${final_dst}${version}"
