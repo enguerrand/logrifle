@@ -22,16 +22,16 @@ package de.logrifle.data.parsing;
 
 import com.googlecode.lanterna.TextColor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 public class Line {
     private int index;
     private final long timestamp;
     private final String raw;
-    private final List<String> additionalLines = new ArrayList<>();
+    private final List<String> additionalLines = new CopyOnWriteArrayList<>();
     private final String lineLabel;
     private final TextColor labelColor;
 
