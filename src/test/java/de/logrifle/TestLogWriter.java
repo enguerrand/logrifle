@@ -46,8 +46,13 @@ public class TestLogWriter {
     private final Random rContent;
     private final List<String> dictionary;
     private volatile boolean stopRequested;
+    private final boolean exceptionsAllowed;
 
     public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed, @Nullable String outfileName) throws IOException {
+        this(timingSeed, contentSeed, outfileName, true);
+    }
+
+    public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed, @Nullable String outfileName, boolean exceptionsAllowed) throws IOException {
         System.setProperty("logfile.name", outfileName != null ? outfileName : "log.log");
         logger = LoggerFactory.getLogger(TestLogWriter.class);
         marker = MarkerFactory.getMarker("TEST");
@@ -55,6 +60,7 @@ public class TestLogWriter {
         rTime = new Random(timingSeed != null ? timingSeed : System.currentTimeMillis());
         rContent = new Random(contentSeed != null ? contentSeed : System.currentTimeMillis());
         dictionary = readDictionary();
+        this.exceptionsAllowed = exceptionsAllowed;
     }
 
     private static long computeDelayMs(double minimumRateLinesPerSecond) {
@@ -103,7 +109,7 @@ public class TestLogWriter {
         }
         int debugLevel = rContent.nextInt(100);
         String message = sb.toString();
-        if (debugLevel < 2) {
+        if (debugLevel < 2 && exceptionsAllowed) {
             writeException(message, "Oops, something went wrong!");
         } else if (debugLevel < 12) {
             logger.error(marker, message);

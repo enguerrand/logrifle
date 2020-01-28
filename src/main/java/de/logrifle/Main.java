@@ -159,16 +159,16 @@ public class Main {
                 TextColor.ANSI.YELLOW,
                 TextColor.ANSI.WHITE
         ));
+        RateLimiterFactory factory = (task, singleThreadedExecutor) ->
+                new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
         for (Path logfile : logfiles) {
-            logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, timerPool, logDispatcher));
+            logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, logDispatcher, factory));
         }
         LineLabelDisplayMode lineLabelDisplayMode;
         if (logReaders.size() == 1) {
             rootView = logReaders.get(0);
             lineLabelDisplayMode = LineLabelDisplayMode.NONE;
         } else {
-            RateLimiterFactory factory = (task, singleThreadedExecutor) ->
-                    new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
             rootView = new DataViewMerged(logReaders, logDispatcher, factory);
             lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
         }

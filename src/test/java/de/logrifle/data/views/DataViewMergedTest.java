@@ -22,7 +22,7 @@ package de.logrifle.data.views;
 
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
-import de.logrifle.base.RateLimiterFactory;
+import de.logrifle.base.RateLimiterFactoryTestImpl;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 class DataViewMergedTest {
 
@@ -43,7 +42,10 @@ class DataViewMergedTest {
 
     @Test
     void getAllLinesShouldBeSorted() throws InterruptedException {
-        RateLimiterFactory factory = (task, singleThreadedExecutor) -> () -> singleThreadedExecutor.execute(task);
+        int jobCountMergedViewInstantiation = 1;
+        int jobCountLineAddition = 6;
+        int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
+        RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(expectedJobCount);
         Line line1 = parser.parse(0, "15:24:01.038 line1", "line1", TextColor.ANSI.DEFAULT).getParsedLine();
         Line line2 = parser.parse(1, "15:24:02.038 line2", "line2", TextColor.ANSI.DEFAULT).getParsedLine();
         Line line3 = parser.parse(2, "15:24:03.038 line3", "line3", TextColor.ANSI.DEFAULT).getParsedLine();
@@ -60,9 +62,8 @@ class DataViewMergedTest {
         addAndFire(dispatcher, viewTwo, line1);
         addAndFire(dispatcher, viewOne, line6, line7);
         addAndFire(dispatcher, viewOne, line5);
-        CountDownLatch latch = new CountDownLatch(1);
-        dispatcher.execute(latch::countDown);
-        latch.await();
+        factory.awaitJobsDone();
+        Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
         Assertions.assertEquals(Arrays.asList(
                 line1, line2, line3, line4, line5, line6, line7
         ), merged.getAllLines());

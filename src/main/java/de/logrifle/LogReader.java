@@ -21,12 +21,13 @@
 package de.logrifle;
 
 import com.googlecode.lanterna.TextColor;
-import de.logrifle.data.views.DataView;
 import de.logrifle.base.LogDispatcher;
-import de.logrifle.base.RateLimiterImpl;
+import de.logrifle.base.RateLimiter;
+import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParseResult;
 import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.views.DataView;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -37,18 +38,17 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class LogReader extends DataView {
     private final List<Line> lines = new ArrayList<>();
     private final LineParser lineParser;
     private final Tailer tailer;
-    private final RateLimiterImpl dispatcher;
+    private final RateLimiter dispatcher;
     private int currentLineIndex = 0;
 
-    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, ScheduledExecutorService timerPool, LogDispatcher logDispatcher) throws IOException {
+    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
-        this.dispatcher = new RateLimiterImpl(this::fireUpdated, logDispatcher, timerPool, 150);
+        this.dispatcher = factory.newRateLimiter(this::fireUpdated, logDispatcher);
         this.lineParser = lineParser;
         TailerListener tailerListener = new TailerListenerAdapter() {
             @Override
