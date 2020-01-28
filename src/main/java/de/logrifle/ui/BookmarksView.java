@@ -67,9 +67,9 @@ class BookmarksView {
             panel.addComponent(bookmarksPanel);
             bookmarksPanel.setLayoutData(BorderLayout.Location.BOTTOM);
 
-            updateStartIndexIfNeeded(focusedLineIndex, maxRowsCount - TITLE_HEIGHT);
-
             ArrayList<Bookmark> bookmarkArrayList = new ArrayList<>(bookmarks.getAll());
+            updateStartIndexIfNeeded(focusedLineIndex, maxRowsCount - TITLE_HEIGHT, bookmarkArrayList);
+
             for (int i = 0; i < bookmarkArrayList.size(); i++) {
                 Bookmark bookmark = bookmarkArrayList.get(i);
                 if (startAtIndex > i) {
@@ -85,17 +85,18 @@ class BookmarksView {
         }
     }
 
-    private void updateStartIndexIfNeeded(int focusedLineIndex, int visibleBookmarksCount) {
+    private void updateStartIndexIfNeeded(int focusedLineIndex, int visibleBookmarksCount, ArrayList<Bookmark> allBookmarks) {
         List<Integer> mustSees = computeMustSees(focusedLineIndex);
         if (mustSees.isEmpty()) {
             return;
         }
         ensureVisible(visibleBookmarksCount, mustSees.get(0));
-        if (visibleBookmarksCount == 1 || mustSees.size() == 1) {
-            return;
+        if (visibleBookmarksCount > 1 && mustSees.size() > 1) {
+            ensureVisible(visibleBookmarksCount, mustSees.get(1));
         }
-        ensureVisible(visibleBookmarksCount, mustSees.get(1));
-
+        if (allBookmarks.size() - startAtIndex < visibleBookmarksCount) {
+            startAtIndex = Math.max(0, allBookmarks.size() - visibleBookmarksCount);
+        }
     }
 
     private void ensureVisible(int rows, int index) {
