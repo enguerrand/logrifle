@@ -53,14 +53,13 @@ class LogReaderTest {
 
     @BeforeEach
     void setUpEach() throws IOException {
-        if(Files.exists(LOGFILE)){
+        if (Files.exists(LOGFILE)){
             Files.write(LOGFILE, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
         }
     }
 
     @AfterAll
-    static void tearDown() throws IOException {
-        Files.delete(LOGFILE);
+    static void tearDown() {
         WORKER_POOL.shutdown();
     }
 
@@ -99,6 +98,7 @@ class LogReaderTest {
         Assertions.assertTrue(logReader.getLine(99).getRaw().endsWith("laboriosam, autem minima ut est ad qui veritatis sunt dolore in sit quae labore öäßaweawe( consequat."), "Wrong line content");
         Assertions.assertTrue(logReader.getLine(100).getRaw().endsWith("aperiam, pariatur. veniam,"), "Wrong line content");
         Assertions.assertTrue(logReader.getLine(299).getRaw().endsWith("eum qui nostrud ut"), "Wrong line content");
+        logWriter.stop();
     }
 
     @Test

@@ -67,7 +67,7 @@ public class TestLogWriter {
         return (long) (1000.0 / minimumRateLinesPerSecond);
     }
 
-    public CompletableFuture<Void> start(double minimumRateLinesPerSecond, @Nullable Integer maxLineCount) {
+    CompletableFuture<Void> start(double minimumRateLinesPerSecond, @Nullable Integer maxLineCount) {
         CompletableFuture<Void> f = new CompletableFuture<>();
         stopRequested = false;
         long maxDelayMs = computeDelayMs(minimumRateLinesPerSecond);
@@ -75,9 +75,15 @@ public class TestLogWriter {
         return f;
     }
 
-    public void stop(){
+    void stop(){
         stopRequested = true;
         executorService.shutdown();
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     private void scheduleNext(long maxDelayMs, int maxLineCount, CompletableFuture<Void> f) {
@@ -92,13 +98,13 @@ public class TestLogWriter {
         }, delayMs, TimeUnit.MILLISECONDS);
     }
 
-    public void writeRandomLines(int count) {
+    void writeRandomLines(int count) {
         for (int i = 0; i < count; i++) {
             writeRandomLogLine();
         }
     }
 
-    public void writeRandomLogLine() {
+    void writeRandomLogLine() {
         int wordCount = rContent.nextInt(20);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < wordCount; i++) {
@@ -122,7 +128,7 @@ public class TestLogWriter {
         }
     }
 
-    public void writeException(String message, String exceptionMessage) {
+    void writeException(String message, String exceptionMessage) {
         logger.error(marker, message, new RuntimeException(exceptionMessage));
     }
 
