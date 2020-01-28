@@ -292,17 +292,19 @@ public class MainController {
     public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        if (focusedTreeNode.getParent() == null) {
+        ViewsTreeNode parent = focusedTreeNode.getParent();
+        if (parent == null) {
             return new ExecutionResult(false, "Cannot edit this view!");
         }
         String regex = focusedTreeNode.getTitle();
         String preparedCommand;
         if (regex.startsWith("!")) {
-            preparedCommand = "!filter " + regex.substring(1);
+            preparedCommand = ":!filter " + regex.substring(1);
         } else {
             preparedCommand = ":filter " + regex;
         }
         viewsTree.removeNode(focusedTreeNode);
+        viewsTree.setFocusedNode(parent);
         return prepareCommand(preparedCommand);
     }
 

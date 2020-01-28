@@ -110,9 +110,13 @@ public class ViewsTree {
         if (viewsTreeNode == null) {
             return false;
         } else {
-            this.focusedNode = viewsTreeNode;
+            setFocusedNode(viewsTreeNode);
             return true;
         }
+    }
+
+    public void setFocusedNode(ViewsTreeNode viewsTreeNode) {
+        this.focusedNode = viewsTreeNode;
     }
 
     public void walk(Walker walker){
