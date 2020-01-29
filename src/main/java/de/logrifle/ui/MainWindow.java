@@ -137,7 +137,7 @@ public class MainWindow {
         if (mainWindowLayout != null) {
             availableSpaceForBookmarks = mainWindowLayout.getBookmarksSize();
         } else {
-            availableSpaceForBookmarks = MainWindowLayout.computeBookmarksSizeFrom(logView.getPanel().getSize(), mainPanel.getSize().getRows(), commandView.getHeight(), bookmarks.count());
+            availableSpaceForBookmarks = MainWindowLayout.computeBookmarksSizeFrom(logView.getPanel().getSize().getColumns(), mainPanel.getSize().getRows(), commandView.getHeight(), bookmarks.count());
         }
         bookmarksView.update(
                 bookmarksViewVisible,

@@ -60,9 +60,9 @@ class MainWindowLayout {
         return new MainWindowLayout(log, cmd, bm);
     }
 
-    static TerminalSize computeBookmarksSizeFrom(TerminalSize logViewSize, int mainWindowHeight, int cmdBarHeight, int bookmarksCount) {
-        int rowsMinusCmd = mainWindowHeight - logViewSize.getRows() - cmdBarHeight;
-        return computeBookmarksSize(logViewSize.getColumns(), bookmarksCount, rowsMinusCmd);
+    static TerminalSize computeBookmarksSizeFrom(int logViewWidth, int mainWindowHeight, int cmdBarHeight, int bookmarksCount) {
+        int rowsMinusCmd = mainWindowHeight - cmdBarHeight;
+        return computeBookmarksSize(logViewWidth, bookmarksCount, rowsMinusCmd);
     }
 
     private static TerminalSize computeBookmarksSize(int logViewWidth, int bookmarksCount, int rowsMinusCmd) {
