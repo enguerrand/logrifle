@@ -58,9 +58,9 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('e', false, true), "edit-filter");
         keyMap.put(new KeyStroke('f', false, false), "toggle-follow-tail");
         keyMap.put(new KeyStroke('f', true, false), "prepare :filter ");
-        keyMap.put(new KeyStroke('F', true, false, true), "prepare :!filter ");
+        keyMap.put(new KeyStroke('F', true, false, true), "prepare :filter! ");
         keyMap.put(new KeyStroke('i', false, false), "prepare :ifilter ");
-        keyMap.put(new KeyStroke('I', false, false, true), "prepare :!ifilter ");
+        keyMap.put(new KeyStroke('I', false, false, true), "prepare :ifilter! ");
         keyMap.put(new KeyStroke('b', false, false), "toggle-sidebar");
         keyMap.put(new KeyStroke('L', false, false, true), "line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");

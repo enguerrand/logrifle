@@ -299,7 +299,7 @@ public class MainController {
         String regex = focusedTreeNode.getTitle();
         String preparedCommand;
         if (regex.startsWith("!")) {
-            preparedCommand = ":!filter " + regex.substring(1);
+            preparedCommand = ":filter! " + regex.substring(1);
         } else {
             preparedCommand = ":filter " + regex;
         }

@@ -92,14 +92,14 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("!ifilter", "!if", "Adds a filter that displays lines that do not case-insensitively match the regex provided as the first argument.") {
+        register(new Command("ifilter!", "if!", "Adds a filter that displays lines that do not case-insensitively match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.addFilter(args, true, true, blocking);
             }
         });
 
-        register(new Command("!filter", "!f", "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
+        register(new Command("filter!", "f!", "Adds a filter that displays lines that do not match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.addFilter(args, true, false, blocking);
