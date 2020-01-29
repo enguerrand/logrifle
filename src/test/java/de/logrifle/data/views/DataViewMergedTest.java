@@ -64,6 +64,7 @@ class DataViewMergedTest {
         addAndFire(dispatcher, viewOne, line5);
         factory.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
+        Assertions.assertEquals(7, merged.getLineCount());
         Assertions.assertEquals(Arrays.asList(
                 line1, line2, line3, line4, line5, line6, line7
         ), merged.getAllLines());
