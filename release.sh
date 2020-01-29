@@ -111,6 +111,9 @@ release_dir="${final_dst}${version}"
 if [ -d "${release_dir}" ]; then
     ask_y "Directory ${release_dir} already exists! Abort?" && exit 0
     rm -rf "${release_dir}"
+elif [ -d "${release_dir}-SNAPSHOT" ]; then
+    ask_y "Found a SNAPSHOT for the version to be released: ${release_dir}-SNAPSHOT. Remove?" && \
+        rm -rf "${release_dir}-SNAPSHOT"
 fi
 
 rsync -av ${dst}/ "${final_dst}${version}"
