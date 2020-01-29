@@ -34,21 +34,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-class BookmarksTest {
+public class BookmarksTest {
     private static final LineParser PARSER = new LineParserTextImpl();
     private static final List<Line> LINES = new ArrayList<>();
 
+    public static List<Line> buildTestLines() {
+        List<Line> lines = new ArrayList<>();
+        lines.add(PARSER.parse(0, "line content 0", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(1, "line content 1", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(2, "line content 2", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(3, "line content 3", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(4, "line content 4", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(5, "line content 5", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(6, "line content 6", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(7, "line content 7", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        lines.add(PARSER.parse(8, "line content 8", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        return lines;
+    }
+
     @BeforeAll
     static void beforeAll() {
-        LINES.add(PARSER.parse(0, "line content 0", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(1, "line content 1", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(2, "line content 2", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(3, "line content 3", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(4, "line content 4", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(5, "line content 5", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(6, "line content 6", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(7, "line content 7", "label", TextColor.ANSI.DEFAULT).getParsedLine());
-        LINES.add(PARSER.parse(8, "line content 8", "label", TextColor.ANSI.DEFAULT).getParsedLine());
+        LINES.addAll(buildTestLines());
     }
 
     @Test

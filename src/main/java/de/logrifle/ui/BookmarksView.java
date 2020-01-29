@@ -38,7 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 
 class BookmarksView {
-    public static final int TITLE_HEIGHT = 1;
+    static final int TITLE_HEIGHT = 1;
     private final Bookmarks bookmarks;
     private final LogLineRenderer logLineRenderer;
     private final Panel panel;
@@ -66,9 +66,13 @@ class BookmarksView {
             Panel bookmarksPanel = new Panel(new ZeroMarginsGridLayout(1));
             panel.addComponent(bookmarksPanel);
             bookmarksPanel.setLayoutData(BorderLayout.Location.BOTTOM);
-
             ArrayList<Bookmark> bookmarkArrayList = new ArrayList<>(bookmarks.getAll());
-            updateStartIndexIfNeeded(focusedLineIndex, maxRowsCount - TITLE_HEIGHT, bookmarkArrayList);
+            this.startAtIndex = updateStartIndexIfNeeded(
+                    this.startAtIndex,
+                    focusedLineIndex,
+                    maxRowsCount - TITLE_HEIGHT,
+                    bookmarkArrayList
+            );
 
             for (int i = 0; i < bookmarkArrayList.size(); i++) {
                 Bookmark bookmark = bookmarkArrayList.get(i);
@@ -79,43 +83,59 @@ class BookmarksView {
                     break;
                 }
                 Line line = bookmark.getLine();
-                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(line, totalLinesCount, line.getIndex() == focusedLineIndex, lineLabelLength, beginColumn, highlights, this.bookmarks, false, LineDetailViewState.IGNORED, maxRowsCount);
+                AbstractComponent<?> bookmarkComponent = logLineRenderer.render(
+                        line,
+                        totalLinesCount,
+                        line.getIndex() == focusedLineIndex,
+                        lineLabelLength,
+                        beginColumn,
+                        highlights,
+                        this.bookmarks,
+                        false,
+                        LineDetailViewState.IGNORED,
+                        maxRowsCount
+                );
                 bookmarksPanel.addComponent(bookmarkComponent);
             }
         }
     }
 
-    private void updateStartIndexIfNeeded(int focusedLineIndex, int visibleBookmarksCount, ArrayList<Bookmark> allBookmarks) {
-        List<Integer> mustSees = computeMustSees(focusedLineIndex);
+    /**
+     * package private for testing only
+     */
+    static int updateStartIndexIfNeeded(int currentStartIndex, int focusedLineIndex, int visibleBookmarksCount, List<Bookmark> allBookmarks) {
+        List<Integer> mustSees = computeMustSees(allBookmarks, focusedLineIndex);
         if (mustSees.isEmpty()) {
-            return;
+            return currentStartIndex;
         }
-        ensureVisible(visibleBookmarksCount, mustSees.get(0));
+        int updatedIndex = ensureVisible(currentStartIndex, visibleBookmarksCount, mustSees.get(0));
         if (visibleBookmarksCount > 1 && mustSees.size() > 1) {
-            ensureVisible(visibleBookmarksCount, mustSees.get(1));
+            updatedIndex = ensureVisible(updatedIndex, visibleBookmarksCount, mustSees.get(1));
         }
-        if (allBookmarks.size() - startAtIndex < visibleBookmarksCount) {
-            startAtIndex = Math.max(0, allBookmarks.size() - visibleBookmarksCount);
+        if (allBookmarks.size() - updatedIndex < visibleBookmarksCount) {
+            updatedIndex = Math.max(0, allBookmarks.size() - visibleBookmarksCount);
+        }
+        return updatedIndex;
+    }
+
+    private static int ensureVisible(int currentStartIndex, int rows, int index) {
+        if (index < currentStartIndex) {
+            return index;
+        } else if (index >= currentStartIndex + rows) {
+            return index - rows + 1;
+        } else {
+            return currentStartIndex;
         }
     }
 
-    private void ensureVisible(int rows, int index) {
-        if (index < startAtIndex) {
-            startAtIndex = index;
-        } else if (index >= startAtIndex + rows) {
-            startAtIndex = index - rows + 1;
-        }
-    }
-
-    private List<Integer> computeMustSees(int focusedLineIndex) {
-        ArrayList<Bookmark> bookmarksAsList = new ArrayList<>(this.bookmarks.getAll());
-        if (bookmarksAsList.isEmpty()) {
+    private static List<Integer> computeMustSees(List<Bookmark> allBookmarks, int focusedLineIndex) {
+        if (allBookmarks.isEmpty()) {
             return Collections.emptyList();
         }
         Bookmark last = null;
         List<Integer> mustSees = new ArrayList<>();
-        for (int i = 0; i < bookmarksAsList.size(); i++) {
-            Bookmark bookmark = bookmarksAsList.get(i);
+        for (int i = 0; i < allBookmarks.size(); i++) {
+            Bookmark bookmark = allBookmarks.get(i);
 
             int currentIndex = bookmark.getLine().getIndex();
             if (currentIndex == focusedLineIndex) {
@@ -132,13 +152,13 @@ class BookmarksView {
             last = bookmark;
         }
         if (mustSees.isEmpty()) {
-            mustSees.add(bookmarksAsList.size() -1);
+            mustSees.add(allBookmarks.size() -1);
         }
         mustSees.sort(Comparator.naturalOrder());
         return mustSees;
     }
 
-    public Panel getPanel() {
+    Panel getPanel() {
         return panel;
     }
 }
