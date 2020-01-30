@@ -25,6 +25,7 @@ import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TestDataView extends DataView {
@@ -32,6 +33,11 @@ public class TestDataView extends DataView {
 
     public TestDataView(LogDispatcher dispatcher, String title) {
         super(title, TextColor.ANSI.DEFAULT, dispatcher, 1);
+    }
+
+    public TestDataView(LogDispatcher dispatcher, String title, Collection<Line> lines) {
+        this(dispatcher, title);
+        this.lines.addAll(lines);
     }
 
     @Override

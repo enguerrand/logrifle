@@ -56,29 +56,32 @@ class LogPosition {
         return topIndex + focusOffset;
     }
 
-    LogPosition ensureValid(int maxLineCount) {
-        if (topIndex >= maxLineCount) {
-            return new LogPosition(maxLineCount - 1, 0);
+    LogPosition ensureValid(int totalLineCount) {
+        if (topIndex >= totalLineCount) {
+            return new LogPosition(totalLineCount - 1, 0);
+        } else if (topIndex + focusOffset >= totalLineCount) {
+            return new LogPosition(topIndex, totalLineCount - topIndex - 1);
         } else if (topIndex < 0) {
-            return new LogPosition(0, focusOffset);
+            return new LogPosition(0, focusOffset)
+                    .ensureValid(totalLineCount); // need to call again because previous conditions might be no longer met due to topIndex increase
         } else {
             return this;
         }
     }
 
-    LogPosition scrollIfRequiredByFocus(int visibleRowsCount, int maxLineCount) {
+    LogPosition scrollIfRequiredByFocus(int visibleRowsCount, int totalLineCount) {
         int nextTopIndex = this.topIndex;
         int nextFocusOffset = this.focusOffset;
         if (nextFocusOffset < 0) {
             nextTopIndex = Math.max(0, nextTopIndex + nextFocusOffset);
             nextFocusOffset = 0;
         }
-        if (nextFocusOffset > visibleRowsCount - 1) {
-            nextTopIndex = Math.min(maxLineCount, nextTopIndex + nextFocusOffset + 1 - visibleRowsCount);
-            nextFocusOffset = visibleRowsCount - 1;
+        if (nextFocusOffset + nextTopIndex >= totalLineCount) {
+            nextFocusOffset = totalLineCount - nextTopIndex - 1;
         }
-        if (nextFocusOffset + nextTopIndex >= maxLineCount) {
-            nextFocusOffset = maxLineCount - nextTopIndex - 1;
+        if (nextFocusOffset > visibleRowsCount - 1) {
+            nextTopIndex = Math.min(totalLineCount, nextTopIndex + nextFocusOffset + 1 - visibleRowsCount);
+            nextFocusOffset = visibleRowsCount - 1;
         }
         return new LogPosition(nextTopIndex, nextFocusOffset);
     }
@@ -96,7 +99,7 @@ class LogPosition {
         }
         int focusedLineIndex = getFocusedLineIndex();
         int nextFocusIndex;
-        if (focusedLineIndex > 0) {
+        if (focusedLineIndex >= 0) {
             Line focusedLine = from.getLine(focusedLineIndex);
             nextFocusIndex = allLines.indexOf(focusedLine);
             if (nextFocusIndex < 0) {
@@ -107,6 +110,9 @@ class LogPosition {
                         nextFocusIndex = i;
                         break;
                     }
+                }
+                if (nextFocusIndex < 0) {
+                    nextFocusIndex = allLines.size() - 1;
                 }
             }
         } else {

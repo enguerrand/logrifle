@@ -21,8 +21,8 @@
 package de.logrifle.ui;
 
 import de.logrifle.data.bookmarks.Bookmarks;
-import de.logrifle.data.bookmarks.BookmarksTest;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.parsing.TestLinesFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,7 +38,7 @@ class BookmarksViewTest {
 
     @BeforeAll
     static void beforeAll() {
-        LINES.addAll(BookmarksTest.buildTestLines());
+        LINES.addAll(TestLinesFactory.buildTestLines());
         BOOKMARKS.toggle(LINES.get(1));
         BOOKMARKS.toggle(LINES.get(3));
         BOOKMARKS.toggle(LINES.get(5));
