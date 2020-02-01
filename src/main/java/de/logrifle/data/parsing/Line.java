@@ -21,6 +21,8 @@
 package de.logrifle.data.parsing;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.DataView;
+import de.logrifle.data.views.LineSource;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,15 +34,13 @@ public class Line {
     private final long timestamp;
     private final String raw;
     private final List<String> additionalLines = new CopyOnWriteArrayList<>();
-    private final String lineLabel;
-    private final TextColor labelColor;
+    private final LineSource source;
 
-    Line(int index, String raw, long timestamp, String lineLabel, TextColor labelColor) {
+    Line(int index, String raw, long timestamp, LineSource source) {
         this.index = index;
         this.timestamp = timestamp;
         this.raw = sanitize(raw);
-        this.lineLabel = lineLabel;
-        this.labelColor = labelColor;
+        this.source = source;
     }
 
     public int getIndex() {
@@ -56,11 +56,15 @@ public class Line {
     }
 
     public String getLineLabel() {
-        return lineLabel;
+        return source.getTitle();
+    }
+
+    public boolean isVisible() {
+        return source.isActive();
     }
 
     public TextColor getLabelColor() {
-        return labelColor;
+        return source.getViewColor();
     }
 
     public long getTimestamp() {
@@ -100,7 +104,7 @@ public class Line {
         return Objects.hash(raw);
     }
 
-    public static Line initialTextLineOf(int index, String raw, String lineLabel, TextColor labelColor) {
-        return new Line(index, raw, 0, lineLabel, labelColor);
+    public static Line initialTextLineOf(int index, String raw, DataView source) {
+        return new Line(index, raw, 0, source);
     }
 }

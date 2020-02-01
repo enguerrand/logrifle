@@ -20,7 +20,7 @@
 
 package de.logrifle.data.parsing;
 
-import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.LineSource;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +42,7 @@ public class LineParserTimestampedTextImpl implements LineParser {
     }
 
     @Override
-    public LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor) {
+    public LineParseResult parse(int index, String raw, LineSource source) {
         long timestamp;
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
@@ -59,6 +59,6 @@ public class LineParserTimestampedTextImpl implements LineParser {
         } else {
             return new LineParseResult(raw);
         }
-        return new LineParseResult(new Line(index, raw, timestamp, lineLabel, labelColor));
+        return new LineParseResult(new Line(index, raw, timestamp, source));
     }
 }

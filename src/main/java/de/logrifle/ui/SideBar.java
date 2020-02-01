@@ -153,8 +153,10 @@ public class SideBar {
             }
             int length = prefix.length() + text.length();
             maxLength.updateAndGet(prev -> Math.max(prev, length));
-            ColoredString navIndex = new ColoredString(prefix, TextColor.ANSI.BLUE, null);
-            ColoredString title = new ColoredString(text, null, null);
+            TextColor viewColor = view.getViewColor();
+            SGR[] styles = view.isActive() ? new SGR[]{SGR.BOLD} : new SGR[0];
+            ColoredString navIndex = new ColoredString(prefix, viewColor, null, styles);
+            ColoredString title = new ColoredString(text, viewColor, null);
             Collection<ColoredString> textComponents = Arrays.asList(
                     navIndex,
                     title

@@ -344,6 +344,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("toggle-file", "tf", "Toggles the visibility of a file. The file's index is specified as the first parameter.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleViewVisible(args);
+            }
+        });
+
         register(new Command("toggle-follow-tail", "tail", "Toggles whether or not the current view's tail is followed.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class UI {
+    private static volatile boolean TEST_MODE = false;
     private static TextGUIThread THREAD = null;
     private final static CompletableFuture<Void> INITIALIZED_FUTURE = new CompletableFuture<>();
 
@@ -38,6 +39,9 @@ public class UI {
     }
 
     public static void checkGuiThreadOrThrow() {
+        if (TEST_MODE) {
+            return;
+        }
         if (THREAD == null || !Objects.equals(Thread.currentThread(), THREAD.getThread())) {
             throw new IllegalStateException("This method must be called on the gui thread!");
         }
@@ -52,5 +56,9 @@ public class UI {
             throw new IllegalStateException("Not initialized!");
         }
         THREAD.invokeLater(runnable);
+    }
+
+    public static void setTestMode() {
+        TEST_MODE = true;
     }
 }

@@ -20,8 +20,8 @@
 
 package de.logrifle.data.parsing;
 
-import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.LineSource;
 
 public interface LineParser {
-    LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor);
+    LineParseResult parse(int index, String raw, LineSource source);
 }

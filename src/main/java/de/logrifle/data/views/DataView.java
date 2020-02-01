@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class DataView implements DataViewListener {
+public abstract class DataView implements DataViewListener, LineSource {
     private final String id = UUID.randomUUID().toString();
     private final String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
@@ -48,10 +48,12 @@ public abstract class DataView implements DataViewListener {
         this.active = true;
     }
 
+    @Override
     public String getTitle() {
         return this.title;
     }
 
+    @Override
     public TextColor getViewColor() {
         return viewColor;
     }
@@ -104,7 +106,8 @@ public abstract class DataView implements DataViewListener {
         this.active = !this.active;
     }
 
-    boolean isActive() {
+    @Override
+    public boolean isActive() {
         UI.checkGuiThreadOrThrow();
         return active;
     }

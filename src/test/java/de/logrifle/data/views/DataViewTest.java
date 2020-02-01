@@ -20,13 +20,14 @@
 
 package de.logrifle.data.views;
 
-import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactoryTestImpl;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.logrifle.data.parsing.TestLinesFactory;
 import de.logrifle.data.parsing.TimeStampFormat;
+import de.logrifle.ui.UI;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,13 +47,13 @@ class DataViewTest {
         int jobCountLineAddition = 6;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
         RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(expectedJobCount);
-        Line line1 = parser.parse(0, "15:24:01.038 line1", "line1", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line2 = parser.parse(1, "15:24:02.038 line2", "line2", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line3 = parser.parse(2, "15:24:03.038 line3", "line3", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line4 = parser.parse(3, "15:24:04.038 line4", "line4", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line5 = parser.parse(4, "15:24:05.038 line5", "line5", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line6 = parser.parse(5, "15:24:06.038 line6", "line6", TextColor.ANSI.DEFAULT).getParsedLine();
-        Line line7 = parser.parse(6, "15:24:06.038 line7", "line7", TextColor.ANSI.DEFAULT).getParsedLine();
+        Line line1 = parser.parse(0, "15:24:01.038 line1", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line2 = parser.parse(1, "15:24:02.038 line2", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line3 = parser.parse(2, "15:24:03.038 line3", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line4 = parser.parse(3, "15:24:04.038 line4", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line5 = parser.parse(4, "15:24:05.038 line5", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line6 = parser.parse(5, "15:24:06.038 line6", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line7 = parser.parse(6, "15:24:06.038 line7", TestLinesFactory.TEST_SOURCE).getParsedLine();
         DataView viewOne = new TestDataView(dispatcher, "one");
         DataView viewTwo = new TestDataView(dispatcher, "two");
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
@@ -68,6 +69,7 @@ class DataViewTest {
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
         Assertions.assertEquals(7, merged.getLineCount());
         Assertions.assertEquals(3, filtered.getLineCount());
+        UI.setTestMode();
         Assertions.assertEquals(Arrays.asList(
                 line1, line2, line3, line4, line5, line6, line7
         ), merged.getAllLines());

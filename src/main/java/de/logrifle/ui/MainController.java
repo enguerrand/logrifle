@@ -484,6 +484,15 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
+    public  ExecutionResult toggleViewVisible(String arg) {
+        try {
+            int index = Integer.parseInt(arg);
+            return this.viewsTree.toggleView(index);
+        }  catch (NumberFormatException e) {
+            return new ExecutionResult(false, arg + ": Not a valid view index!");
+        }
+    }
+
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
         if (query.isBackwards()) {
             return focusedLineIndex == 0;

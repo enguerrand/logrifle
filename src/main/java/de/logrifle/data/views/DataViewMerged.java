@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
     private final List<DataView> sourceViews;
@@ -70,7 +71,9 @@ public class DataViewMerged extends DataView {
 
     @Override
     public List<Line> getAllLines() {
-        return new ArrayList<>(linesCache);
+        return new ArrayList<>(linesCache).stream()
+                .filter(Line::isVisible)
+                .collect(Collectors.toList());
     }
 
     @Override
