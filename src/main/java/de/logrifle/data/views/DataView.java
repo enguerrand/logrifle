@@ -23,6 +23,7 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -38,11 +39,13 @@ public abstract class DataView implements DataViewListener {
     private final LogDispatcher logDispatcher;
     private int maxLineLabelLength;
     private final TextColor viewColor;
+    private boolean active;
     protected DataView(String title, TextColor viewColor, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
         this.viewColor = viewColor;
         this.logDispatcher = logDispatcher;
         this.maxLineLabelLength = maxLineLabelLength;
+        this.active = true;
     }
 
     public String getTitle() {
@@ -55,6 +58,10 @@ public abstract class DataView implements DataViewListener {
 
     public int getMaxLineLabelLength() {
         return maxLineLabelLength;
+    }
+
+    public void setMaxLineLabelLength(int maxLineLabelLength) {
+        this.maxLineLabelLength = maxLineLabelLength;
     }
 
     public Line getLine(int index) {
@@ -91,6 +98,17 @@ public abstract class DataView implements DataViewListener {
             listener.onUpdated(DataView.this);
         }
     }
+
+    void toggleActive() {
+        UI.checkGuiThreadOrThrow();
+        this.active = !this.active;
+    }
+
+    boolean isActive() {
+        UI.checkGuiThreadOrThrow();
+        return active;
+    }
+
     public abstract int getLineCount();
     public abstract List<Line> getAllLines();
     public int indexOfClosestTo(int indexToHit, int startSearchAt) {

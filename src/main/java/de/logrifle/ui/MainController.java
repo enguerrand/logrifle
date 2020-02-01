@@ -251,7 +251,7 @@ public class MainController {
         return new ExecutionResult(true);
 
     }
-
+;
     public ExecutionResult deleteHighlight(String args) {
         try {
             int index = Integer.parseInt(args);

@@ -26,10 +26,12 @@ import java.util.List;
 
 public class ViewsTree {
     private final ViewsTreeNode rootNode;
+    private final DataViewMerged rootView;
     private ViewsTreeNode focusedNode;
 
-    public ViewsTree(DataView rootView) {
+    public ViewsTree(DataViewMerged rootView) {
         this.rootNode = new ViewsTreeNode(null, rootView);
+        this.rootView = rootView;
         this.focusedNode = rootNode;
     }
 
@@ -117,6 +119,22 @@ public class ViewsTree {
 
     public void setFocusedNode(ViewsTreeNode viewsTreeNode) {
         this.focusedNode = viewsTreeNode;
+    }
+
+    public List<DataView> getViews(){
+        return this.rootView.getViews();
+    }
+
+    public ExecutionResult addView(DataView dataView){
+        return this.rootView.addView(dataView);
+    }
+
+    public ExecutionResult removeView(int viewIndex){
+        return this.rootView.removeView(viewIndex);
+    }
+
+    public ExecutionResult toggleView(int viewIndex){
+        return this.rootView.toggleView(viewIndex);
     }
 
     public void walk(Walker walker){

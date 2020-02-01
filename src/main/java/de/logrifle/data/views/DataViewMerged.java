@@ -25,33 +25,33 @@ import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiter;
 import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.ui.UI;
+import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
-    private final Collection<? extends DataView> sourceViews;
+    private final List<DataView> sourceViews;
     private final RateLimiter updater;
     private final List<Line> linesCache = new CopyOnWriteArrayList<>();
     private final Map<String, Integer> processedLinesMap = new HashMap<>();
 
     public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, RateLimiterFactory factory) {
-        super(sourceViews.stream()
-                .map(DataView::getTitle)
-                .collect(Collectors.joining(" + ")),
+        super("Root View",
                 TextColor.ANSI.DEFAULT,
                 logDispatcher,
                 sourceViews.stream()
                         .map(DataView::getMaxLineLabelLength)
                         .max(Comparator.comparing(x -> x))
                         .orElse(0));
-        this.sourceViews = sourceViews;
+        this.sourceViews = new ArrayList<>(sourceViews);
         this.updater = factory.newRateLimiter(this::handleUpdate, logDispatcher);
         logDispatcher.execute(() -> {
             for (DataView sourceView : sourceViews) {
@@ -99,5 +99,36 @@ public class DataViewMerged extends DataView {
             line.setIndex(i);
         }
         fireUpdated();
+    }
+
+    public List<DataView> getViews() {
+        UI.checkGuiThreadOrThrow();
+        return Collections.unmodifiableList(this.sourceViews);
+    }
+
+    public ExecutionResult addView(DataView dataView) {
+        UI.checkGuiThreadOrThrow();
+        this.sourceViews.add(dataView);
+        return new ExecutionResult(true);
+    }
+
+    public ExecutionResult removeView(int viewIndex) {
+        UI.checkGuiThreadOrThrow();
+        try {
+            this.sourceViews.remove(viewIndex);
+            return new ExecutionResult(true);
+        } catch (IndexOutOfBoundsException e) {
+            return new ExecutionResult(false, "Invalid view index: "+viewIndex);
+        }
+    }
+
+    public ExecutionResult toggleView(int viewIndex) {
+        UI.checkGuiThreadOrThrow();
+        try {
+            this.sourceViews.get(viewIndex).toggleActive();
+            return new ExecutionResult(true);
+        } catch (IndexOutOfBoundsException e) {
+            return new ExecutionResult(false, "Invalid view index: "+viewIndex);
+        }
     }
 }

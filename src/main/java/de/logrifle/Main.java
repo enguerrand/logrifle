@@ -32,7 +32,6 @@ import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
-import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
 import de.logrifle.ui.LineLabelDisplayMode;
@@ -148,7 +147,6 @@ public class Main {
         String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
         String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
-        DataView rootView;
         List<LogReader> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
                 TextColor.ANSI.BLUE,
@@ -166,12 +164,11 @@ public class Main {
         }
         LineLabelDisplayMode lineLabelDisplayMode;
         if (logReaders.size() == 1) {
-            rootView = logReaders.get(0);
             lineLabelDisplayMode = LineLabelDisplayMode.NONE;
         } else {
-            rootView = new DataViewMerged(logReaders, logDispatcher, factory);
             lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
         }
+        DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
