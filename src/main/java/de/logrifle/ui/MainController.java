@@ -23,12 +23,14 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.logrifle.LogReader;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Patterns;
 import de.logrifle.data.bookmarks.Bookmark;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.Highlight;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
@@ -41,6 +43,8 @@ import de.logrifle.ui.cmd.Query;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -60,6 +64,7 @@ public class MainController {
     private final ViewsTree viewsTree;
     private final HighlightsData highlightsData;
     private final Bookmarks bookmarks;
+    private final FileOpener logFileOpener;
     private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
             TextColor.ANSI.BLACK,
             TextColor.ANSI.BLACK,
@@ -82,14 +87,15 @@ public class MainController {
             LogDispatcher logDispatcher,
             ViewsTree viewsTree,
             HighlightsData highlightsData,
-            Bookmarks bookmarks
-    ) {
+            Bookmarks bookmarks,
+            FileOpener logFileOpener) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
+        this.logFileOpener = logFileOpener;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
@@ -484,11 +490,32 @@ public class MainController {
         return new ExecutionResult(true);
     }
 
-    public  ExecutionResult toggleViewVisible(String arg) {
+    public ExecutionResult toggleViewVisible(String arg) {
         try {
             int index = Integer.parseInt(arg);
             return this.viewsTree.toggleView(index);
         }  catch (NumberFormatException e) {
+            return new ExecutionResult(false, arg + ": Not a valid view index!");
+        }
+    }
+
+    public ExecutionResult openFile(String arg) {
+        Path path = Paths.get(arg);
+        try {
+            LogReader logfile = logFileOpener.open(path);
+            return viewsTree.addView(logfile);
+        } catch (IOException e) {
+            return new ExecutionResult(false, "Could not open file: " + e.toString());
+        }
+    }
+
+    public ExecutionResult closeFile(String arg) {
+        try {
+            int index = Integer.parseInt(arg);
+            DataView dataView = this.viewsTree.removeView(index);
+            dataView.destroy();
+            return new ExecutionResult(true);
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
             return new ExecutionResult(false, arg + ": Not a valid view index!");
         }
     }

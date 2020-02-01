@@ -29,6 +29,7 @@ import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
@@ -70,7 +71,7 @@ public class Main {
     private static final String DEFAULTS_FILE =
             System.getProperty("user.home") + System.getProperty("file.separator") + ".logriflerc";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(null));
 
         KeyMapFactory keyMapFactory = new KeyMapFactory();
@@ -132,7 +133,12 @@ public class Main {
         String commandsFile = getOption(defaults, parserResult, "commands_file");
         List<String> commands = new ArrayList<>();
         if (commandsFile != null) {
-            commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
+            try {
+                commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
+            } catch (IOException e) {
+                System.err.println("Commands file "+ commandsFile + " could not be opened. Cause: " + e.toString());
+                System.exit(-1);
+            }
         }
 
         boolean followTail = getBooleanOption(defaults, parserResult, "follow", false);
@@ -157,10 +163,20 @@ public class Main {
                 TextColor.ANSI.YELLOW,
                 TextColor.ANSI.WHITE
         ));
+
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
+
+        FileOpener logFileOpener = path ->
+                new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory);
+
         for (Path logfile : logfiles) {
-            logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, logDispatcher, factory));
+            try {
+                logReaders.add(logFileOpener.open(logfile));
+            } catch (IOException e) {
+                System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
+                System.exit(-1);
+            }
         }
         LineLabelDisplayMode lineLabelDisplayMode;
         if (logReaders.size() == 1) {
@@ -175,7 +191,15 @@ public class Main {
         Bookmarks bookmarks = new Bookmarks();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
-        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
+        MainController mainController = new MainController(
+                mainWindow,
+                commandHandler,
+                keyStrokeHandler,
+                logDispatcher,
+                viewsTree,
+                highlightsData,
+                bookmarks,
+                logFileOpener);
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override

@@ -112,6 +112,11 @@ public class LogReader extends DataView {
         // ignored - this should never happen
     }
 
+    @Override
+    public void destroy() {
+        this.shutdown();
+    }
+
     public void shutdown() {
         tailer.stop();
     }

@@ -134,4 +134,7 @@ public abstract class DataView implements DataViewListener, LineSource {
     protected LogDispatcher getLogDispatcher() {
         return logDispatcher;
     }
+
+    public void destroy() {
+    }
 }

@@ -112,17 +112,20 @@ public class DataViewMerged extends DataView {
     public ExecutionResult addView(DataView dataView) {
         UI.checkGuiThreadOrThrow();
         this.sourceViews.add(dataView);
+        getLogDispatcher().execute(() ->
+                dataView.addListener(this));
         return new ExecutionResult(true);
     }
 
-    public ExecutionResult removeView(int viewIndex) {
+    /**
+     * @throws IndexOutOfBoundsException
+     */
+    public DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();
-        try {
-            this.sourceViews.remove(viewIndex);
-            return new ExecutionResult(true);
-        } catch (IndexOutOfBoundsException e) {
-            return new ExecutionResult(false, "Invalid view index: "+viewIndex);
-        }
+        DataView removed = this.sourceViews.remove(viewIndex);
+        getLogDispatcher().execute(() ->
+                removed.addListener(this));
+        return removed;
     }
 
     public ExecutionResult toggleView(int viewIndex) {

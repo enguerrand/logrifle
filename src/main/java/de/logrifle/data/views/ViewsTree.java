@@ -129,7 +129,10 @@ public class ViewsTree {
         return this.rootView.addView(dataView);
     }
 
-    public ExecutionResult removeView(int viewIndex){
+    /**
+     * @throws IndexOutOfBoundsException
+     */
+    public DataView removeView(int viewIndex){
         return this.rootView.removeView(viewIndex);
     }
 

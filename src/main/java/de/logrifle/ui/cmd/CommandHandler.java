@@ -351,6 +351,20 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("open", "of", "Loads a logfile into the current view. The first parameter specifies the path to the file.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.openFile(args);
+            }
+        });
+
+        register(new Command("close", "cf", "Closes the file at the index provided by the first parameter and removes it from the view.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.closeFile(args);
+            }
+        });
+
         register(new Command("toggle-follow-tail", "tail", "Toggles whether or not the current view's tail is followed.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
