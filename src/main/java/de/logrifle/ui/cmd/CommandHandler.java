@@ -22,9 +22,9 @@ package de.logrifle.ui.cmd;
 
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.logrifle.base.Strings;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
-import de.logrifle.base.Strings;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandHandler {
@@ -423,17 +423,35 @@ public class CommandHandler {
         List<KeyBind> binds = new ArrayList<>();
         for (Map.Entry<KeyStroke, String> keyMapping : keyMap.entrySet()) {
             KeyBind bind = new KeyBind(keyMapping.getKey(), keyMapping.getValue());
-            if (!binds.contains(bind)) {
+            boolean duplicate = binds.stream()
+                    .map(KeyBind::renderKeyStroke)
+                    .anyMatch(rendered ->
+                            rendered.equals(bind.renderKeyStroke())
+                    );
+            if (!duplicate) {
                 binds.add(bind);
             }
         }
-        binds.sort(Comparator.comparing(KeyBind::getKey));
-        int bindLength = binds.stream().mapToInt(e -> e.getKey().length()).max().orElse(0);
+        Comparator<KeyBind> typeComparator = Comparator.comparing(bind -> bind.getKeyStroke().getKeyType() != KeyType.Character);
+        binds.sort(typeComparator
+                .thenComparing(KeyBind::getModifiersCount)
+                .thenComparing(keyBind -> {
+                    KeyStroke keyStroke = keyBind.getKeyStroke();
+                    String rendered = keyBind.renderKeyStroke();
+                    if (keyStroke.getKeyType() == KeyType.Character) {
+                        return rendered.toLowerCase();  // Lowercase first
+                    }
+                    rendered = Pattern.compile("(.*)F([0-9]$)").matcher(rendered).replaceFirst("$1F0$2");  // F10 after F9
+                    return rendered;
+                })
+        );
+        int bindLength = binds.stream().mapToInt(e -> e.renderKeyStroke().length()).max().orElse(0);
         for (KeyBind bind : binds) {
             sb.append(bind.render(bindLength)+"\n");
         }
         return sb.toString();
     }
+
     private static class HelpEntry {
         private final String commandName;
         private final @Nullable String commandShortName;
@@ -455,23 +473,37 @@ public class CommandHandler {
     }
 
     private static class KeyBind {
-        private final String key;
+        private final KeyStroke keyStroke;
         private final String mapping;
 
         private KeyBind(KeyStroke keyStroke, String mapping) {
-            this.key = renderKeyStroke(keyStroke);
+            this.keyStroke = keyStroke;
             this.mapping = mapping;
         }
 
-        String getKey() {
-            return key;
+        KeyStroke getKeyStroke() {
+            return keyStroke;
+        }
+
+        int getModifiersCount() {
+            int count = 0;
+            if (keyStroke.isCtrlDown()) {
+                ++count;
+            }
+            if (keyStroke.isAltDown()) {
+                ++count;
+            }
+            if (keyStroke.getKeyType() != KeyType.Character && keyStroke.isShiftDown()) {
+                ++count;
+            }
+            return count;
         }
 
         String render(int keyLength) {
-            return Strings.pad(getKey(), keyLength, false) + " => :" + mapping;
+            return Strings.pad(renderKeyStroke(), keyLength, false) + " => :" + mapping;
         }
 
-        private static String renderKeyStroke(KeyStroke keyStroke) {
+        String renderKeyStroke() {
             StringBuilder sb = new StringBuilder();
             if (keyStroke.isCtrlDown()) {
                 sb.append("CTRL+");
@@ -482,23 +514,12 @@ public class CommandHandler {
             if (keyStroke.getKeyType() == KeyType.Character) {
                 sb.append(keyStroke.getCharacter());
             } else {
+                if (keyStroke.isShiftDown()) {
+                    sb.append("SHIFT+");
+                }
                 sb.append(keyStroke.getKeyType().name());
             }
             return sb.toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            KeyBind keyBind = (KeyBind) o;
-            return Objects.equals(key, keyBind.key) &&
-                    Objects.equals(mapping, keyBind.mapping);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, mapping);
         }
     }
 }
