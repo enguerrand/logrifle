@@ -56,15 +56,18 @@ class DataViewTest {
         DataView viewOne = new TestDataView(dispatcher, "one");
         DataView viewTwo = new TestDataView(dispatcher, "two");
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        dispatcher.execute(() -> merged.addListener(filtered));
         addAndFire(dispatcher, viewOne, line2);
         addAndFire(dispatcher, viewOne, line3);
-        addAndFire(dispatcher, viewOne, line4);
         addAndFire(dispatcher, viewTwo, line1);
         addAndFire(dispatcher, viewOne, line6, line7);
         addAndFire(dispatcher, viewOne, line5);
+        addAndFire(dispatcher, viewOne, line4);
         factory.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
         Assertions.assertEquals(7, merged.getLineCount());
+        Assertions.assertEquals(3, filtered.getLineCount());
         Assertions.assertEquals(Arrays.asList(
                 line1, line2, line3, line4, line5, line6, line7
         ), merged.getAllLines());

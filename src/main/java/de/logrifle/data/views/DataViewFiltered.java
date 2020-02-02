@@ -30,10 +30,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DataViewFiltered extends DataView {
-    private final List<Line> visibleLines = new ArrayList<>();
+    private List<Line> visibleLines = new ArrayList<>();
     private final boolean inverted;
     private final Pattern pattern;
-    private int processedLinesCount = 0;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
         super((inverted ? "! " : "") + regex, parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
@@ -59,11 +58,10 @@ public class DataViewFiltered extends DataView {
     @Override
     public void onUpdated(DataView source) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
-        List<Line> sourceLines = source.getLines(processedLinesCount, null);
-        this.processedLinesCount += sourceLines.size();
-        this.visibleLines.addAll(sourceLines.stream()
+        List<Line> sourceLines = source.getAllLines();
+        this.visibleLines = sourceLines.stream()
                 .filter(this::lineMatches)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
         fireUpdated();
     }
 }
