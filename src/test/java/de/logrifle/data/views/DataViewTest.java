@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-class DataViewMergedTest {
+class DataViewTest {
 
     private final LineParser parser = new LineParserTimestampedTextImpl(
             new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
