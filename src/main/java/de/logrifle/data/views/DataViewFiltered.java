@@ -31,11 +31,13 @@ import java.util.stream.Collectors;
 
 public class DataViewFiltered extends DataView {
     private List<Line> visibleLines = new ArrayList<>();
+    private final DataView parentView;
     private final boolean inverted;
     private final Pattern pattern;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
         super((inverted ? "! " : "") + regex, parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
+        this.parentView = parentView;
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
     }
@@ -52,11 +54,21 @@ public class DataViewFiltered extends DataView {
 
     @Override
     public void onUpdated(DataView source) {
+        handleUpdate();
+    }
+
+    private void handleUpdate() {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
-        List<Line> sourceLines = source.getAllLines();
+        List<Line> sourceLines = parentView.getAllLines();
         this.visibleLines = sourceLines.stream()
                 .filter(this::lineMatches)
                 .collect(Collectors.toList());
         fireUpdated();
+    }
+
+    @Override
+    protected void clearCache() {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        handleUpdate();
     }
 }

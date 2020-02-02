@@ -48,11 +48,9 @@ public class DataViewMerged extends DataView {
         super("Root View",
                 TextColor.ANSI.DEFAULT,
                 logDispatcher,
-                sourceViews.stream()
-                        .map(DataView::getMaxLineLabelLength)
-                        .max(Comparator.comparing(x -> x))
-                        .orElse(0));
+                0);
         this.sourceViews = new ArrayList<>(sourceViews);
+        updateMaxLineLabelLengths();
         this.updater = factory.newRateLimiter(this::handleUpdate, logDispatcher);
         logDispatcher.execute(() -> {
             for (DataView sourceView : sourceViews) {
@@ -97,7 +95,8 @@ public class DataViewMerged extends DataView {
         fireUpdated();
     }
 
-    private void clearCache(){
+    @Override
+    protected void clearCache(){
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         invalidateLogPosition();
         processedLinesMap.clear();
@@ -113,6 +112,7 @@ public class DataViewMerged extends DataView {
     public ExecutionResult addView(DataView dataView) {
         UI.checkGuiThreadOrThrow();
         this.sourceViews.add(dataView);
+        updateMaxLineLabelLengths();
         getLogDispatcher().execute(() -> {
             clearCache();
             dataView.addListener(this);
@@ -126,6 +126,7 @@ public class DataViewMerged extends DataView {
     public DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();
         DataView removed = this.sourceViews.remove(viewIndex);
+        updateMaxLineLabelLengths();
         getLogDispatcher().execute(() -> {
             clearCache();
             removed.addListener(this);
@@ -137,10 +138,19 @@ public class DataViewMerged extends DataView {
         UI.checkGuiThreadOrThrow();
         try {
             this.sourceViews.get(viewIndex).toggleActive();
+            updateMaxLineLabelLengths();
             getLogDispatcher().execute(this::clearCache);
             return new ExecutionResult(true);
         } catch (IndexOutOfBoundsException e) {
             return new ExecutionResult(false, "Invalid view index: "+viewIndex);
         }
+    }
+
+    public void updateMaxLineLabelLengths () {
+        setMaxLineLabelLength(sourceViews.stream()
+                .filter(DataView::isActive)
+                .map(DataView::getMaxLineLabelLength)
+                .max(Comparator.comparing(x -> x))
+                .orElse(0));
     }
 }

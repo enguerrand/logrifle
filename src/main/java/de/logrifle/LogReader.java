@@ -114,4 +114,8 @@ public class LogReader extends DataView {
     public void shutdown() {
         tailer.stop();
     }
+
+    @Override
+    protected void clearCache() {
+    }
 }

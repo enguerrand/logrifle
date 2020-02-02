@@ -47,6 +47,9 @@ public class TestDataView extends DataView {
 
     @Override
     public void onUpdated(DataView source) {
+    }
 
+    @Override
+    protected void clearCache() {
     }
 }

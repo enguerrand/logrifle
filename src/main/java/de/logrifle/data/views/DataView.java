@@ -38,7 +38,7 @@ public abstract class DataView implements DataViewListener, LineSource {
     private final String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher logDispatcher;
-    private int maxLineLabelLength;
+    private volatile int maxLineLabelLength;
     private final TextColor viewColor;
     private final AtomicReference<Boolean> active = new AtomicReference<>(true);
     private final AtomicBoolean logPositionInvalidated = new AtomicBoolean(false);
@@ -149,4 +149,6 @@ public abstract class DataView implements DataViewListener, LineSource {
     public boolean getAndClearLogPositionInvalidated() {
         return logPositionInvalidated.getAndSet(false);
     }
+
+    protected abstract void clearCache();
 }
