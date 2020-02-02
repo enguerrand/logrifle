@@ -22,6 +22,7 @@ package de.logrifle.ui;
 
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.views.DataView;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -87,39 +88,57 @@ class LogPosition {
     }
 
     LogPosition transferIfNeeded(@Nullable DataView from, DataView to) {
+        List<Line> allLines = to.getAllLines();
+        if (allLines.isEmpty() || to.getAndClearLogPositionInvalidated()) {
+            return new LogPosition(-1, 0);
+        }
         if (Objects.equals(from, to)) {
             return this;
         }
         if (from == null) {
             return this;
         }
-        List<Line> allLines = to.getAllLines();
-        if (allLines.isEmpty()) {
-            return new LogPosition(-1, 0);
-        }
-        int focusedLineIndex = getFocusedLineIndex();
+
+        Line focusedLine = getFocusedLine(from);
         int nextFocusIndex;
-        if (focusedLineIndex >= 0) {
-            Line focusedLine = from.getLine(focusedLineIndex);
-            nextFocusIndex = allLines.indexOf(focusedLine);
-            if (nextFocusIndex < 0) {
-                long focusedLineTimestamp = focusedLine.getTimestamp();
-                for (int i = 0; i < allLines.size(); i++) {
-                    Line line = allLines.get(i);
-                    if (line.getTimestamp() >= focusedLineTimestamp) {
-                        nextFocusIndex = i;
-                        break;
-                    }
-                }
-                if (nextFocusIndex < 0) {
-                    nextFocusIndex = allLines.size() - 1;
-                }
-            }
+        if (focusedLine != null) {
+            nextFocusIndex = getNextFocusIndex(allLines, focusedLine);
         } else {
             nextFocusIndex = -1;
         }
         int top = Math.max(0, nextFocusIndex - this.focusOffset);
         return new LogPosition(top, nextFocusIndex - top);
+    }
+
+    @Nullable
+    private Line getFocusedLine(@NotNull DataView from) {
+        Line focusedLine;
+        int focusedLineIndex = getFocusedLineIndex();
+        if (focusedLineIndex >= 0) {
+            focusedLine = from.getLine(focusedLineIndex);
+        } else {
+            focusedLine = null;
+        }
+        return focusedLine;
+    }
+
+    static int getNextFocusIndex(List<Line> allLines, Line focusedLine) {
+        int nextFocusIndex;
+        nextFocusIndex = allLines.indexOf(focusedLine);
+        if (nextFocusIndex < 0) {
+            long focusedLineTimestamp = focusedLine.getTimestamp();
+            for (int i = 0; i < allLines.size(); i++) {
+                Line line = allLines.get(i);
+                if (line.getTimestamp() >= focusedLineTimestamp) {
+                    nextFocusIndex = i;
+                    break;
+                }
+            }
+            if (nextFocusIndex < 0) {
+                nextFocusIndex = allLines.size() - 1;
+            }
+        }
+        return nextFocusIndex;
     }
 
     boolean isBefore(LogPosition other) {

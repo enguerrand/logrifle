@@ -97,12 +97,6 @@ public class LogReader extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        List<Line> snapshot = this.lines;
-        return snapshot == null ? 0 : snapshot.size();
-    }
-
-    @Override
     public List<Line> getAllLines() {
         return new ArrayList<>(this.lines);
     }

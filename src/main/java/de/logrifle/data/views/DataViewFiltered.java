@@ -46,11 +46,6 @@ public class DataViewFiltered extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        return this.visibleLines.size();
-    }
-
-    @Override
     public List<Line> getAllLines() {
         return new ArrayList<>(this.visibleLines);
     }

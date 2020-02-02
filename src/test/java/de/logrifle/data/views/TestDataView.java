@@ -41,11 +41,6 @@ public class TestDataView extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        return lines.size();
-    }
-
-    @Override
     public List<Line> getAllLines() {
         return lines;
     }

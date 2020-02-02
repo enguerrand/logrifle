@@ -63,17 +63,8 @@ public class DataViewMerged extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        return sourceViews.stream()
-                .mapToInt(DataView::getLineCount)
-                .sum();
-    }
-
-    @Override
     public List<Line> getAllLines() {
-        return new ArrayList<>(linesCache).stream()
-                .filter(Line::isVisible)
-                .collect(Collectors.toList());
+        return new ArrayList<>(linesCache);
     }
 
     @Override
@@ -89,7 +80,9 @@ public class DataViewMerged extends DataView {
             int processedLinesCount = processedLinesMap.getOrDefault(viewId, 0);
             if (sourceView.getLineCount() > processedLinesCount) {
                 List<Line> newLinesInView = sourceView.getLines(processedLinesCount, null);
-                newLines.addAll(newLinesInView);
+                newLines.addAll(newLinesInView.stream()
+                        .filter(Line::isVisible)
+                        .collect(Collectors.toList()));
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
@@ -104,6 +97,14 @@ public class DataViewMerged extends DataView {
         fireUpdated();
     }
 
+    private void clearCache(){
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        invalidateLogPosition();
+        processedLinesMap.clear();
+        linesCache.clear();
+        handleUpdate();
+    }
+
     public List<DataView> getViews() {
         UI.checkGuiThreadOrThrow();
         return Collections.unmodifiableList(this.sourceViews);
@@ -112,8 +113,10 @@ public class DataViewMerged extends DataView {
     public ExecutionResult addView(DataView dataView) {
         UI.checkGuiThreadOrThrow();
         this.sourceViews.add(dataView);
-        getLogDispatcher().execute(() ->
-                dataView.addListener(this));
+        getLogDispatcher().execute(() -> {
+            clearCache();
+            dataView.addListener(this);
+        });
         return new ExecutionResult(true);
     }
 
@@ -123,8 +126,10 @@ public class DataViewMerged extends DataView {
     public DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();
         DataView removed = this.sourceViews.remove(viewIndex);
-        getLogDispatcher().execute(() ->
-                removed.addListener(this));
+        getLogDispatcher().execute(() -> {
+            clearCache();
+            removed.addListener(this);
+        });
         return removed;
     }
 
@@ -132,6 +137,7 @@ public class DataViewMerged extends DataView {
         UI.checkGuiThreadOrThrow();
         try {
             this.sourceViews.get(viewIndex).toggleActive();
+            getLogDispatcher().execute(this::clearCache);
             return new ExecutionResult(true);
         } catch (IndexOutOfBoundsException e) {
             return new ExecutionResult(false, "Invalid view index: "+viewIndex);

@@ -23,7 +23,6 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
-import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -31,6 +30,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class DataView implements DataViewListener, LineSource {
     private final String id = UUID.randomUUID().toString();
@@ -39,13 +40,14 @@ public abstract class DataView implements DataViewListener, LineSource {
     private final LogDispatcher logDispatcher;
     private int maxLineLabelLength;
     private final TextColor viewColor;
-    private boolean active;
+    private final AtomicReference<Boolean> active = new AtomicReference<>(true);
+    private final AtomicBoolean logPositionInvalidated = new AtomicBoolean(false);
+
     protected DataView(String title, TextColor viewColor, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
         this.viewColor = viewColor;
         this.logDispatcher = logDispatcher;
         this.maxLineLabelLength = maxLineLabelLength;
-        this.active = true;
     }
 
     @Override
@@ -102,18 +104,20 @@ public abstract class DataView implements DataViewListener, LineSource {
     }
 
     void toggleActive() {
-        UI.checkGuiThreadOrThrow();
-        this.active = !this.active;
+        this.active.updateAndGet(value -> !value);
+        getLogDispatcher().execute(this::fireUpdated);
     }
 
-    @Override
     public boolean isActive() {
-        UI.checkGuiThreadOrThrow();
-        return active;
+        return active.get();
     }
 
-    public abstract int getLineCount();
+    public int getLineCount() {
+        return getAllLines().size();
+    }
+
     public abstract List<Line> getAllLines();
+
     public int indexOfClosestTo(int indexToHit, int startSearchAt) {
         List<Line> allLines = getAllLines();
         Line from = allLines.get(startSearchAt);
@@ -136,5 +140,13 @@ public abstract class DataView implements DataViewListener, LineSource {
     }
 
     public void destroy() {
+    }
+
+    public void invalidateLogPosition() {
+        this.logPositionInvalidated.set(true);
+    }
+
+    public boolean getAndClearLogPositionInvalidated() {
+        return logPositionInvalidated.getAndSet(false);
     }
 }
