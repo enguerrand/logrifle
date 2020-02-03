@@ -155,8 +155,8 @@ public class SideBar {
             maxLength.updateAndGet(prev -> Math.max(prev, length));
             TextColor viewColor = view.getViewColor();
             SGR[] styles = view.isActive() ? new SGR[]{SGR.BOLD} : new SGR[0];
-            ColoredString navIndex = new ColoredString(prefix, viewColor, null, styles);
-            ColoredString title = new ColoredString(text, viewColor, null);
+            ColoredString navIndex = new ColoredString(prefix, viewColor, null);
+            ColoredString title = new ColoredString(text, TextColor.ANSI.WHITE, null, styles);
             Collection<ColoredString> textComponents = Arrays.asList(
                     navIndex,
                     title
