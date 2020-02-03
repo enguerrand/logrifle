@@ -32,12 +32,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
     private final Collection<? extends DataView> sourceViews;
     private final RateLimiter updater;
-    private final List<Line> linesCache = new ArrayList<>();
+    private final List<Line> linesCache = new CopyOnWriteArrayList<>();
     private final Map<String, Integer> processedLinesMap = new HashMap<>();
 
     public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, RateLimiterFactory factory) {
