@@ -54,7 +54,10 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         String lineLabel = "";
         if (lineLabelLength > 0) {
             String fullLabel = line.getLineLabel();
-            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length())) + " ";
+            lineLabel = fullLabel.substring(0, Math.min(lineLabelLength, fullLabel.length()));
+        }
+        if (lineLabel.length() < lineLabelLength + 1) {
+            lineLabel = Strings.pad(lineLabel, lineLabelLength + 1, false);
         }
         String lineText = line.getRaw();
         lineText = getScrolledString(beginColumn, lineText);
