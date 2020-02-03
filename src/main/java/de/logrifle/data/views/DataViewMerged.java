@@ -49,7 +49,7 @@ public class DataViewMerged extends DataView {
                 TextColor.ANSI.DEFAULT,
                 logDispatcher,
                 0);
-        this.sourceViews = new ArrayList<>(sourceViews);
+        this.sourceViews = new CopyOnWriteArrayList<>(sourceViews);
         updateMaxLineLabelLengths();
         this.updater = factory.newRateLimiter(this::handleUpdate, logDispatcher);
         logDispatcher.execute(() -> {
