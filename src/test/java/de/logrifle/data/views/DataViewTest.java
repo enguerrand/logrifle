@@ -71,6 +71,9 @@ class DataViewTest {
         Assertions.assertEquals(Arrays.asList(
                 line1, line2, line3, line4, line5, line6, line7
         ), merged.getAllLines());
+        Assertions.assertEquals(Arrays.asList(
+                line3, line4, line5
+        ), filtered.getAllLines());
     }
 
     private void addAndFire(LogDispatcher dispatcher, DataView view, Line... lines) {
