@@ -116,6 +116,6 @@ public class LogReader extends DataView {
     }
 
     @Override
-    protected void clearCache() {
+    protected void clearCacheImpl() {
     }
 }

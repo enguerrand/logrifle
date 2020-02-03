@@ -73,6 +73,10 @@ class LogView {
                     update(null, source);
                 });
             }
+
+            @Override
+            public void onCacheCleared(DataView source) {
+            }
         };
     }
 

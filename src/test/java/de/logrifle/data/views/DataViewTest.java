@@ -22,6 +22,7 @@ package de.logrifle.data.views;
 
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactoryTestImpl;
+import de.logrifle.base.TestLogDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
@@ -39,7 +40,7 @@ class DataViewTest {
             new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
     );
 
-    private final LogDispatcher dispatcher = new LogDispatcher();
+    private final TestLogDispatcher dispatcher = new TestLogDispatcher();
 
     @Test
     void getAllLinesShouldBeSorted() throws InterruptedException {
@@ -76,6 +77,44 @@ class DataViewTest {
         Assertions.assertEquals(Arrays.asList(
                 line3, line4, line5
         ), filtered.getAllLines());
+    }
+
+    @Test
+    void invisibleLinesShouldNotBeReturned() throws InterruptedException {
+        int jobCountMergedViewInstantiation = 1;
+        int jobCountLineAddition = 2;
+        int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
+        RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(expectedJobCount);
+        DataView viewOne = new TestDataView(dispatcher, "one");
+        DataView viewTwo = new TestDataView(dispatcher, "two");
+        Line line1 = parser.parse(0, "15:24:01.038 line1", viewOne).getParsedLine();
+        Line line2 = parser.parse(1, "15:24:02.038 line2", viewTwo).getParsedLine();
+        Line line3 = parser.parse(2, "15:24:03.038 line3", viewOne).getParsedLine();
+        Line line4 = parser.parse(3, "15:24:04.038 line4", viewTwo).getParsedLine();
+        Line line5 = parser.parse(4, "15:24:05.038 line5", viewTwo).getParsedLine();
+        Line line6 = parser.parse(5, "15:24:06.038 line6", viewOne).getParsedLine();
+        Line line7 = parser.parse(6, "15:24:06.038 line7", viewOne).getParsedLine();
+        DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        dispatcher.execute(() -> merged.addListener(filtered));
+        addAndFire(dispatcher, viewOne, line1, line3, line6, line7);
+        addAndFire(dispatcher, viewTwo, line2, line4, line5);
+        dispatcher.awaitJobsDone();
+        Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
+        Assertions.assertEquals(7, merged.getLineCount());
+        Assertions.assertEquals(3, filtered.getLineCount());
+        UI.setTestMode();
+        Assertions.assertEquals(Arrays.asList(
+                line1, line2, line3, line4, line5, line6, line7
+        ), merged.getAllLines());
+        Assertions.assertEquals(Arrays.asList(
+                line3, line4, line5
+        ), filtered.getAllLines());
+
+        merged.toggleView(1);
+        dispatcher.awaitJobsDone();
+        Assertions.assertEquals(4, merged.getLineCount());
+        Assertions.assertEquals(1, filtered.getLineCount());
     }
 
     private void addAndFire(LogDispatcher dispatcher, DataView view, Line... lines) {

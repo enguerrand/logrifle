@@ -50,6 +50,6 @@ public class TestDataView extends DataView {
     }
 
     @Override
-    protected void clearCache() {
+    protected void clearCacheImpl() {
     }
 }

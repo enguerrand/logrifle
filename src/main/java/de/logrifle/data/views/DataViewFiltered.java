@@ -67,7 +67,7 @@ public class DataViewFiltered extends DataView {
     }
 
     @Override
-    protected void clearCache() {
+    protected void clearCacheImpl() {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         handleUpdate();
     }

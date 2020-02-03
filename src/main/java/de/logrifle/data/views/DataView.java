@@ -103,6 +103,13 @@ public abstract class DataView implements DataViewListener, LineSource {
         }
     }
 
+    protected void fireCacheCleared() {
+        logDispatcher.checkOnDispatchThreadOrThrow();
+        for (DataViewListener listener : this.listeners) {
+            listener.onCacheCleared(DataView.this);
+        }
+    }
+
     void toggleActive() {
         this.active.updateAndGet(value -> !value);
         getLogDispatcher().execute(this::fireUpdated);
@@ -150,5 +157,15 @@ public abstract class DataView implements DataViewListener, LineSource {
         return logPositionInvalidated.getAndSet(false);
     }
 
-    protected abstract void clearCache();
+    void clearCache() {
+        clearCacheImpl();
+        fireCacheCleared();
+    }
+
+    protected abstract void clearCacheImpl();
+
+    @Override
+    public void onCacheCleared(DataView source) {
+        clearCache();
+    }
 }

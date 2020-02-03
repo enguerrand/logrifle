@@ -22,4 +22,5 @@ package de.logrifle.data.views;
 
 public interface DataViewListener {
     void onUpdated(DataView source);
+    void onCacheCleared(DataView source);
 }

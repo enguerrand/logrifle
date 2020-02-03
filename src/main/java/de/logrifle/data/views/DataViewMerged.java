@@ -96,7 +96,7 @@ public class DataViewMerged extends DataView {
     }
 
     @Override
-    protected void clearCache(){
+    protected void clearCacheImpl(){
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         invalidateLogPosition();
         processedLinesMap.clear();
