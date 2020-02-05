@@ -37,10 +37,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
 public class LogReader extends DataView {
     private final List<Line> lines = new ArrayList<>();
+    private final List<Line> linesSnapshot = new CopyOnWriteArrayList<>();
     private final LineParser lineParser;
     private final Tailer tailer;
     private final RateLimiter dispatcher;
@@ -48,7 +50,7 @@ public class LogReader extends DataView {
 
     LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
-        this.dispatcher = factory.newRateLimiter(this::fireUpdated, logDispatcher);
+        this.dispatcher = factory.newRateLimiter(this::fireUpdatedInternal, logDispatcher);
         this.lineParser = lineParser;
         TailerListener tailerListener = new TailerListenerAdapter() {
             @Override
@@ -93,22 +95,38 @@ public class LogReader extends DataView {
      *   use only in tests!
      */
     List<Line> getLines() {
-        return lines;
+        return linesSnapshot;
+    }
+
+    private void fireUpdatedInternal() {
+        ArrayList<Line> snapshot = new ArrayList<>(this.lines);
+        if (this.linesSnapshot.isEmpty()) {
+            linesSnapshot.addAll(snapshot);
+            fireUpdated();
+        } else {
+            List<Line> newLines = snapshot.subList(linesSnapshot.size(), snapshot.size());
+            linesSnapshot.addAll(newLines);
+            fireUpdatedIncremental(newLines);
+        }
     }
 
     @Override
     public int getLineCount() {
-        List<Line> snapshot = this.lines;
-        return snapshot == null ? 0 : snapshot.size();
+        return this.linesSnapshot.size();
     }
 
     @Override
     public List<Line> getAllLines() {
-        return new ArrayList<>(this.lines);
+        return new ArrayList<>(this.linesSnapshot);
     }
 
     @Override
-    public void onUpdated(DataView parent) {
+    public void onFullUpdate(DataView parent) {
+        // ignored - this should never happen
+    }
+
+    @Override
+    public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         // ignored - this should never happen
     }
 

@@ -85,10 +85,17 @@ public abstract class DataView implements DataViewListener {
         return id;
     }
 
+    protected void fireUpdatedIncremental(List<Line> newLines) {
+        logDispatcher.checkOnDispatchThreadOrThrow();
+        for (DataViewListener listener : this.listeners) {
+            listener.onIncrementalUpdate(DataView.this, newLines);
+        }
+    }
+
     protected void fireUpdated() {
         logDispatcher.checkOnDispatchThreadOrThrow();
         for (DataViewListener listener : this.listeners) {
-            listener.onUpdated(DataView.this);
+            listener.onFullUpdate(DataView.this);
         }
     }
     public abstract int getLineCount();
