@@ -50,6 +50,7 @@ public class SideBar {
     private final Panel highlightsContentPanel;
     private final ViewsTree viewsTree;
     private final HighlightsData highlightsData;
+    private final Label openFilesLabel;
     private final Label filtersTitleLabel;
     private final Label highlightsTitleLabel;
     // only access on ui thread
@@ -68,7 +69,7 @@ public class SideBar {
         this.panel = new Panel(new BorderLayout());
 
         Panel openFilesPanel = new Panel(new BorderLayout());
-        Label openFilesLabel = new Label(FILES_TITLE);
+        openFilesLabel = new Label(FILES_TITLE);
         openFilesLabel.addStyle(SGR.BOLD);
         openFilesPanel.addComponent(openFilesLabel);
         openFilesLabel.setLayoutData(BorderLayout.Location.TOP);
@@ -120,6 +121,7 @@ public class SideBar {
         int maxSidebarWidth = (int) Math.min(maxAbsoluteWidth, (maxWindowWidth * maxRelativeWidth));
         if (show) {
             setRightMargin(Math.min(maxWindowWidth, 1));
+            openFilesLabel.setText(FILES_TITLE);
             filtersTitleLabel.setText(FILTERS_TITLE);
             highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
             updateHighlights(maxSidebarWidth);
@@ -128,8 +130,10 @@ public class SideBar {
             return Math.max(maxLabelLengthViewsTree, maxLabelLengthSourceViewsList);
         } else {
             setRightMargin(0);
+            openFilesLabel.setText("");
             filtersTitleLabel.setText("");
             highlightsTitleLabel.setText("");
+            this.filesContentPanel.removeAllComponents();
             this.highlightsContentPanel.removeAllComponents();
             this.viewsTreeContentPanel.removeAllComponents();
             return 0;
