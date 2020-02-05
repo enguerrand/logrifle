@@ -44,7 +44,10 @@ class LineParserTimestampedTextImplTest {
             new TestCase("21:04:17.394 foobar", 75857394L, ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*", "HH:mm:ss.SSS"),
             new TestCase("21:04:17.394", 75857394L, "(.*)", "HH:mm:ss.SSS"),
             new TestCase("1970-01-01 21:04:17.394", 75857394L, "(.*)", "yyyy-MM-dd HH:mm:ss.SSS"),
-            new TestCase("1970 Jan 01 21:04:17", 75857000L, "(.*)", "yyyy MMM dd HH:mm:ss")
+            new TestCase("1970 Jan 01 21:04:17", 75857000L, "(.*)", "yyyy MMM dd HH:mm:ss"),
+            new TestCase("2023 12 11 21:04:17", 1702328657000L, "(.*)", "yyyy MM dd HH:mm:ss"),
+            new TestCase("Jan 01 21:04:17", 75857000L, "(.*)", "MMM dd HH:mm:ss"),
+            new TestCase("Mar 12 21:04:17", 6123857000L, "(.*)", "MMM dd HH:mm:ss")
         );
     }
 

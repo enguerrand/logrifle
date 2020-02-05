@@ -27,8 +27,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -38,7 +36,10 @@ public class LineParserTimestampedTextImpl implements LineParser {
     private final Pattern timeStampPattern;
     private final DateTimeFormatter dateFormatter;
     private final Function<String, Long> timeParser;
-    private static final List<String> DATE_FORMAT_SPECIFIERS = Arrays.asList("G", "y", "M", "w", "W", "D", "d", "F", "E");
+    private final boolean dayInFormat;
+    private final boolean monthInFormat;
+    private final boolean yearInFormat;
+    private final String datePrefix;
 
     public LineParserTimestampedTextImpl() {
         this(new TimeStampFormat(null, null));
@@ -46,21 +47,30 @@ public class LineParserTimestampedTextImpl implements LineParser {
 
     public LineParserTimestampedTextImpl(TimeStampFormat timeStampFormat) {
         this.timeStampPattern = Pattern.compile(timeStampFormat.getRegex());
-        this.dateFormatter = DateTimeFormatter.ofPattern(timeStampFormat.getFormat());
-        if (isDateFormatter(timeStampFormat.getFormat())) {
+        String format = timeStampFormat.getFormat();
+        this.dayInFormat = containsDay(format);
+        this.monthInFormat = containsMonth(format);
+        this.yearInFormat = containsYear(format);
+        StringBuilder prefixBuilder = new StringBuilder();
+        StringBuilder formatBuilder = new StringBuilder();
+        if (this.dayInFormat) {
             timeParser = this::parseDate;
+            if (!yearInFormat) {
+                formatBuilder.append("yyyy ");
+                prefixBuilder.append("1970 ");
+                if (!monthInFormat) {
+                    formatBuilder.append("MM ");
+                    prefixBuilder.append("01 ");
+                }
+            }
+            formatBuilder.append(format);
+            dateFormatter = DateTimeFormatter.ofPattern(formatBuilder.toString());
+            datePrefix = prefixBuilder.toString();
         } else {
             timeParser = this::parseTime;
+            dateFormatter = DateTimeFormatter.ofPattern(format);
+            datePrefix = "";
         }
-    }
-
-    private static boolean isDateFormatter(String format) {
-        for (String dateFormatSpecifier : DATE_FORMAT_SPECIFIERS) {
-            if (format.contains(dateFormatSpecifier)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -83,7 +93,8 @@ public class LineParserTimestampedTextImpl implements LineParser {
     }
 
     private long parseDate(String input) {
-        LocalDateTime parsed = LocalDateTime.parse(input, dateFormatter);
+        String pimpedInput = datePrefix + input;
+        LocalDateTime parsed = LocalDateTime.parse(pimpedInput, dateFormatter);
         ZonedDateTime zdt = ZonedDateTime.of(parsed, ZoneId.of("UTC"));
         return zdt.toInstant().toEpochMilli();
     }
@@ -91,5 +102,17 @@ public class LineParserTimestampedTextImpl implements LineParser {
     private long parseTime(String input) {
         LocalTime parsed = LocalTime.parse(input, dateFormatter);
         return TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
+    }
+
+    private static boolean containsYear(String format) {
+        return format.contains("yy");
+    }
+
+    private static boolean containsMonth(String format) {
+        return format.contains("M");
+    }
+
+    private static boolean containsDay(String format) {
+        return format.contains("d");
     }
 }
