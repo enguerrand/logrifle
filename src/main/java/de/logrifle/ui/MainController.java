@@ -222,7 +222,7 @@ public class MainController {
         CompletableFuture<Void> f = CompletableFuture.supplyAsync(
                 () -> {
                     focusedView.addListener(dataViewFiltered);
-                    dataViewFiltered.onUpdated(focusedView);
+                    dataViewFiltered.onFullUpdate(focusedView);
                     if (!blocking) {
                         UI.runLater(
                                 () -> {

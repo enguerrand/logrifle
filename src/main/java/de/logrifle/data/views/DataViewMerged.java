@@ -66,12 +66,22 @@ public class DataViewMerged extends DataView {
     }
 
     @Override
-    public void onUpdated(DataView source) {
+    public void onFullUpdate(DataView source) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        this.processedLinesMap.clear();
+        this.linesCache.clear();
+        this.updater.requestExecution();
+    }
+
+    @Override
+    public void onIncrementalUpdate(DataView source, List<Line> newLines) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
         this.updater.requestExecution();
     }
 
     private void handleUpdate() {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
+        boolean fullUpdate = linesCache.isEmpty();
         List<Line> newLines = new ArrayList<>();
         for (DataView sourceView : sourceViews) {
             String viewId = sourceView.getId();
@@ -92,7 +102,12 @@ public class DataViewMerged extends DataView {
             Line line = linesCache.get(i);
             line.setIndex(i);
         }
-        fireUpdated();
+
+        if (fullUpdate) {
+            fireUpdated();
+        } else {
+            fireUpdatedIncremental(newLines);
+        }
     }
 
     @Override

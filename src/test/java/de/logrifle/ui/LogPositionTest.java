@@ -91,7 +91,7 @@ class LogPositionTest {
         TestLogDispatcher dispatcher = new TestLogDispatcher();
         DataView full = new TestDataView(dispatcher, "foobar", TestLinesFactory.buildTestLines());
         DataView filtered = new DataViewFiltered("line content [3-5]", full, false, dispatcher);
-        dispatcher.execute(() -> filtered.onUpdated(full));
+        dispatcher.execute(() -> filtered.onFullUpdate(full));
         dispatcher.awaitJobsDone();
         DataView from = select(full, filtered, fromView);
         DataView to = select(full, filtered, toView);

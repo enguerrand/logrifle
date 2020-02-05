@@ -62,7 +62,7 @@ class LogView {
         this.followTail = followTail;
         viewListener = new DataViewListener() {
             @Override
-            public void onUpdated(DataView source) {
+            public void onFullUpdate(DataView source) {
                 UI.runLater(() -> {
                     if (!Objects.equals(source, lastView)) {
                         return;
@@ -72,6 +72,11 @@ class LogView {
                     }
                     update(null, source);
                 });
+            }
+
+            @Override
+            public void onIncrementalUpdate(DataView source, List<Line> newLines) {
+                onFullUpdate(source);
             }
 
             @Override

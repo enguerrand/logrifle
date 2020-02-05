@@ -26,11 +26,12 @@ import de.logrifle.base.LogDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DataViewFiltered extends DataView {
-    private List<Line> visibleLines = new ArrayList<>();
+    private final List<Line> visibleLines = new CopyOnWriteArrayList<>();
     private final DataView parentView;
     private final boolean inverted;
     private final Pattern pattern;
@@ -53,22 +54,44 @@ public class DataViewFiltered extends DataView {
     }
 
     @Override
-    public void onUpdated(DataView source) {
-        handleUpdate();
+    public void onFullUpdate(DataView source) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        List<Line> sourceLines = source.getAllLines();
+        this.visibleLines.clear();
+        this.visibleLines.addAll(sourceLines.stream()
+                .filter(this::lineMatches)
+                .collect(Collectors.toList()));
+        fireUpdated();
     }
 
-    private void handleUpdate() {
+    @Override
+    public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
-        List<Line> sourceLines = parentView.getAllLines();
-        this.visibleLines = sourceLines.stream()
+        List<Line> newMatchingLines = newLines.stream()
                 .filter(this::lineMatches)
                 .collect(Collectors.toList());
-        fireUpdated();
+        if (newMatchingLines.isEmpty()) {
+            return;
+        }
+        if (isFullUpdateRequired(this.visibleLines, newMatchingLines.get(0))) {
+            onFullUpdate(source);
+            return;
+        }
+        this.visibleLines.addAll(newMatchingLines);
+        fireUpdatedIncremental(newMatchingLines);
+    }
+
+    private static boolean isFullUpdateRequired(List<Line> previouslyProcessed, Line firstNewMatchingLine) {
+        if (previouslyProcessed.isEmpty()) {
+            return false;
+        }
+        Line last = previouslyProcessed.get(previouslyProcessed.size() - 1);
+        return last.getTimestamp() > firstNewMatchingLine.getTimestamp();
     }
 
     @Override
     protected void clearCacheImpl() {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
-        handleUpdate();
+        onFullUpdate(this);
     }
 }

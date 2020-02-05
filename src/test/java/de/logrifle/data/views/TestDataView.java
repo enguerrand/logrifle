@@ -46,7 +46,11 @@ public class TestDataView extends DataView {
     }
 
     @Override
-    public void onUpdated(DataView source) {
+    public void onFullUpdate(DataView source) {
+    }
+
+    @Override
+    public void onIncrementalUpdate(DataView source, List<Line> newLines) {
     }
 
     @Override
