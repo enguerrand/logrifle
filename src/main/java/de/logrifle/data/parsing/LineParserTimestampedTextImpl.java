@@ -22,15 +22,23 @@ package de.logrifle.data.parsing;
 
 import de.logrifle.data.views.LineSource;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineParserTimestampedTextImpl implements LineParser {
     private final Pattern timeStampPattern;
     private final DateTimeFormatter dateFormatter;
+    private final Function<String, Long> timeParser;
+    private static final List<String> DATE_FORMAT_SPECIFIERS = Arrays.asList("G", "y", "M", "w", "W", "D", "d", "F", "E");
 
     public LineParserTimestampedTextImpl() {
         this(new TimeStampFormat(null, null));
@@ -39,6 +47,20 @@ public class LineParserTimestampedTextImpl implements LineParser {
     public LineParserTimestampedTextImpl(TimeStampFormat timeStampFormat) {
         this.timeStampPattern = Pattern.compile(timeStampFormat.getRegex());
         this.dateFormatter = DateTimeFormatter.ofPattern(timeStampFormat.getFormat());
+        if (isDateFormatter(timeStampFormat.getFormat())) {
+            timeParser = this::parseDate;
+        } else {
+            timeParser = this::parseTime;
+        }
+    }
+
+    private static boolean isDateFormatter(String format) {
+        for (String dateFormatSpecifier : DATE_FORMAT_SPECIFIERS) {
+            if (format.contains(dateFormatSpecifier)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -47,10 +69,8 @@ public class LineParserTimestampedTextImpl implements LineParser {
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
             String dateString = matcher.group(1);
-            LocalTime parsed = null;
             try {
-                parsed = LocalTime.parse(dateString, dateFormatter);
-                timestamp = TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
+                timestamp = timeParser.apply(dateString);
             } catch (RuntimeException e) {
                 throw new IllegalStateException("Error while parsing datestring. \""+dateString+"\"." +
                         "The date string pattern matches but the matched string cannot be parsed with the given date format! " +
@@ -60,5 +80,16 @@ public class LineParserTimestampedTextImpl implements LineParser {
             return new LineParseResult(raw);
         }
         return new LineParseResult(new Line(index, raw, timestamp, source));
+    }
+
+    private long parseDate(String input) {
+        LocalDateTime parsed = LocalDateTime.parse(input, dateFormatter);
+        ZonedDateTime zdt = ZonedDateTime.of(parsed, ZoneId.of("UTC"));
+        return zdt.toInstant().toEpochMilli();
+    }
+
+    private long parseTime(String input) {
+        LocalTime parsed = LocalTime.parse(input, dateFormatter);
+        return TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
     }
 }
