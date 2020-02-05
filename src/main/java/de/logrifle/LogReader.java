@@ -136,5 +136,6 @@ public class LogReader extends DataView {
 
     @Override
     protected void clearCacheImpl() {
+        this.getLogDispatcher().execute(this.linesSnapshot::clear);
     }
 }
