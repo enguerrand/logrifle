@@ -43,6 +43,8 @@ class LineParserTimestampedTextImplTest {
         LineParserTimestampedTextImpl parser = new LineParserTimestampedTextImpl(testCase.timeStampFormat);
         LineParseResult parseResult = parser.parse(0, testCase.raw, new LineSourceTestImpl("foo"));
         Line line = parseResult.getParsedLine();
+        Assertions.assertTrue(parseResult.isNewLine(), "newLine should be true");
+        Assertions.assertEquals(testCase.raw, line.getRaw(), "Wrong raw content");
         Assertions.assertEquals(testCase.expectedTimestamp, line.getTimestamp(), "wrong timestamp");
     }
 
