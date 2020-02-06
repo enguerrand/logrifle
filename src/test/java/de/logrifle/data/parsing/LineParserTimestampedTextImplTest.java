@@ -22,13 +22,20 @@ package de.logrifle.data.parsing;
 
 import de.logrifle.data.views.LineSourceTestImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 class LineParserTimestampedTextImplTest {
+
+    @BeforeAll
+    static void setUp() {
+        Locale.setDefault(new Locale("en", "US"));
+    }
 
     @ParameterizedTest
     @MethodSource("getTestCases")
