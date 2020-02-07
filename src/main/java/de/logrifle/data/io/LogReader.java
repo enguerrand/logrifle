@@ -18,7 +18,7 @@
  *
  */
 
-package de.logrifle;
+package de.logrifle.data.io;
 
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
@@ -48,7 +48,7 @@ public class LogReader extends DataView {
     private final RateLimiter dispatcher;
     private int currentLineIndex = 0;
 
-    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
+    public LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = factory.newRateLimiter(this::fireUpdatedInternal, logDispatcher);
         this.lineParser = lineParser;

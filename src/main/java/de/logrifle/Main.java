@@ -30,6 +30,7 @@ import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
+import de.logrifle.data.io.LogReader;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;

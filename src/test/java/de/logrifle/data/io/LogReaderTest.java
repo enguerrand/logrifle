@@ -18,7 +18,7 @@
  *
  */
 
-package de.logrifle;
+package de.logrifle.data.io;
 
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;

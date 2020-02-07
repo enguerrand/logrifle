@@ -23,7 +23,7 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
-import de.logrifle.LogReader;
+import de.logrifle.data.io.LogReader;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Patterns;
 import de.logrifle.data.bookmarks.Bookmark;

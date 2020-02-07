@@ -20,8 +20,6 @@
 
 package de.logrifle.data.io;
 
-import de.logrifle.LogReader;
-
 import java.io.IOException;
 import java.nio.file.Path;
 
