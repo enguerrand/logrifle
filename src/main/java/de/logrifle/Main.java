@@ -30,7 +30,7 @@ import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
-import de.logrifle.data.io.LogReader;
+import de.logrifle.data.io.MainFileOpenerImpl;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
@@ -62,7 +62,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -170,12 +169,11 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
-        FileOpener logFileOpener = path ->
-                Collections.singletonList(new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory));
+        FileOpener fileOpener = new MainFileOpenerImpl(lineParser, textColorIterator, workerPool, logDispatcher, factory);
 
         for (Path logfile : logfiles) {
             try {
-                logReaders.addAll(logFileOpener.open(logfile));
+                logReaders.addAll(fileOpener.open(logfile));
             } catch (IOException e) {
                 System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
                 System.exit(-1);
@@ -202,7 +200,7 @@ public class Main {
                 viewsTree,
                 highlightsData,
                 bookmarks,
-                logFileOpener);
+                fileOpener);
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
