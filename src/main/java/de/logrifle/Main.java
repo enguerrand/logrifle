@@ -62,6 +62,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -170,11 +171,11 @@ public class Main {
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
         FileOpener logFileOpener = path ->
-                new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory);
+                Collections.singletonList(new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory));
 
         for (Path logfile : logfiles) {
             try {
-                logReaders.add(logFileOpener.open(logfile));
+                logReaders.addAll(logFileOpener.open(logfile));
             } catch (IOException e) {
                 System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
                 System.exit(-1);

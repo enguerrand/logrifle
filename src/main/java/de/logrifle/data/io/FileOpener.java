@@ -24,7 +24,8 @@ import de.logrifle.data.views.DataView;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 
 public interface FileOpener {
-    DataView open(Path path) throws IOException;
+    Collection<DataView> open(Path path) throws IOException;
 }

@@ -45,12 +45,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MainController {
     private static final String COMMAND_PREFIX = ":";
@@ -501,8 +503,13 @@ public class MainController {
     public ExecutionResult openFile(String arg) {
         Path path = Paths.get(arg);
         try {
-            DataView logfile = logFileOpener.open(path);
-            return viewsTree.addView(logfile);
+            Collection<DataView> logfiles = logFileOpener.open(path);
+            if (logfiles.isEmpty()) {
+                return new ExecutionResult(false, "No logfiles could be found unter " + path.toString());
+            }
+            return ExecutionResult.merged((logfiles.stream()
+                    .map(viewsTree::addView)
+                    .collect(Collectors.toList())));
         } catch (IOException e) {
             return new ExecutionResult(false, "Could not open file: " + e.toString());
         }
