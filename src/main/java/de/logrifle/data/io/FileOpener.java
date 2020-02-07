@@ -20,9 +20,11 @@
 
 package de.logrifle.data.io;
 
+import de.logrifle.data.views.DataView;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
 public interface FileOpener {
-    LogReader open(Path path) throws IOException;
+    DataView open(Path path) throws IOException;
 }

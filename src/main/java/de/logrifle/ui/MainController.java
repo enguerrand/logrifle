@@ -23,7 +23,6 @@ package de.logrifle.ui;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
-import de.logrifle.data.io.LogReader;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Patterns;
 import de.logrifle.data.bookmarks.Bookmark;
@@ -502,7 +501,7 @@ public class MainController {
     public ExecutionResult openFile(String arg) {
         Path path = Paths.get(arg);
         try {
-            LogReader logfile = logFileOpener.open(path);
+            DataView logfile = logFileOpener.open(path);
             return viewsTree.addView(logfile);
         } catch (IOException e) {
             return new ExecutionResult(false, "Could not open file: " + e.toString());

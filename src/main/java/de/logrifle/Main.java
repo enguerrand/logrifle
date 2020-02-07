@@ -34,6 +34,7 @@ import de.logrifle.data.io.LogReader;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
+import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
 import de.logrifle.ui.LineLabelDisplayMode;
@@ -154,7 +155,7 @@ public class Main {
         String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
         String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
-        List<LogReader> logReaders = new ArrayList<>();
+        List<DataView> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
                 TextColor.ANSI.BLUE,
                 TextColor.ANSI.GREEN,
@@ -210,8 +211,8 @@ public class Main {
 
             @Override
             public void onClosed() {
-                for (LogReader logReader : logReaders) {
-                    logReader.shutdown();
+                for (DataView logReader : logReaders) {
+                    logReader.destroy();
                 }
                 workerPool.shutdown();
                 System.exit(0);
