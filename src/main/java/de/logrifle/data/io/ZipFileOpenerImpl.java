@@ -27,54 +27,53 @@ import de.logrifle.data.views.DataView;
 import de.logrifle.ui.TextColorIterator;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
-public class MainFileOpenerImpl implements FileOpener {
-    private final Map<Pattern, FileOpener> fileOpeners = new LinkedHashMap<>();
+class ZipFileOpenerImpl implements FileOpener {
+    private final LineParser lineParser;
+    private final TextColorIterator textColorIterator;
+    private final ExecutorService workerPool;
+    private final LogDispatcher logDispatcher;
+    private final RateLimiterFactory factory;
 
-    public MainFileOpenerImpl(
+    ZipFileOpenerImpl(
             LineParser lineParser,
             TextColorIterator textColorIterator,
             ExecutorService workerPool,
             LogDispatcher logDispatcher,
             RateLimiterFactory factory) {
-        fileOpeners.put(Pattern.compile(".*\\.zip"), new ZipFileOpenerImpl(
-                lineParser,
-                textColorIterator,
-                workerPool,
-                logDispatcher,
-                factory
-        ));
-        fileOpeners.put(Pattern.compile(".*"), new PlainFileOpenerImpl(
-                lineParser,
-                textColorIterator,
-                workerPool,
-                logDispatcher,
-                factory
-        ));
+        this.lineParser = lineParser;
+        this.textColorIterator = textColorIterator;
+        this.workerPool = workerPool;
+        this.logDispatcher = logDispatcher;
+        this.factory = factory;
     }
-
 
     @Override
     public Collection<DataView> open(Path path) throws IOException {
-        for (Map.Entry<Pattern, FileOpener> entry : fileOpeners.entrySet()) {
-            Pattern pattern = entry.getKey();
-            if (pattern.matcher(path.getFileName().toString()).matches()) {
-                FileOpener fileOpener = entry.getValue();
-                try {
-                    return fileOpener.open(path);
-                } catch (UnexpectedFileFormatException e) {
-                    // The pattern matched but the file's format was not consistent with its name. Continue trying other file openers.
+        try {
+            ZipFile zip = new ZipFile(path.toFile());
+            List<DataView> views = new ArrayList<>();
+            for (Enumeration e = zip.entries(); e.hasMoreElements(); ) {
+                ZipEntry entry = (ZipEntry) e.nextElement();
+                if (entry.isDirectory()) {
                     continue;
                 }
+                InputStream inputStream = zip.getInputStream(entry);
+                views.add(new LogInputStreamReader(inputStream, lineParser, textColorIterator.next(), logDispatcher, entry.getName()));
             }
+            return views;
+        } catch (ZipException e) {
+            throw new UnexpectedFileFormatException(e);
         }
-        return Collections.emptyList();
     }
 }

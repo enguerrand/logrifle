@@ -48,7 +48,7 @@ public class LogReader extends DataView {
     private final RateLimiter dispatcher;
     private int currentLineIndex = 0;
 
-    public LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
+    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = factory.newRateLimiter(this::fireUpdatedInternal, logDispatcher);
         this.lineParser = lineParser;

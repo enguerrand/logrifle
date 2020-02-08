@@ -23,4 +23,18 @@ package de.logrifle.data.io;
 import java.io.IOException;
 
 public class UnexpectedFileFormatException extends IOException {
+    public UnexpectedFileFormatException() {
+    }
+
+    public UnexpectedFileFormatException(String s) {
+        super(s);
+    }
+
+    public UnexpectedFileFormatException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
+
+    public UnexpectedFileFormatException(Throwable throwable) {
+        super(throwable);
+    }
 }
