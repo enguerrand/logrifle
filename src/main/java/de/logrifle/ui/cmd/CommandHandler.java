@@ -64,6 +64,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("toggle-line-numbers", "tln", "Toggles display of line numbers on and off.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleLineNumbers();
+            }
+        });
+
         register(new Command("prev-bookmark", "pb", "Scrolls to the previous bookmark.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

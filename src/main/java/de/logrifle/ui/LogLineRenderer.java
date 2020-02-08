@@ -42,6 +42,7 @@ public interface LogLineRenderer {
             Bookmarks bookmarks,
             boolean lineIndexHot,
             LineDetailViewState lineDetailViewState,
-            int maxRenderableLineCount
+            int maxRenderableLineCount,
+            boolean showLineNumber
     );
 }

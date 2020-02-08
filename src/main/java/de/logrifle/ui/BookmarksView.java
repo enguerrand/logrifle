@@ -51,7 +51,7 @@ class BookmarksView {
         panel = new Panel(layout);
     }
 
-    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex, int lineLabelLength, LineDetailViewState lineDetailViewState) {
+    void update(boolean shown, int totalLinesCount, int beginColumn, List<Highlight> highlights, TerminalSize availableSpace, int focusedLineIndex, int lineLabelLength, boolean showLineNumbers) {
         int maxRowsCount = availableSpace.getRows();
         if (!shown || maxRowsCount < TITLE_HEIGHT) {
             panel.removeAllComponents();
@@ -93,7 +93,8 @@ class BookmarksView {
                         this.bookmarks,
                         false,
                         LineDetailViewState.IGNORED,
-                        maxRowsCount
+                        maxRowsCount,
+                        showLineNumbers
                 );
                 bookmarksPanel.addComponent(bookmarkComponent);
             }

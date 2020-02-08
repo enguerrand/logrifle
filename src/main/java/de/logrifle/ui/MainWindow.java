@@ -147,7 +147,8 @@ public class MainWindow {
                 availableSpaceForBookmarks,
                 logView.getFocusedLineIndexInView(),
                 logView.getLineLabelLength(dataView.getMaxLineLabelLength()),
-                logView.getLineDetailViewState());
+                logView.isShowLineNumbers()
+        );
     }
 
     void close() throws IOException {

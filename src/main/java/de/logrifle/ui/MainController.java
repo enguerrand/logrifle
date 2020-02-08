@@ -355,6 +355,11 @@ public class MainController {
         return ExecutionResult.merged(toggleResult, moveFocusResult);
     }
 
+    public ExecutionResult toggleLineNumbers() {
+        mainWindow.getLogView().toggleLineNumbers();
+        return new ExecutionResult(true);
+    }
+
     public ExecutionResult findAgain() {
         if (this.queryHistory.isEmpty()) {
             return new ExecutionResult(false);

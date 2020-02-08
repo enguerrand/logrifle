@@ -48,7 +48,8 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             Bookmarks bookmarks,
             boolean lineIndexHot,
             LineDetailViewState lineDetailViewState,
-            int maxRenderableLineCount
+            int maxRenderableLineCount,
+            boolean showLineNumber
     ) {
         int digitCount = Digits.getDigitCount(totalLineCount);
         String lineLabel = "";
@@ -64,16 +65,11 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
         List<ColoredString> coloredStrings = new ArrayList<>();
         coloredStrings.add(new ColoredString(lineLabel, line.getLabelColor(), null));
         boolean bookmarked = bookmarks.isLineBookmarked(line);
-        TextColor.ANSI lineNumberColor;
-        if (lineIndexHot) {
-            lineNumberColor = TextColor.ANSI.RED;
-        } else if (line.getAdditionalLines().isEmpty()) {
-            lineNumberColor = TextColor.ANSI.CYAN;
-        } else {
-            lineNumberColor = TextColor.ANSI.MAGENTA;
+        if (showLineNumber) {
+            coloredStrings.addAll(
+                    buildLineNumber(line, lineIndexHot, digitCount, bookmarked)
+            );
         }
-        coloredStrings.add(new ColoredString(String.format("%" + digitCount + "d", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
-        coloredStrings.add(new ColoredString(" ", null, null));
         if (focused) {
             coloredStrings.add(new ColoredString(lineText, TextColor.ANSI.WHITE, null, SGR.BOLD));
         } else {
@@ -96,6 +92,21 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
             wrapper.addComponent(additionalLineLabel);
         }
         return wrapper;
+    }
+
+    private List<ColoredString> buildLineNumber(Line line, boolean lineIndexHot, int digitCount, boolean bookmarked) {
+        List<ColoredString> coloredStrings = new ArrayList<>();
+        TextColor.ANSI lineNumberColor;
+        if (lineIndexHot) {
+            lineNumberColor = TextColor.ANSI.RED;
+        } else if (line.getAdditionalLines().isEmpty()) {
+            lineNumberColor = TextColor.ANSI.CYAN;
+        } else {
+            lineNumberColor = TextColor.ANSI.MAGENTA;
+        }
+        coloredStrings.add(new ColoredString(String.format("%" + digitCount + "d", line.getIndex()), lineNumberColor, bookmarked ? TextColor.ANSI.RED: null));
+        coloredStrings.add(new ColoredString(" ", null, null));
+        return coloredStrings;
     }
 
     private String getScrolledString(int beginColumn, String full) {
