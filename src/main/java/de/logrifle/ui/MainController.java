@@ -25,6 +25,7 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Patterns;
+import de.logrifle.base.Strings;
 import de.logrifle.data.bookmarks.Bookmark;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.Highlight;
@@ -353,6 +354,18 @@ public class MainController {
         ExecutionResult toggleResult = bookmarks.toggle(focusedLine);
         ExecutionResult moveFocusResult = moveFocus(args);
         return ExecutionResult.merged(toggleResult, moveFocusResult);
+    }
+
+    public ExecutionResult writeBookmarks(String args) {
+        if (Strings.isBlank(args)) {
+            return new ExecutionResult(false, "Argument missing: path");
+        }
+        try {
+            bookmarks.write(args);
+            return new ExecutionResult(false);
+        } catch (IOException e) {
+            return new ExecutionResult(false, "Could not write bookmarks: "+e);
+        }
     }
 
     public ExecutionResult toggleLineNumbers() {

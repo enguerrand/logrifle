@@ -20,9 +20,15 @@
 
 package de.logrifle.data.bookmarks;
 
+import de.logrifle.base.Strings;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,6 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
@@ -87,5 +94,18 @@ public class Bookmarks {
 
         }
         return Optional.of(this.bookmarks.last());
+    }
+
+    public void write(String path) throws IOException {
+        Files.write(
+                Paths.get(
+                        Strings.expandPathPlaceHolders(path)
+                ),
+                bookmarks.stream()
+                        .map(Bookmark::toWritableString)
+                        .collect(Collectors.toList()),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

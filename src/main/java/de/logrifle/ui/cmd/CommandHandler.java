@@ -64,6 +64,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("write-bookmarks", "wb", "Writes all bookmarks to the file provided as the first parameter.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.writeBookmarks(args);
+            }
+        });
+
         register(new Command("toggle-line-numbers", "tln", "Toggles display of line numbers on and off.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
