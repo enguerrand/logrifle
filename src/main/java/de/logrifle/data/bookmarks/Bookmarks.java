@@ -25,7 +25,6 @@ import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -104,7 +103,6 @@ public class Bookmarks {
                 bookmarks.stream()
                         .map(Bookmark::toWritableString)
                         .collect(Collectors.toList()),
-                StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }

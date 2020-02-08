@@ -33,7 +33,6 @@ import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +86,7 @@ public class LogReader extends DataView {
                 ex.printStackTrace();
             }
         };
-        tailer = new Tailer(logfile.toFile(), StandardCharsets.UTF_8, tailerListener, 250, false, false, 4096);
+        tailer = new Tailer(logfile.toFile(), tailerListener, 250, false, false, 4096);
         workerPool.submit(tailer);
     }
 
