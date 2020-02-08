@@ -37,10 +37,12 @@ public class DataViewFiltered extends DataView {
     private final List<Line> visibleLines = new CopyOnWriteArrayList<>();
     private final DataView parentView;
     private final boolean inverted;
+    private String regex;
     private Pattern pattern;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
         super(deriveTitleFromRegex(regex, inverted), parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
+        this.regex = regex;
         this.parentView = parentView;
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
@@ -49,6 +51,10 @@ public class DataViewFiltered extends DataView {
     @NotNull
     private static String deriveTitleFromRegex(String regex, boolean inverted) {
         return (inverted ? "! " : "") + regex;
+    }
+
+    public String getRegex() {
+        return regex;
     }
 
     public void updateTitle(String regex) {

@@ -299,29 +299,19 @@ public class MainController {
     public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        ViewsTreeNode parent = focusedTreeNode.getParent();
-        if (parent == null) {
+        String title = focusedTreeNode.getTitle();
+        DataView dataView = focusedTreeNode.getDataView();
+        if (!(dataView instanceof DataViewFiltered)) {
             return new ExecutionResult(false, "Cannot edit this view!");
         }
-        String regex = focusedTreeNode.getTitle();
-        String preparedCommand;
-        if (regex.startsWith("!")) {
-            preparedCommand = ":filter! " + regex.substring(1);
-        } else {
-            preparedCommand = ":filter " + regex;
-        }
-        viewsTree.removeNode(focusedTreeNode);
-        viewsTree.setFocusedNode(parent);
+        DataViewFiltered filter = (DataViewFiltered) dataView;
+        String preparedCommand = ":replace-filter " + filter.getRegex();
         return prepareCommand(preparedCommand);
     }
 
     public ExecutionResult replaceFilter(String newRegex, boolean blocking) {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        ViewsTreeNode parent = focusedTreeNode.getParent();
-        if (parent == null) {
-            return new ExecutionResult(false, "Cannot edit this view!");
-        }
         DataView focusedDataView = focusedTreeNode.getDataView();
         if (!(focusedDataView instanceof DataViewFiltered)) {
             return new ExecutionResult(false, "Cannot edit this view!");
@@ -342,7 +332,8 @@ public class MainController {
             }
         } else {
             f.thenRunAsync(mainWindow::updateView, UI::runLater);
-            return new ExecutionResult(false);
+            // need to update for the updated title anyway
+            return new ExecutionResult(true);
         }
     }
 
