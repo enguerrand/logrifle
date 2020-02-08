@@ -23,6 +23,7 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -35,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class DataView implements DataViewListener, LineSource {
     private final String id = UUID.randomUUID().toString();
-    private final String title;
+    private String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher logDispatcher;
     private volatile int maxLineLabelLength;
@@ -53,6 +54,11 @@ public abstract class DataView implements DataViewListener, LineSource {
     @Override
     public String getTitle() {
         return this.title;
+    }
+
+    public void setTitle(String title) {
+        UI.checkGuiThreadOrThrow();
+        this.title = title;
     }
 
     @Override

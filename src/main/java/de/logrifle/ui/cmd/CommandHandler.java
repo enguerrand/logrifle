@@ -127,6 +127,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("replace-filter", "rf", "Replaces the currently focused filter's pattern with the pattern provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.replaceFilter(args, blocking);
+            }
+        });
+
         register(new Command("edit-highlight", "eh", "Edits the highlight at the index provided as the first argument") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

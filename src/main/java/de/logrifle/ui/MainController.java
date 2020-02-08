@@ -315,6 +315,37 @@ public class MainController {
         return prepareCommand(preparedCommand);
     }
 
+    public ExecutionResult replaceFilter(String newRegex, boolean blocking) {
+        ViewsTree viewsTree = this.viewsTree;
+        ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
+        ViewsTreeNode parent = focusedTreeNode.getParent();
+        if (parent == null) {
+            return new ExecutionResult(false, "Cannot edit this view!");
+        }
+        DataView focusedDataView = focusedTreeNode.getDataView();
+        if (!(focusedDataView instanceof DataViewFiltered)) {
+            return new ExecutionResult(false, "Cannot edit this view!");
+        }
+        DataViewFiltered currentFilter = (DataViewFiltered) focusedDataView;
+        currentFilter.updateTitle(newRegex);
+        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(
+                () -> currentFilter.setPattern(newRegex), logDispatcher
+        );
+        if (blocking) {
+            try {
+                return f.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Interrupted while editing filter!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, "Error while editing filter: "+e.toString());
+            }
+        } else {
+            f.thenRunAsync(mainWindow::updateView, UI::runLater);
+            return new ExecutionResult(false);
+        }
+    }
+
     public ExecutionResult toggleBookmark() {
         @Nullable Line focusedLine = mainWindow.getLogView().getFocusedLine();
         if (focusedLine == null) {

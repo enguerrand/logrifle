@@ -23,9 +23,12 @@ package de.logrifle.data.views;
 
 import de.logrifle.data.parsing.Line;
 import de.logrifle.base.LogDispatcher;
+import de.logrifle.ui.cmd.ExecutionResult;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,18 +37,38 @@ public class DataViewFiltered extends DataView {
     private final List<Line> visibleLines = new CopyOnWriteArrayList<>();
     private final DataView parentView;
     private final boolean inverted;
-    private final Pattern pattern;
+    private Pattern pattern;
 
     public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
-        super((inverted ? "! " : "") + regex, parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
+        super(deriveTitleFromRegex(regex, inverted), parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
         this.parentView = parentView;
         this.inverted = inverted;
         this.pattern = Pattern.compile(regex);
     }
 
+    @NotNull
+    private static String deriveTitleFromRegex(String regex, boolean inverted) {
+        return (inverted ? "! " : "") + regex;
+    }
+
+    public void updateTitle(String regex) {
+        super.setTitle(deriveTitleFromRegex(regex, this.inverted));
+    }
+
     private boolean lineMatches(Line l) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
         boolean patternMatches = l.contains(pattern);
         return inverted != patternMatches;
+    }
+
+    public ExecutionResult setPattern(String regex) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        if (Objects.equals(this.pattern.pattern(), regex)) {
+            return new ExecutionResult(false);
+        }
+        this.pattern = Pattern.compile(regex);
+        onFullUpdate(parentView);
+        return new ExecutionResult(true);
     }
 
     @Override
