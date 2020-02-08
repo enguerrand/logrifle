@@ -49,7 +49,7 @@ cat << EOF
 <ul>
     <li></li>
 </ul>
-<h4>Bugfixes</h4>
+<h4>Bugs fixed</h4>
 <ul>
     <li></li>
 </ul>
