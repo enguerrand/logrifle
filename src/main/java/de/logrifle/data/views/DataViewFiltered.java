@@ -120,6 +120,7 @@ public class DataViewFiltered extends DataView {
 
     @Override
     protected void clearCacheImpl() {
+        setMaxLineLabelLength(parentView.getMaxLineLabelLength());
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         onFullUpdate(this);
     }

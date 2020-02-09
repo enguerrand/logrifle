@@ -124,7 +124,7 @@ public class DataViewMerged extends DataView {
         return Collections.unmodifiableList(this.sourceViews);
     }
 
-    public ExecutionResult addView(DataView dataView) {
+    ExecutionResult addView(DataView dataView) {
         UI.checkGuiThreadOrThrow();
         this.sourceViews.add(dataView);
         updateMaxLineLabelLengths();
@@ -138,7 +138,7 @@ public class DataViewMerged extends DataView {
     /**
      * @throws IndexOutOfBoundsException
      */
-    public DataView removeView(int viewIndex) {
+    DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();
         DataView removed = this.sourceViews.remove(viewIndex);
         updateMaxLineLabelLengths();
@@ -149,7 +149,7 @@ public class DataViewMerged extends DataView {
         return removed;
     }
 
-    public ExecutionResult toggleView(int viewIndex) {
+    ExecutionResult toggleView(int viewIndex) {
         UI.checkGuiThreadOrThrow();
         try {
             this.sourceViews.get(viewIndex).toggleActive();
@@ -161,7 +161,7 @@ public class DataViewMerged extends DataView {
         }
     }
 
-    public void updateMaxLineLabelLengths () {
+    private void updateMaxLineLabelLengths() {
         setMaxLineLabelLength(sourceViews.stream()
                 .filter(DataView::isActive)
                 .map(DataView::getMaxLineLabelLength)
