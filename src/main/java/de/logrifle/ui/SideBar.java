@@ -124,10 +124,10 @@ public class SideBar {
             openFilesLabel.setText(FILES_TITLE);
             filtersTitleLabel.setText(FILTERS_TITLE);
             highlightsTitleLabel.setText(HIGHLIGHTS_TITLE);
-            updateHighlights(maxSidebarWidth);
+            int maxHighlightLength = updateHighlights(maxSidebarWidth);
             int maxLabelLengthViewsTree = updateViewsTree(maxSidebarWidth);
             int maxLabelLengthSourceViewsList = updateFilesListView(maxSidebarWidth);
-            return Math.max(maxLabelLengthViewsTree, maxLabelLengthSourceViewsList);
+            return Math.max(maxHighlightLength, Math.max(maxLabelLengthViewsTree, maxLabelLengthSourceViewsList));
         } else {
             setRightMargin(0);
             openFilesLabel.setText("");
@@ -207,14 +207,17 @@ public class SideBar {
         return maxLength.get();
     }
 
-    private void updateHighlights(int maxLength) {
+    private int updateHighlights(int maxLength) {
         this.highlightsContentPanel.removeAllComponents();
         List<Highlight> highlights = this.highlightsData.getHighlights();
         int digitCount = Digits.getDigitCount(highlights.size());
+        int actualLength = 0;
         for (int i = 0; i < highlights.size(); i++) {
             Highlight highlight = highlights.get(i);
+            actualLength = Math.max(actualLength, digitCount + 2 + highlight.getRegex().length());
             this.highlightsContentPanel.addComponent(renderHighlight(highlight, i, digitCount, maxLength));
         }
+        return actualLength;
     }
 
     private String buildText(String title, int recursionDepth, int maxLength) {
