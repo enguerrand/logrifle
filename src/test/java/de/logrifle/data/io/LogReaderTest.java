@@ -33,6 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +47,7 @@ import java.util.concurrent.Executors;
 class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
     static ExecutorService WORKER_POOL;
+    static final Charset charset = StandardCharsets.UTF_8;
 
     @BeforeAll
     static void setUp() {
@@ -73,7 +76,7 @@ class LogReaderTest {
             logWriter.writeRandomLogLine();
         }
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory, charset);
         rateLimiterFactory.awaitJobsDone();
         Assertions.assertEquals(lineCount, rateLimiterFactory.getExecutedJobCount());
         Assertions.assertEquals(3, logReader.getLineCount(), "wrong line count");
@@ -90,7 +93,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L, null, false);
         logWriter.writeRandomLines(initialLinesCount);
         CompletableFuture<Void> f = logWriter.start(100, tailedLinesCount);
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory, charset);
         f.get();
         rateLimiterFactory.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, rateLimiterFactory.getExecutedJobCount());
@@ -108,7 +111,7 @@ class LogReaderTest {
         TestLogWriter logWriter = new TestLogWriter(null, 0L, null);
         logWriter.writeException("Exception text", "Exception Message");
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory);
+        LogReader logReader = new LogReader(new LineParserTimestampedTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory, charset);
         List<Line> lines = logReader.getLines();
         rateLimiterFactory.awaitJobsDone();
         Assertions.assertEquals(1, lines.size(), "no lines were appended");
@@ -126,7 +129,7 @@ class LogReaderTest {
             logWriter.writeRandomLogLine();
         }
         logWriter.stop();
-        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory);
+        LogReader logReader = new LogReader(new LineParserTextImpl(), LOGFILE, TextColor.ANSI.DEFAULT, WORKER_POOL, logDispatcher, rateLimiterFactory, charset);
 
         rateLimiterFactory.awaitJobsDone();
         Assertions.assertEquals(lineCount, rateLimiterFactory.getExecutedJobCount());

@@ -32,7 +32,7 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class LogReader extends DataView {
     private final RateLimiter dispatcher;
     private int currentLineIndex = 0;
 
-    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
+    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = factory.newRateLimiter(this::fireUpdatedInternal, logDispatcher);
         this.lineParser = lineParser;
@@ -86,7 +86,7 @@ public class LogReader extends DataView {
                 ex.printStackTrace();
             }
         };
-        tailer = new Tailer(logfile.toFile(), tailerListener, 250, false, false, 4096);
+        tailer = new Tailer(logfile.toFile(), charset, tailerListener, 250, false, false, 4096);
         workerPool.submit(tailer);
     }
 

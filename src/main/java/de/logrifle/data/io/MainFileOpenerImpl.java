@@ -27,6 +27,7 @@ import de.logrifle.data.views.DataView;
 import de.logrifle.ui.TextColorIterator;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,13 +38,16 @@ import java.util.regex.Pattern;
 
 public class MainFileOpenerImpl implements FileOpener {
     private final Map<Pattern, FileOpener> fileOpeners = new LinkedHashMap<>();
+    private final Charset charset;
 
     public MainFileOpenerImpl(
             LineParser lineParser,
             TextColorIterator textColorIterator,
             ExecutorService workerPool,
             LogDispatcher logDispatcher,
-            RateLimiterFactory factory) {
+            RateLimiterFactory factory,
+            Charset charset) {
+        this.charset = charset;
         fileOpeners.put(Pattern.compile(".*\\.zip"), new ZipFileOpenerImpl(
                 lineParser,
                 textColorIterator,
@@ -56,8 +60,8 @@ public class MainFileOpenerImpl implements FileOpener {
                 textColorIterator,
                 workerPool,
                 logDispatcher,
-                factory
-        ));
+                factory,
+                this.charset));
     }
 
 

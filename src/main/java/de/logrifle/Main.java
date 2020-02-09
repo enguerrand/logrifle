@@ -57,6 +57,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,6 +96,9 @@ public class Main {
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
+        parser.addArgument("-C", "--charset")
+                .type(String.class)
+                .help("Character set for reading/writing files. Defaults to UTF-8");
         parser.addArgument("-f", "--follow")
                 .type(Boolean.class)
                 .help("Initially follow tail? Defaults to false");
@@ -123,6 +128,16 @@ public class Main {
             BuildProperties buildProperties = new BuildProperties();
             System.out.println("logrifle version " + buildProperties.getVersion());
             System.exit(0);
+        }
+        String charsetName = parserResult.getString("charset");
+        Charset charset = StandardCharsets.UTF_8;
+        if (charsetName != null) {
+            try {
+                charset = Charset.forName(charsetName);
+            } catch (RuntimeException e) {
+                System.err.println("Error: Unknown charset: "+charsetName);
+                System.exit(-1);
+            }
         }
         List<Path> logfiles = parserResult.getList("logfile").stream()
                 .map(f -> Paths.get((String)f))
@@ -169,7 +184,7 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
-        FileOpener fileOpener = new MainFileOpenerImpl(lineParser, textColorIterator, workerPool, logDispatcher, factory);
+        FileOpener fileOpener = new MainFileOpenerImpl(lineParser, textColorIterator, workerPool, logDispatcher, factory, charset);
 
         for (Path logfile : logfiles) {
             try {
@@ -189,7 +204,7 @@ public class Main {
 
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
-        Bookmarks bookmarks = new Bookmarks();
+        Bookmarks bookmarks = new Bookmarks(charset);
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(

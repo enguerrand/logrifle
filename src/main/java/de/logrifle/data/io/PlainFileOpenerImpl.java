@@ -26,7 +26,7 @@ import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.views.DataView;
 import de.logrifle.ui.TextColorIterator;
 
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,17 +38,19 @@ class PlainFileOpenerImpl implements FileOpener {
     private final ExecutorService workerPool;
     private final LogDispatcher logDispatcher;
     private final RateLimiterFactory factory;
+    private final Charset charset;
 
-    PlainFileOpenerImpl(LineParser lineParser, TextColorIterator textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) {
+    PlainFileOpenerImpl(LineParser lineParser, TextColorIterator textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
         this.lineParser = lineParser;
         this.textColorIterator = textColorIterator;
         this.workerPool = workerPool;
         this.logDispatcher = logDispatcher;
         this.factory = factory;
+        this.charset = charset;
     }
 
     @Override
-    public Collection<DataView> open(Path path) throws IOException {
-        return Collections.singleton(new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory));
+    public Collection<DataView> open(Path path) {
+        return Collections.singleton(new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory, charset));
     }
 }

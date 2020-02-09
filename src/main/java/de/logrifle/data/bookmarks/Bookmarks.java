@@ -25,6 +25,7 @@ import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -39,6 +40,12 @@ import java.util.stream.Collectors;
 
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
+    private final Charset charset;
+
+    public Bookmarks(Charset charset) {
+        this.charset = charset;
+    }
+
 
     public ExecutionResult toggle(Line line) {
         Bookmark bookmark = new Bookmark(line);
@@ -103,6 +110,7 @@ public class Bookmarks {
                 bookmarks.stream()
                         .map(Bookmark::toWritableString)
                         .collect(Collectors.toList()),
+                charset,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
