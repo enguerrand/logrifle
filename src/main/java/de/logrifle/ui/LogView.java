@@ -208,7 +208,7 @@ class LogView {
         if (lastView == null) {
             return new ExecutionResult(false);
         }
-        int index = lastView.indexOfClosestTo(lineIndex, getFocusedLineIndexInView());
+        int index = lastView.indexOfClosestTo(lineIndex, Math.max(getFocusedLineIndexInView(), 0));
         if (index < 0) {
             return new ExecutionResult(false);
         } else {
