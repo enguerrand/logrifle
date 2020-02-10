@@ -146,8 +146,8 @@ public class SideBar {
         List<DataView> views = this.viewsTree.getViews();
         for (int i = 0; i < views.size(); i++) {
             DataView view = views.get(i);
-            String prefixText = i + ") ";
-            String prefix = Strings.pad(prefixText, 5, true);
+            String prefixText = i + ")";
+            String prefix = Strings.pad(prefixText, 3, true);
             String text;
             if (prefix.length() > maxWidth) {
                 prefix = Strings.truncateString(prefix, maxWidth);
@@ -155,18 +155,24 @@ public class SideBar {
             } else {
                 text = Strings.truncateString(view.getTitle(), maxWidth - prefix.length());
             }
-            int length = prefix.length() + text.length();
-            maxLength.updateAndGet(prev -> Math.max(prev, length));
             TextColor viewColor = view.getViewColor();
-            SGR[] styles = view.isActive() ? new SGR[]{SGR.BOLD} : new SGR[0];
-            ColoredString navIndex = new ColoredString(prefix, viewColor, null);
-            ColoredString title = new ColoredString(text, TextColor.ANSI.WHITE, null, styles);
+            ColoredString space = new ColoredString(" ", null, null);
+            ColoredString navIndex = view.isActive()
+                    ? new ColoredString(prefix, viewColor, null, SGR.REVERSE)
+                    : new ColoredString(prefix, TextColor.ANSI.GREEN, null);
+            ColoredString title = new ColoredString(text, viewColor, null);
             Collection<ColoredString> textComponents = Arrays.asList(
+                    space,
                     navIndex,
+                    space,
                     title
             );
             MultiColoredLabel label = new MultiColoredLabel(textComponents);
             filesContentPanel.addComponent(label.asComponent());
+
+            int spaceLength = 1;
+            int length = prefix.length() + text.length() + 2 + spaceLength;
+            maxLength.updateAndGet(prev -> Math.max(prev, length));
         }
         return maxLength.get();
     }
