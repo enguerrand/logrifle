@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SideBar {
     private static final String FILES_TITLE = "Open Files";
-    private static final String FILTERS_TITLE = "Views Tree";
+    private static final String FILTERS_TITLE = "Filters";
     private static final String HIGHLIGHTS_TITLE = "Highlights";
     public static final int DEFAULT_MAX_ABSOLUTE_WIDTH = 30;
     public static final double DEFAULT_MAX_RELATIVE_WIDTH = 0.5;
