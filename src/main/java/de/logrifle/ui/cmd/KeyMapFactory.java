@@ -76,7 +76,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('L', false, false, true), "line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
-        keyMap.put(new KeyStroke('q', false, false), "quit");
+        keyMap.put(new KeyStroke('q', false, false), "prepare :quit");
         keyMap.put(new KeyStroke('h', false, false), "filter-view-up");
         keyMap.put(new KeyStroke('j', false, false), "filter-view-next");
         keyMap.put(new KeyStroke('k', false, false), "filter-view-prev");
