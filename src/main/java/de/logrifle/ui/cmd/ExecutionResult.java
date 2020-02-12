@@ -22,6 +22,8 @@ package de.logrifle.ui.cmd;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 public class ExecutionResult {
@@ -47,7 +49,11 @@ public class ExecutionResult {
     }
 
     public static ExecutionResult merged(ExecutionResult ... results) {
-        if (results == null || results.length == 0) {
+        return merged(Arrays.asList(results));
+    }
+
+    public static ExecutionResult merged(Collection<ExecutionResult> results) {
+        if (results == null || results.isEmpty()) {
             throw new IllegalArgumentException("Need at least one result to merge!");
         }
         boolean updateRequired = false;

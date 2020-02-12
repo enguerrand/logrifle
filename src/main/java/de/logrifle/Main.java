@@ -29,6 +29,8 @@ import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.base.RateLimiterImpl;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.io.FileOpener;
+import de.logrifle.data.io.MainFileOpenerImpl;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
@@ -55,6 +57,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,7 +75,7 @@ public class Main {
     private static final String DEFAULTS_FILE =
             System.getProperty("user.home") + System.getProperty("file.separator") + ".logriflerc";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(null));
 
         KeyMapFactory keyMapFactory = new KeyMapFactory();
@@ -92,6 +96,9 @@ public class Main {
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
+        parser.addArgument("-C", "--charset")
+                .type(String.class)
+                .help("Character set for reading/writing files. Defaults to UTF-8");
         parser.addArgument("-f", "--follow")
                 .type(Boolean.class)
                 .help("Initially follow tail? Defaults to false");
@@ -122,6 +129,16 @@ public class Main {
             System.out.println("logrifle version " + buildProperties.getVersion());
             System.exit(0);
         }
+        String charsetName = parserResult.getString("charset");
+        Charset charset = StandardCharsets.UTF_8;
+        if (charsetName != null) {
+            try {
+                charset = Charset.forName(charsetName);
+            } catch (RuntimeException e) {
+                System.err.println("Error: Unknown charset: "+charsetName);
+                System.exit(-1);
+            }
+        }
         List<Path> logfiles = parserResult.getList("logfile").stream()
                 .map(f -> Paths.get((String)f))
                 .collect(Collectors.toList());
@@ -133,7 +150,12 @@ public class Main {
         String commandsFile = getOption(defaults, parserResult, "commands_file");
         List<String> commands = new ArrayList<>();
         if (commandsFile != null) {
-            commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
+            try {
+                commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
+            } catch (IOException e) {
+                System.err.println("Commands file "+ commandsFile + " could not be opened. Cause: " + e.toString());
+                System.exit(-1);
+            }
         }
 
         boolean followTail = getBooleanOption(defaults, parserResult, "follow", false);
@@ -148,8 +170,7 @@ public class Main {
         String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
         String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
-        DataView rootView;
-        List<LogReader> logReaders = new ArrayList<>();
+        List<DataView> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
                 TextColor.ANSI.BLUE,
                 TextColor.ANSI.GREEN,
@@ -159,26 +180,42 @@ public class Main {
                 TextColor.ANSI.YELLOW,
                 TextColor.ANSI.WHITE
         ));
+
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
+
+        FileOpener fileOpener = new MainFileOpenerImpl(lineParser, textColorIterator, workerPool, logDispatcher, factory, charset);
+
         for (Path logfile : logfiles) {
-            logReaders.add(new LogReader(lineParser, logfile, textColorIterator.next(), workerPool, logDispatcher, factory));
+            try {
+                logReaders.addAll(fileOpener.open(logfile));
+            } catch (IOException e) {
+                System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
+                System.exit(-1);
+            }
         }
         LineLabelDisplayMode lineLabelDisplayMode;
         if (logReaders.size() == 1) {
-            rootView = logReaders.get(0);
             lineLabelDisplayMode = LineLabelDisplayMode.NONE;
         } else {
-            rootView = new DataViewMerged(logReaders, logDispatcher, factory);
             lineLabelDisplayMode = LineLabelDisplayMode.SHORT;
         }
+        DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
         ViewsTree viewsTree = new ViewsTree(rootView);
         HighlightsData highlightsData = new HighlightsData();
-        Bookmarks bookmarks = new Bookmarks();
+        Bookmarks bookmarks = new Bookmarks(charset);
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
-        MainController mainController = new MainController(mainWindow, commandHandler, keyStrokeHandler, logDispatcher, viewsTree, highlightsData, bookmarks);
+        MainController mainController = new MainController(
+                mainWindow,
+                commandHandler,
+                keyStrokeHandler,
+                logDispatcher,
+                viewsTree,
+                highlightsData,
+                bookmarks,
+                fileOpener);
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
@@ -188,8 +225,8 @@ public class Main {
 
             @Override
             public void onClosed() {
-                for (LogReader logReader : logReaders) {
-                    logReader.shutdown();
+                for (DataView logReader : logReaders) {
+                    logReader.destroy();
                 }
                 workerPool.shutdown();
                 System.exit(0);

@@ -18,7 +18,7 @@
  *
  */
 
-package de.logrifle;
+package de.logrifle.data.io;
 
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;

@@ -20,17 +20,26 @@
 
 package de.logrifle.data.parsing;
 
-import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.LineSource;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineParserTimestampedTextImpl implements LineParser {
     private final Pattern timeStampPattern;
     private final DateTimeFormatter dateFormatter;
+    private final Function<String, Long> timeParser;
+    private final boolean dayInFormat;
+    private final boolean monthInFormat;
+    private final boolean yearInFormat;
+    private final String datePrefix;
 
     public LineParserTimestampedTextImpl() {
         this(new TimeStampFormat(null, null));
@@ -38,19 +47,40 @@ public class LineParserTimestampedTextImpl implements LineParser {
 
     public LineParserTimestampedTextImpl(TimeStampFormat timeStampFormat) {
         this.timeStampPattern = Pattern.compile(timeStampFormat.getRegex());
-        this.dateFormatter = DateTimeFormatter.ofPattern(timeStampFormat.getFormat());
+        String format = timeStampFormat.getFormat();
+        this.dayInFormat = containsDay(format);
+        this.monthInFormat = containsMonth(format);
+        this.yearInFormat = containsYear(format);
+        StringBuilder prefixBuilder = new StringBuilder();
+        StringBuilder formatBuilder = new StringBuilder();
+        if (this.dayInFormat) {
+            timeParser = this::parseDate;
+            if (!yearInFormat) {
+                formatBuilder.append("yyyy ");
+                prefixBuilder.append("1970 ");
+                if (!monthInFormat) {
+                    formatBuilder.append("MM ");
+                    prefixBuilder.append("01 ");
+                }
+            }
+            formatBuilder.append(format);
+            dateFormatter = DateTimeFormatter.ofPattern(formatBuilder.toString());
+            datePrefix = prefixBuilder.toString();
+        } else {
+            timeParser = this::parseTime;
+            dateFormatter = DateTimeFormatter.ofPattern(format);
+            datePrefix = "";
+        }
     }
 
     @Override
-    public LineParseResult parse(int index, String raw, String lineLabel, TextColor labelColor) {
+    public LineParseResult parse(int index, String raw, LineSource source) {
         long timestamp;
         Matcher matcher = timeStampPattern.matcher(raw);
         if (matcher.find()) {
             String dateString = matcher.group(1);
-            LocalTime parsed = null;
             try {
-                parsed = LocalTime.parse(dateString, dateFormatter);
-                timestamp = TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
+                timestamp = timeParser.apply(dateString);
             } catch (RuntimeException e) {
                 throw new IllegalStateException("Error while parsing datestring. \""+dateString+"\"." +
                         "The date string pattern matches but the matched string cannot be parsed with the given date format! " +
@@ -59,6 +89,30 @@ public class LineParserTimestampedTextImpl implements LineParser {
         } else {
             return new LineParseResult(raw);
         }
-        return new LineParseResult(new Line(index, raw, timestamp, lineLabel, labelColor));
+        return new LineParseResult(new Line(index, raw, timestamp, source));
+    }
+
+    private long parseDate(String input) {
+        String pimpedInput = datePrefix + input;
+        LocalDateTime parsed = LocalDateTime.parse(pimpedInput, dateFormatter);
+        ZonedDateTime zdt = ZonedDateTime.of(parsed, ZoneId.of("UTC"));
+        return zdt.toInstant().toEpochMilli();
+    }
+
+    private long parseTime(String input) {
+        LocalTime parsed = LocalTime.parse(input, dateFormatter);
+        return TimeUnit.NANOSECONDS.toMillis(parsed.toNanoOfDay());
+    }
+
+    private static boolean containsYear(String format) {
+        return format.contains("yy");
+    }
+
+    private static boolean containsMonth(String format) {
+        return format.contains("M");
+    }
+
+    private static boolean containsDay(String format) {
+        return format.contains("d");
     }
 }

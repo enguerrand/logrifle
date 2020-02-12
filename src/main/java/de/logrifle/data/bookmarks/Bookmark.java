@@ -35,6 +35,10 @@ public class Bookmark {
         return line;
     }
 
+    public String toWritableString() {
+        return line.getLineLabel() + ": " + line.getRaw();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

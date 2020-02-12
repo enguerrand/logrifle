@@ -25,9 +25,12 @@ import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiter;
 import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.ui.UI;
+import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -36,22 +39,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
-    private final Collection<? extends DataView> sourceViews;
+    private final List<DataView> sourceViews;
     private final RateLimiter updater;
     private final List<Line> linesCache = new CopyOnWriteArrayList<>();
     private final Map<String, Integer> processedLinesMap = new HashMap<>();
 
     public DataViewMerged(Collection<? extends DataView> sourceViews, LogDispatcher logDispatcher, RateLimiterFactory factory) {
-        super(sourceViews.stream()
-                .map(DataView::getTitle)
-                .collect(Collectors.joining(" + ")),
+        super("Root View",
                 TextColor.ANSI.DEFAULT,
                 logDispatcher,
-                sourceViews.stream()
-                        .map(DataView::getMaxLineLabelLength)
-                        .max(Comparator.comparing(x -> x))
-                        .orElse(0));
-        this.sourceViews = sourceViews;
+                0);
+        this.sourceViews = new CopyOnWriteArrayList<>(sourceViews);
+        updateMaxLineLabelLengths();
         this.updater = factory.newRateLimiter(this::handleUpdate, logDispatcher);
         logDispatcher.execute(() -> {
             for (DataView sourceView : sourceViews) {
@@ -59,13 +58,6 @@ public class DataViewMerged extends DataView {
             }
         });
         this.updater.requestExecution();
-    }
-
-    @Override
-    public int getLineCount() {
-        return sourceViews.stream()
-                .mapToInt(DataView::getLineCount)
-                .sum();
     }
 
     @Override
@@ -96,7 +88,9 @@ public class DataViewMerged extends DataView {
             int processedLinesCount = processedLinesMap.getOrDefault(viewId, 0);
             if (sourceView.getLineCount() > processedLinesCount) {
                 List<Line> newLinesInView = sourceView.getLines(processedLinesCount, null);
-                newLines.addAll(newLinesInView);
+                newLines.addAll(newLinesInView.stream()
+                        .filter(Line::isVisible)
+                        .collect(Collectors.toList()));
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
@@ -114,5 +108,64 @@ public class DataViewMerged extends DataView {
         } else {
             fireUpdatedIncremental(newLines);
         }
+    }
+
+    @Override
+    protected void clearCacheImpl(){
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        invalidateLogPosition();
+        processedLinesMap.clear();
+        linesCache.clear();
+        handleUpdate();
+    }
+
+    public List<DataView> getViews() {
+        UI.checkGuiThreadOrThrow();
+        return Collections.unmodifiableList(this.sourceViews);
+    }
+
+    ExecutionResult addView(DataView dataView) {
+        UI.checkGuiThreadOrThrow();
+        this.sourceViews.add(dataView);
+        updateMaxLineLabelLengths();
+        getLogDispatcher().execute(() -> {
+            clearCache();
+            dataView.addListener(this);
+        });
+        return new ExecutionResult(true);
+    }
+
+    /**
+     * @throws IndexOutOfBoundsException
+     */
+    DataView removeView(int viewIndex) {
+        UI.checkGuiThreadOrThrow();
+        DataView removed = this.sourceViews.remove(viewIndex);
+        updateMaxLineLabelLengths();
+        getLogDispatcher().execute(() -> {
+            clearCache();
+            removed.addListener(this);
+        });
+        return removed;
+    }
+
+    ExecutionResult toggleView(int viewIndex) {
+        UI.checkGuiThreadOrThrow();
+        try {
+            this.sourceViews.get(viewIndex).toggleActive();
+            updateMaxLineLabelLengths();
+            getLogDispatcher().execute(this::clearCache);
+            return new ExecutionResult(true);
+        } catch (IndexOutOfBoundsException e) {
+            return new ExecutionResult(false, "Invalid view index: "+viewIndex);
+        }
+    }
+
+    private void updateMaxLineLabelLengths() {
+        setMaxLineLabelLength(sourceViews.stream()
+                .filter(DataView::isActive)
+                .map(DataView::getMaxLineLabelLength)
+                .max(Comparator.comparing(x -> x))
+                .orElse(0));
     }
 }

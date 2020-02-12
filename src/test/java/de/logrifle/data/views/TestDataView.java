@@ -41,22 +41,19 @@ public class TestDataView extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        return lines.size();
-    }
-
-    @Override
     public List<Line> getAllLines() {
         return lines;
     }
 
     @Override
     public void onFullUpdate(DataView source) {
-
     }
 
     @Override
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
+    }
 
+    @Override
+    protected void clearCacheImpl() {
     }
 }

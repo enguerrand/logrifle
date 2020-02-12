@@ -20,6 +20,8 @@
 
 package de.logrifle.base;
 
+import org.jetbrains.annotations.Nullable;
+
 public class Strings {
     public static String pad(String s, int length, boolean beginning) {
         return pad(s, length, " ", beginning);
@@ -46,5 +48,16 @@ public class Strings {
             s = s.substring(0, Math.max(0, maxLength - 3)) + truncationPlaceholder.substring(0, truncationPlaceholderLength);
         }
         return s;
+    }
+
+    public static boolean isBlank(@Nullable String s) {
+        if (s == null) {
+            return true;
+        }
+        return (s.matches("\\s*"));
+    }
+
+    public static String expandPathPlaceHolders(String input) {
+        return input.replaceAll("~", System.getProperty("user.home"));
     }
 }

@@ -42,6 +42,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.PageDown, false, true), "scroll-page 0.5");
         keyMap.put(new KeyStroke(KeyType.Home, false, false), "home");
         keyMap.put(new KeyStroke(KeyType.End, false, false), "end");
+        keyMap.put(new KeyStroke(KeyType.F2), "edit-filter");
         keyMap.put(new KeyStroke(KeyType.F4), "toggle-bookmarks-view");
         keyMap.put(new KeyStroke(KeyType.F5), "refresh");
         keyMap.put(new KeyStroke(KeyType.F6), "prev-bookmark");
@@ -49,6 +50,16 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke(KeyType.F8), "bookmark-move-focus -1");
         keyMap.put(new KeyStroke(KeyType.F9), "bookmark");
         keyMap.put(new KeyStroke(KeyType.F10), "bookmark-move-focus 1");
+        keyMap.put(new KeyStroke('0', false, false), "toggle-file 0");
+        keyMap.put(new KeyStroke('1', false, false), "toggle-file 1");
+        keyMap.put(new KeyStroke('2', false, false), "toggle-file 2");
+        keyMap.put(new KeyStroke('3', false, false), "toggle-file 3");
+        keyMap.put(new KeyStroke('4', false, false), "toggle-file 4");
+        keyMap.put(new KeyStroke('5', false, false), "toggle-file 5");
+        keyMap.put(new KeyStroke('6', false, false), "toggle-file 6");
+        keyMap.put(new KeyStroke('7', false, false), "toggle-file 7");
+        keyMap.put(new KeyStroke('8', false, false), "toggle-file 8");
+        keyMap.put(new KeyStroke('9', false, false), "toggle-file 9");
         keyMap.put(new KeyStroke('^', false, false), "lstart");
         keyMap.put(new KeyStroke('$', false, false, true), "lend");
         keyMap.put(new KeyStroke('y', true, false), "scroll -1");
@@ -65,7 +76,7 @@ public class KeyMapFactory {
         keyMap.put(new KeyStroke('L', false, false, true), "line-labels");
         keyMap.put(new KeyStroke('n', false, false), "find-again");
         keyMap.put(new KeyStroke('N', false, false, true), "find-again-backwards");
-        keyMap.put(new KeyStroke('q', false, false), "quit");
+        keyMap.put(new KeyStroke('q', false, false), "prepare :quit");
         keyMap.put(new KeyStroke('h', false, false), "filter-view-up");
         keyMap.put(new KeyStroke('j', false, false), "filter-view-next");
         keyMap.put(new KeyStroke('k', false, false), "filter-view-prev");

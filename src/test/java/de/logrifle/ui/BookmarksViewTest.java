@@ -28,13 +28,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 class BookmarksViewTest {
 
     private static final List<Line> LINES = new ArrayList<>();
-    private static final Bookmarks BOOKMARKS = new Bookmarks();
+    private static final Bookmarks BOOKMARKS = new Bookmarks(StandardCharsets.UTF_8);
 
     @BeforeAll
     static void beforeAll() {

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019, Enguerrand de Rochefort
+ *  Copyright 2020, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,13 +18,29 @@
  *
  */
 
-package de.logrifle.data.parsing;
+package de.logrifle.data.views;
 
-import de.logrifle.data.views.LineSource;
+import com.googlecode.lanterna.TextColor;
 
-public class LineParserTextImpl implements LineParser {
+public class LineSourceTestImpl implements LineSource {
+    private String title;
+
+    public LineSourceTestImpl(String title) {
+        this.title = title;
+    }
+
     @Override
-    public LineParseResult parse(int index, String raw, LineSource source) {
-        return new LineParseResult(new Line(index, raw, System.currentTimeMillis(), source));
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public TextColor getViewColor() {
+        return TextColor.ANSI.DEFAULT;
+    }
+
+    @Override
+    public boolean isActive() {
+        return true;
     }
 }

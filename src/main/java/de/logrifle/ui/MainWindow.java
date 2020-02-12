@@ -147,7 +147,8 @@ public class MainWindow {
                 availableSpaceForBookmarks,
                 logView.getFocusedLineIndexInView(),
                 logView.getLineLabelLength(dataView.getMaxLineLabelLength()),
-                logView.getLineDetailViewState());
+                logView.isShowLineNumbers()
+        );
     }
 
     void close() throws IOException {
@@ -203,8 +204,8 @@ public class MainWindow {
         updateView(screen.getTerminalSize());
     }
 
-    void showCommandViewMessage(String message, @Nullable TextColor textColor) {
-        this.commandView.showMessage(message, textColor == null ? TextColor.ANSI.DEFAULT : textColor);
+    void showCommandViewMessage(String message, TextColor textColor) {
+        this.commandView.showMessage(message, textColor);
     }
 
     LogView getLogView() {

@@ -18,7 +18,7 @@
  *
  */
 
-package de.logrifle;
+package de.logrifle.data.io;
 
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
@@ -32,8 +32,7 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,7 @@ public class LogReader extends DataView {
     private final RateLimiter dispatcher;
     private int currentLineIndex = 0;
 
-    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory) throws IOException {
+    LogReader(LineParser lineParser, Path logfile, TextColor fileColor, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
         super(logfile.getFileName().toString(), fileColor, logDispatcher, logfile.getFileName().toString().length());
         this.dispatcher = factory.newRateLimiter(this::fireUpdatedInternal, logDispatcher);
         this.lineParser = lineParser;
@@ -63,14 +62,14 @@ public class LogReader extends DataView {
              */
             @Override
             public void handle(String s) {
-                LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex, s, getTitle(), getViewColor());
+                LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex, s, LogReader.this);
                 if (parseResult.isNewLine()) {
                     lines.add(parseResult.getParsedLine());
 	                currentLineIndex++;
                 } else {
                     Line last;
                     if (lines.isEmpty()) {
-                        last = Line.initialTextLineOf(currentLineIndex, s, getTitle(), getViewColor());
+                        last = Line.initialTextLineOf(currentLineIndex, s, LogReader.this);
                         lines.add(last);
 	                    currentLineIndex++;
                     } else {
@@ -87,7 +86,7 @@ public class LogReader extends DataView {
                 ex.printStackTrace();
             }
         };
-        tailer = new Tailer(logfile.toFile(), StandardCharsets.UTF_8, tailerListener, 250, false, false, 4096);
+        tailer = new Tailer(logfile.toFile(), charset, tailerListener, 250, false, false, 4096);
         workerPool.submit(tailer);
     }
 
@@ -111,11 +110,6 @@ public class LogReader extends DataView {
     }
 
     @Override
-    public int getLineCount() {
-        return this.linesSnapshot.size();
-    }
-
-    @Override
     public List<Line> getAllLines() {
         return new ArrayList<>(this.linesSnapshot);
     }
@@ -130,7 +124,17 @@ public class LogReader extends DataView {
         // ignored - this should never happen
     }
 
+    @Override
+    public void destroy() {
+        this.shutdown();
+    }
+
     public void shutdown() {
         tailer.stop();
+    }
+
+    @Override
+    protected void clearCacheImpl() {
+        this.getLogDispatcher().execute(this.linesSnapshot::clear);
     }
 }

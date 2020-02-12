@@ -23,6 +23,7 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -30,14 +31,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class DataView implements DataViewListener {
+public abstract class DataView implements DataViewListener, LineSource {
     private final String id = UUID.randomUUID().toString();
-    private final String title;
+    private String title;
     private final Set<DataViewListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher logDispatcher;
-    private int maxLineLabelLength;
+    private volatile int maxLineLabelLength;
     private final TextColor viewColor;
+    private final AtomicReference<Boolean> active = new AtomicReference<>(true);
+    private final AtomicBoolean logPositionInvalidated = new AtomicBoolean(false);
+
     protected DataView(String title, TextColor viewColor, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
         this.viewColor = viewColor;
@@ -45,16 +51,27 @@ public abstract class DataView implements DataViewListener {
         this.maxLineLabelLength = maxLineLabelLength;
     }
 
+    @Override
     public String getTitle() {
         return this.title;
     }
 
+    public void setTitle(String title) {
+        UI.checkGuiThreadOrThrow();
+        this.title = title;
+    }
+
+    @Override
     public TextColor getViewColor() {
         return viewColor;
     }
 
     public int getMaxLineLabelLength() {
         return maxLineLabelLength;
+    }
+
+    public void setMaxLineLabelLength(int maxLineLabelLength) {
+        this.maxLineLabelLength = maxLineLabelLength;
     }
 
     public Line getLine(int index) {
@@ -98,8 +115,29 @@ public abstract class DataView implements DataViewListener {
             listener.onFullUpdate(DataView.this);
         }
     }
-    public abstract int getLineCount();
+
+    protected void fireCacheCleared() {
+        logDispatcher.checkOnDispatchThreadOrThrow();
+        for (DataViewListener listener : this.listeners) {
+            listener.onCacheCleared(DataView.this);
+        }
+    }
+
+    void toggleActive() {
+        this.active.updateAndGet(value -> !value);
+        getLogDispatcher().execute(this::fireUpdated);
+    }
+
+    public boolean isActive() {
+        return active.get();
+    }
+
+    public int getLineCount() {
+        return getAllLines().size();
+    }
+
     public abstract List<Line> getAllLines();
+
     public int indexOfClosestTo(int indexToHit, int startSearchAt) {
         List<Line> allLines = getAllLines();
         Line from = allLines.get(startSearchAt);
@@ -119,5 +157,28 @@ public abstract class DataView implements DataViewListener {
 
     protected LogDispatcher getLogDispatcher() {
         return logDispatcher;
+    }
+
+    public void destroy() {
+    }
+
+    public void invalidateLogPosition() {
+        this.logPositionInvalidated.set(true);
+    }
+
+    public boolean getAndClearLogPositionInvalidated() {
+        return logPositionInvalidated.getAndSet(false);
+    }
+
+    void clearCache() {
+        clearCacheImpl();
+        fireCacheCleared();
+    }
+
+    protected abstract void clearCacheImpl();
+
+    @Override
+    public void onCacheCleared(DataView source) {
+        clearCache();
     }
 }

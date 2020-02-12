@@ -20,10 +20,10 @@
 
 package de.logrifle.ui;
 
-import com.googlecode.lanterna.TextColor;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTextImpl;
+import de.logrifle.data.parsing.TestLinesFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,8 +52,8 @@ class LineDetailViewStateTest {
     void getTopLinesToSkipNoDetail() {
         LineDetailViewState lineDetailViewState = new LineDetailViewState();
         Assertions.assertEquals(0, lineDetailViewState.getTopLinesCountToSkip(Arrays.asList(
-                P.parse(0, "first", "FOO", TextColor.ANSI.DEFAULT).getParsedLine(),
-                P.parse(1, "second", "FOO", TextColor.ANSI.DEFAULT).getParsedLine()
+                P.parse(0, "first", TestLinesFactory.TEST_SOURCE).getParsedLine(),
+                P.parse(1, "second", TestLinesFactory.TEST_SOURCE).getParsedLine()
         )));
     }
 
@@ -61,7 +61,7 @@ class LineDetailViewStateTest {
     @MethodSource("getTopLinesToSkipTestCases")
     void getTopLinesToSkip(TopLinesToSkipTestCase testCase) {
         LineDetailViewState lineDetailViewState = new LineDetailViewState();
-        Line detailedLine = P.parse(testCase.getDetailedLineIndex(), "detail", "FOO", TextColor.ANSI.DEFAULT).getParsedLine();
+        Line detailedLine = P.parse(testCase.getDetailedLineIndex(), "detail", TestLinesFactory.TEST_SOURCE).getParsedLine();
         for (int i = 0; i < testCase.getAdditionalLineCount(); i++) {
             detailedLine.appendAdditionalLine("foo"+i);
         }
@@ -73,7 +73,7 @@ class LineDetailViewStateTest {
             if (i == detailedLine.getIndex()) {
                 lines.add(detailedLine);
             } else {
-                lines.add(P.parse(i, "other" + i, "FOO", TextColor.ANSI.DEFAULT).getParsedLine());
+                lines.add(P.parse(i, "other" + i, TestLinesFactory.TEST_SOURCE).getParsedLine());
             }
         }
         int actual = lineDetailViewState.getTopLinesCountToSkip(lines);

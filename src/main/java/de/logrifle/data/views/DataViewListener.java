@@ -27,4 +27,5 @@ import java.util.List;
 public interface DataViewListener {
     void onFullUpdate(DataView source);
     void onIncrementalUpdate(DataView source, List<Line> newLines);
+    void onCacheCleared(DataView source);
 }

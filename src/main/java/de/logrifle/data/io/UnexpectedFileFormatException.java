@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019, Enguerrand de Rochefort
+ *  Copyright 2020, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,13 +18,23 @@
  *
  */
 
-package de.logrifle.data.parsing;
+package de.logrifle.data.io;
 
-import de.logrifle.data.views.LineSource;
+import java.io.IOException;
 
-public class LineParserTextImpl implements LineParser {
-    @Override
-    public LineParseResult parse(int index, String raw, LineSource source) {
-        return new LineParseResult(new Line(index, raw, System.currentTimeMillis(), source));
+public class UnexpectedFileFormatException extends IOException {
+    public UnexpectedFileFormatException() {
+    }
+
+    public UnexpectedFileFormatException(String s) {
+        super(s);
+    }
+
+    public UnexpectedFileFormatException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
+
+    public UnexpectedFileFormatException(Throwable throwable) {
+        super(throwable);
     }
 }

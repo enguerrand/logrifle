@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 class LogView {
     private final Panel panel;
@@ -50,6 +51,7 @@ class LogView {
     private final Bookmarks bookmarks;
     private boolean followTail;
     private final LineDetailViewState lineDetailViewState = new LineDetailViewState();
+    private final AtomicReference<Boolean> showLineNumbers = new AtomicReference<>(true);
 
     LogView(LogDispatcher logDispatcher, HighlightsData highlightsData, LogLineRenderer logLineRenderer, Bookmarks bookmarks, boolean followTail, LineLabelDisplayMode initialLineLabelDisplayMode) {
         lineLabelDisplayMode = initialLineLabelDisplayMode;
@@ -77,6 +79,10 @@ class LogView {
             @Override
             public void onIncrementalUpdate(DataView source, List<Line> newLines) {
                 onFullUpdate(source);
+            }
+
+            @Override
+            public void onCacheCleared(DataView source) {
             }
         };
     }
@@ -107,7 +113,7 @@ class LogView {
             Line line = lines.get(i);
             boolean focused = i == this.logPosition.getFocusOffset();
             boolean hot = followTail && i == lines.size() - 1;
-            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, this.lineDetailViewState, rows);
+            AbstractComponent<?> label = logLineRenderer.render(line, dataView.getLineCount(), focused, lineLabelLength, horizontalScrollPosition, highlightsData.getHighlights(), this.bookmarks, hot, this.lineDetailViewState, rows, showLineNumbers.get());
             panel.addComponent(label);
         }
         this.lastView = dataView;
@@ -151,7 +157,7 @@ class LogView {
         int marginWidth = ((GridLayout)panel.getLayoutManager()).getHorizontalSpacing();
         int columnsAvailable = panel.getSize().getColumns() - 2 * marginWidth;
         int lineLabelLength = getLineLabelLength(lastView.getMaxLineLabelLength());
-        AbstractComponent<?> renderedLine = logLineRenderer.render(focusedLine, lastView.getLineCount(), false, lineLabelLength, 0, Collections.emptyList(), this.bookmarks, false, LineDetailViewState.IGNORED, 1);
+        AbstractComponent<?> renderedLine = logLineRenderer.render(focusedLine, lastView.getLineCount(), false, lineLabelLength, 0, Collections.emptyList(), this.bookmarks, false, LineDetailViewState.IGNORED, 1, showLineNumbers.get());
         int lineLength = renderedLine.getPreferredSize().getColumns();
         this.horizontalScrollPosition = Math.max(0, lineLength - columnsAvailable);
         return new ExecutionResult(true);
@@ -202,7 +208,7 @@ class LogView {
         if (lastView == null) {
             return new ExecutionResult(false);
         }
-        int index = lastView.indexOfClosestTo(lineIndex, getFocusedLineIndexInView());
+        int index = lastView.indexOfClosestTo(lineIndex, Math.max(getFocusedLineIndexInView(), 0));
         if (index < 0) {
             return new ExecutionResult(false);
         } else {
@@ -314,5 +320,13 @@ class LogView {
 
     public LineDetailViewState getLineDetailViewState() {
         return lineDetailViewState;
+    }
+
+    boolean isShowLineNumbers() {
+        return showLineNumbers.get();
+    }
+
+    void toggleLineNumbers() {
+        this.showLineNumbers.updateAndGet(value -> !value);
     }
 }

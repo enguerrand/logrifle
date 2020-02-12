@@ -64,6 +64,20 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("write-bookmarks", "wb", "Writes all bookmarks to the file provided as the first parameter.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.writeBookmarks(args);
+            }
+        });
+
+        register(new Command("toggle-line-numbers", "tln", "Toggles display of line numbers on and off.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleLineNumbers();
+            }
+        });
+
         register(new Command("prev-bookmark", "pb", "Scrolls to the previous bookmark.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
@@ -124,6 +138,13 @@ public class CommandHandler {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.editFilter();
+            }
+        });
+
+        register(new Command("replace-filter", "rf", "Replaces the currently focused filter's pattern with the pattern provided as the first argument.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.replaceFilter(args, blocking);
             }
         });
 
@@ -341,6 +362,27 @@ public class CommandHandler {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.setMaxSidebarWidthRatio(args);
+            }
+        });
+
+        register(new Command("toggle-file", "tf", "Toggles the visibility of a file. The file's index is specified as the first parameter.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleViewVisible(args);
+            }
+        });
+
+        register(new Command("open", "of", "Loads a logfile into the current view. The first parameter specifies the path to the file.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.openFile(args);
+            }
+        });
+
+        register(new Command("close", "cf", "Closes the file at the index provided by the first parameter and removes it from the view.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.closeFile(args);
             }
         });
 

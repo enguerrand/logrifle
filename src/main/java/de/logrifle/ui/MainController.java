@@ -25,10 +25,12 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Patterns;
+import de.logrifle.base.Strings;
 import de.logrifle.data.bookmarks.Bookmark;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.Highlight;
 import de.logrifle.data.highlights.HighlightsData;
+import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
@@ -41,13 +43,17 @@ import de.logrifle.ui.cmd.Query;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MainController {
     private static final String COMMAND_PREFIX = ":";
@@ -60,6 +66,7 @@ public class MainController {
     private final ViewsTree viewsTree;
     private final HighlightsData highlightsData;
     private final Bookmarks bookmarks;
+    private final FileOpener logFileOpener;
     private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
             TextColor.ANSI.BLACK,
             TextColor.ANSI.BLACK,
@@ -82,14 +89,15 @@ public class MainController {
             LogDispatcher logDispatcher,
             ViewsTree viewsTree,
             HighlightsData highlightsData,
-            Bookmarks bookmarks
-    ) {
+            Bookmarks bookmarks,
+            FileOpener logFileOpener) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
         this.viewsTree = viewsTree;
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
+        this.logFileOpener = logFileOpener;
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
@@ -251,7 +259,7 @@ public class MainController {
         return new ExecutionResult(true);
 
     }
-
+;
     public ExecutionResult deleteHighlight(String args) {
         try {
             int index = Integer.parseInt(args);
@@ -292,20 +300,42 @@ public class MainController {
     public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        ViewsTreeNode parent = focusedTreeNode.getParent();
-        if (parent == null) {
+        String title = focusedTreeNode.getTitle();
+        DataView dataView = focusedTreeNode.getDataView();
+        if (!(dataView instanceof DataViewFiltered)) {
             return new ExecutionResult(false, "Cannot edit this view!");
         }
-        String regex = focusedTreeNode.getTitle();
-        String preparedCommand;
-        if (regex.startsWith("!")) {
-            preparedCommand = ":filter! " + regex.substring(1);
-        } else {
-            preparedCommand = ":filter " + regex;
-        }
-        viewsTree.removeNode(focusedTreeNode);
-        viewsTree.setFocusedNode(parent);
+        DataViewFiltered filter = (DataViewFiltered) dataView;
+        String preparedCommand = ":replace-filter " + filter.getRegex();
         return prepareCommand(preparedCommand);
+    }
+
+    public ExecutionResult replaceFilter(String newRegex, boolean blocking) {
+        ViewsTree viewsTree = this.viewsTree;
+        ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
+        DataView focusedDataView = focusedTreeNode.getDataView();
+        if (!(focusedDataView instanceof DataViewFiltered)) {
+            return new ExecutionResult(false, "Cannot edit this view!");
+        }
+        DataViewFiltered currentFilter = (DataViewFiltered) focusedDataView;
+        currentFilter.updateTitle(newRegex);
+        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(
+                () -> currentFilter.setPattern(newRegex), logDispatcher
+        );
+        if (blocking) {
+            try {
+                return f.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Interrupted while editing filter!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, "Error while editing filter: "+e.toString());
+            }
+        } else {
+            f.thenRunAsync(mainWindow::updateView, UI::runLater);
+            // need to update for the updated title anyway
+            return new ExecutionResult(true);
+        }
     }
 
     public ExecutionResult toggleBookmark() {
@@ -324,6 +354,23 @@ public class MainController {
         ExecutionResult toggleResult = bookmarks.toggle(focusedLine);
         ExecutionResult moveFocusResult = moveFocus(args);
         return ExecutionResult.merged(toggleResult, moveFocusResult);
+    }
+
+    public ExecutionResult writeBookmarks(String args) {
+        if (Strings.isBlank(args)) {
+            return new ExecutionResult(false, "Argument missing: path");
+        }
+        try {
+            bookmarks.write(args);
+            return new ExecutionResult(false);
+        } catch (IOException e) {
+            return new ExecutionResult(false, "Could not write bookmarks: "+e);
+        }
+    }
+
+    public ExecutionResult toggleLineNumbers() {
+        mainWindow.getLogView().toggleLineNumbers();
+        return new ExecutionResult(true);
     }
 
     public ExecutionResult findAgain() {
@@ -482,6 +529,41 @@ public class MainController {
         }
         this.mainWindow.getSideBar().setMaxRelativeWidth(ratio);
         return new ExecutionResult(true);
+    }
+
+    public ExecutionResult toggleViewVisible(String arg) {
+        try {
+            int index = Integer.parseInt(arg);
+            return this.viewsTree.toggleView(index);
+        }  catch (NumberFormatException e) {
+            return new ExecutionResult(false, arg + ": Not a valid view index!");
+        }
+    }
+
+    public ExecutionResult openFile(String arg) {
+        Path path = Paths.get(arg);
+        try {
+            Collection<DataView> logfiles = logFileOpener.open(path);
+            if (logfiles.isEmpty()) {
+                return new ExecutionResult(false, "No logfiles could be found unter " + path.toString());
+            }
+            return ExecutionResult.merged((logfiles.stream()
+                    .map(viewsTree::addView)
+                    .collect(Collectors.toList())));
+        } catch (IOException e) {
+            return new ExecutionResult(false, "Could not open file: " + e.toString());
+        }
+    }
+
+    public ExecutionResult closeFile(String arg) {
+        try {
+            int index = Integer.parseInt(arg);
+            DataView dataView = this.viewsTree.removeView(index);
+            dataView.destroy();
+            return new ExecutionResult(true);
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            return new ExecutionResult(false, arg + ": Not a valid view index!");
+        }
     }
 
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
