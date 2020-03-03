@@ -145,7 +145,7 @@ public class MainWindow {
                 logView.getHorizontalScrollPosition(),
                 highlightsData.getHighlights(),
                 availableSpaceForBookmarks,
-                logView.getFocusedLineIndexInView(),
+                logView.getGlobalIndexOfFocusedLineOrZero(),
                 logView.getLineLabelLength(dataView.getMaxLineLabelLength()),
                 logView.isShowLineNumbers()
         );
