@@ -74,8 +74,13 @@ public abstract class DataView implements DataViewListener, LineSource {
         this.maxLineLabelLength = maxLineLabelLength;
     }
 
+    @Nullable
     public Line getLine(int index) {
-        return getAllLines().get(index);
+        List<Line> allLines = getAllLines();
+        if (allLines.size() <= index) {
+            return null;
+        }
+        return allLines.get(index);
     }
     public List<Line> getLines(int topIndex, @Nullable Integer maxCount) {
         List<Line> snapshot = getAllLines();
