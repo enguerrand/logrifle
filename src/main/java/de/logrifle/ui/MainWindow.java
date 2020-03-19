@@ -124,7 +124,7 @@ public class MainWindow {
         if (newTerminalSize != null) {
             int sideBarWidth = sideBar.update(sidebarVisible, newTerminalSize.getColumns());
             if (sideBarWidth >= newTerminalSize.getColumns()) {
-                throw new IllegalStateException("Side bar is too large: "+sideBarWidth+" >= " + newTerminalSize.getColumns());
+                sideBarWidth = sideBar.update(false, newTerminalSize.getColumns());
             }
             mainWindowLayout = MainWindowLayout.compute(newTerminalSize, commandView.getHeight(), sideBarWidth, bookmarks.count(), bookmarksViewVisible);
         } else {
