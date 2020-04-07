@@ -35,6 +35,7 @@ class CommandView implements InteractableKeystrokeListener {
     private final Panel panel;
     private final TextBox commandInput;
     private final Label messageBox;
+    private final CommandHistory history;
     /**
      * only access on ui thread
      */
@@ -42,6 +43,7 @@ class CommandView implements InteractableKeystrokeListener {
     private int height = 0;
 
     CommandView() {
+        history = new CommandHistory();
         LayoutManager layout = new ZeroMarginsGridLayout(1);
         panel = new Panel(layout);
         TextBox.DefaultTextBoxRenderer renderer = new TextBox.DefaultTextBoxRenderer();
@@ -91,6 +93,11 @@ class CommandView implements InteractableKeystrokeListener {
         }
     }
 
+    private void setCurrentInput(String input) {
+        commandInput.setText(input);
+        commandInput.setCaretPosition(input.length());
+    }
+
     @Override
     public void onKeyStroke(Interactable interactable, KeyStroke keyStroke) {
         String command = commandInput.getText();
@@ -101,12 +108,20 @@ class CommandView implements InteractableKeystrokeListener {
         KeyType keyType = keyStroke.getKeyType();
         switch(keyType) {
             case Escape:
-                commandInput.setText("");
-                this.listener.onEmptied();
+                setCurrentInput("");
+                listener.onEmptied();
+                history.reset();
                 break;
             case Enter:
-                commandInput.setText("");
+                setCurrentInput("");
+                history.append(command);
                 this.listener.onCommand(command);
+                break;
+            case ArrowUp:
+                history.back(commandInput.getText(), this::setCurrentInput);
+                break;
+            case ArrowDown:
+                history.forward(this::setCurrentInput);
                 break;
             default:
                 break;
