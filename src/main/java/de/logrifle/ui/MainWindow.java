@@ -24,11 +24,13 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.bundle.LanternaThemes;
 import com.googlecode.lanterna.gui2.BorderLayout;
+import com.googlecode.lanterna.gui2.Interactable;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.WindowListenerAdapter;
+import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import de.logrifle.base.DefaultUncaughtExceptionHandler;
@@ -96,9 +98,24 @@ public class MainWindow {
         commandView = new CommandView();
         mainPanel.addComponent(commandView.getPanel());
         commandView.getPanel().setLayoutData(BorderLayout.Location.BOTTOM);
-        window.addInteractableListener(commandView);
+        window.addInteractableListener(new InteractableKeystrokeListener() {
+            @Override
+            public void onKeyStroke(Interactable interactable, KeyStroke keyStroke) {
+                commandView.onKeyStroke(interactable, keyStroke);
+                updateView();
+            }
+
+            @Override
+            public Interactable getInteractable() {
+                return commandView.getInteractable();
+            }
+        });
 
         window.setComponent(mainPanel);
+    }
+
+    void setCommandAutoCompleter(CommandAutoCompleter autoCompleter) {
+        this.commandView.setAutoCompleter(autoCompleter);
     }
 
     void setCommandViewListener(CommandViewListener commandViewListener) {

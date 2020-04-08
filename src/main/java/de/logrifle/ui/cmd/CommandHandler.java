@@ -404,6 +404,12 @@ public class CommandHandler {
         this.mainController = mainController;
     }
 
+    public List<String> getAvailableCommands() {
+        List<String> commands = new ArrayList<>(this.commands.keySet());
+        commands.sort(Comparator.naturalOrder());
+        return commands;
+    }
+
     /**
      * @return whether the ui should be updated as a result of this command execution
      */
