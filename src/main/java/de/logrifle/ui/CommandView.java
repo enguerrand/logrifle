@@ -149,6 +149,8 @@ class CommandView implements InteractableKeystrokeListener {
                 this.listener.onCommand(command);
                 break;
             case Tab:
+                String completed = commandAutoCompleter.complete(command);
+                setCurrentInput(completed);
                 break;
             case ArrowUp:
                 history.back(commandInput.getText(), this::setCurrentInput);

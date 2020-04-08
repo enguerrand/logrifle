@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommandAutoCompleter {
+    private static final String PREFIX = ":";
     private final List<String> allCommands;
     private final int maximumCommandLength;
 
@@ -34,7 +35,7 @@ public class CommandAutoCompleter {
         this.maximumCommandLength = allCommands.stream()
                 .map(String::length)
                 .max(Comparator.naturalOrder())
-                .orElse(0) + ":".length();
+                .orElse(0) + PREFIX.length();
     }
 
     public int getMaximumCommandLength() {
@@ -42,7 +43,7 @@ public class CommandAutoCompleter {
     }
 
     public List<String> getMatching(String currentInput) {
-        if (!currentInput.startsWith(":")) {
+        if (!currentInput.startsWith(PREFIX)) {
             return Collections.emptyList();
         }
         String currentCommand = currentInput.substring(1);
@@ -52,7 +53,37 @@ public class CommandAutoCompleter {
     }
 
     public String complete(String currentInput) {
-        // TODO
-        return currentInput;
+        List<String> matching = getMatching(currentInput);
+        if (matching.isEmpty()) {
+            return currentInput;
+        }
+        String currentInputStripped = currentInput.substring(1);
+        List<String> stripped = matching.stream()
+                .map(s -> s.replaceFirst(currentInputStripped, ""))
+                .collect(Collectors.toList());
+        int maxLength = stripped.stream()
+                .map(String::length)
+                .min(Comparator.naturalOrder())
+                .orElse(0);
+
+        StringBuilder toAppend = new StringBuilder();
+        boolean charsMatching = true;
+        for (int charIndex = 0; charIndex < maxLength && charsMatching; charIndex++) {
+            Character c = null;
+            for (int i = 0; i < stripped.size(); i++) {
+                String s = stripped.get(i);
+                char nextChar = s.charAt(charIndex);
+                if (i == 0) {
+                    c = nextChar;
+                } else if (c != nextChar) {
+                    charsMatching = false;
+                    break;
+                }
+            }
+            if (charsMatching && c != null) {
+                toAppend.append(c);
+            }
+        }
+        return currentInput + toAppend.toString();
     }
 }
