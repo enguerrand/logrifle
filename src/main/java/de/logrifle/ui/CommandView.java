@@ -22,7 +22,6 @@ package de.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.gui2.AbstractComponent;
 import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.Interactable;
 import com.googlecode.lanterna.gui2.Label;
@@ -33,7 +32,6 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +41,6 @@ class CommandView implements InteractableKeystrokeListener {
     private final Label messageBox;
     private final CommandHistory history;
     private final Panel completionPanel;
-    private List<String> currentCommandOptions = Collections.emptyList();
     /**
      * only access on ui thread
      */
@@ -114,7 +111,7 @@ class CommandView implements InteractableKeystrokeListener {
             int margin = 1;
             int minWidth = commandAutoCompleter.getMaximumCommandLength() + caretWidth + margin;
             TerminalSize nextPreferredSize;
-            if (commandBarSize.getColumns() <= minWidth || currentCommandOptions.isEmpty()) {
+            if (commandBarSize.getColumns() <= minWidth || completionPanel.getPreferredSize().getColumns() == 0) {
                 nextPreferredSize = commandBarSize;
             } else {
                 nextPreferredSize = new TerminalSize(minWidth, 1);
@@ -131,9 +128,9 @@ class CommandView implements InteractableKeystrokeListener {
     @Override
     public void onKeyStroke(Interactable interactable, KeyStroke keyStroke) {
         String command = commandInput.getText();
+        completionPanel.removeAllComponents();
         if(command.isEmpty()) {
             listener.onEmptied();
-            currentCommandOptions = Collections.emptyList();
             return;
         }
         KeyType keyType = keyStroke.getKeyType();
@@ -161,13 +158,13 @@ class CommandView implements InteractableKeystrokeListener {
             default:
                 break;
         }
-        currentCommandOptions = commandAutoCompleter.getMatching(commandInput.getText());
-
-        AbstractComponent<?> completion = new MultiColoredLabel(currentCommandOptions.stream()
-                .map(opt -> new ColoredString(opt + " ", null, null))
-                .collect(Collectors.toList())).asComponent();
-        completionPanel.removeAllComponents();
-        completionPanel.addComponent(completion);
+        List<String> currentCommandOptions = commandAutoCompleter.getMatching(commandInput.getText());
+        completionPanel.addComponent(new MultiColoredLabel(
+                currentCommandOptions.stream()
+                        .map(opt -> new ColoredString(opt + " ", null, null))
+                        .collect(Collectors.toList()))
+                .asComponent()
+        );
     }
 
     @Override
