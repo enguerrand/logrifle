@@ -9,7 +9,7 @@ Lists of 14 third-party dependencies.
      (The Apache Software License, Version 2.0) JetBrains Java Annotations (org.jetbrains:annotations:16.0.2 - https://github.com/JetBrains/java-annotations)
      (Eclipse Public License v2.0) JUnit Jupiter API (org.junit.jupiter:junit-jupiter-api:5.5.2 - https://junit.org/junit5/)
      (Eclipse Public License v2.0) JUnit Jupiter Engine (org.junit.jupiter:junit-jupiter-engine:5.5.2 - https://junit.org/junit5/)
-     (Eclipse Public License v2.0) JUnit Jupiter Params (org.junit.jupiter:junit-jupiter-params:5.4.2 - https://junit.org/junit5/)
+     (Eclipse Public License v2.0) JUnit Jupiter Params (org.junit.jupiter:junit-jupiter-params:5.5.2 - https://junit.org/junit5/)
      (Eclipse Public License v2.0) JUnit Platform Commons (org.junit.platform:junit-platform-commons:1.5.2 - https://junit.org/junit5/)
      (Eclipse Public License v2.0) JUnit Platform Engine API (org.junit.platform:junit-platform-engine:1.5.2 - https://junit.org/junit5/)
      (The Apache License, Version 2.0) org.opentest4j:opentest4j (org.opentest4j:opentest4j:1.2.0 - https://github.com/ota4j-team/opentest4j)
