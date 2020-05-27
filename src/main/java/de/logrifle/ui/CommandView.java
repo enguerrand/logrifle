@@ -22,6 +22,7 @@ package de.logrifle.ui;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.Interactable;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.LayoutManager;
@@ -31,10 +32,19 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 class CommandView implements InteractableKeystrokeListener {
     private final Panel panel;
     private final TextBox commandInput;
     private final Label messageBox;
+    private final CommandHistory history;
+    private final Panel completionPanel;
+    /**
+     * only access on ui thread
+     */
+    private CommandAutoCompleter commandAutoCompleter;
     /**
      * only access on ui thread
      */
@@ -42,8 +52,10 @@ class CommandView implements InteractableKeystrokeListener {
     private int height = 0;
 
     CommandView() {
-        LayoutManager layout = new ZeroMarginsGridLayout(1);
+        history = new CommandHistory();
+        LayoutManager layout = new BorderLayout();
         panel = new Panel(layout);
+        completionPanel = new Panel(new ZeroMarginsGridLayout(1));
         TextBox.DefaultTextBoxRenderer renderer = new TextBox.DefaultTextBoxRenderer();
         renderer.setUnusedSpaceCharacter(' ');
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
@@ -55,12 +67,19 @@ class CommandView implements InteractableKeystrokeListener {
         this.listener = listener;
     }
 
+    void setAutoCompleter(CommandAutoCompleter commandAutoCompleter) {
+        this.commandAutoCompleter = commandAutoCompleter;
+    }
+
     void show(String initialText){
         hide();
         commandInput.setText(initialText);
         commandInput.setCaretPosition(initialText.length());
         panel.addComponent(commandInput);
+        commandInput.setLayoutData(BorderLayout.Location.LEFT);
         commandInput.takeFocus();
+        panel.addComponent(completionPanel);
+        completionPanel.setLayoutData(BorderLayout.Location.CENTER);
         height = 1;
     }
 
@@ -78,6 +97,7 @@ class CommandView implements InteractableKeystrokeListener {
         UI.checkGuiThreadOrThrow();
         panel.removeComponent(commandInput);
         panel.removeComponent(messageBox);
+        panel.removeComponent(completionPanel);
         height = 0;
     }
 
@@ -87,30 +107,64 @@ class CommandView implements InteractableKeystrokeListener {
 
     void update(@Nullable TerminalSize commandBarSize) {
         if (commandBarSize != null) {
-            commandInput.setPreferredSize(commandBarSize);
+            int caretWidth = 1;
+            int margin = 1;
+            int minWidth = commandAutoCompleter.getMaximumCommandLength() + caretWidth + margin;
+            TerminalSize nextPreferredSize;
+            if (commandBarSize.getColumns() <= minWidth || completionPanel.getPreferredSize().getColumns() == 0) {
+                nextPreferredSize = commandBarSize;
+            } else {
+                nextPreferredSize = new TerminalSize(minWidth, 1);
+            }
+            commandInput.setPreferredSize(nextPreferredSize);
         }
+    }
+
+    private void setCurrentInput(String input) {
+        commandInput.setText(input);
+        commandInput.setCaretPosition(input.length());
     }
 
     @Override
     public void onKeyStroke(Interactable interactable, KeyStroke keyStroke) {
         String command = commandInput.getText();
+        completionPanel.removeAllComponents();
         if(command.isEmpty()) {
-            this.listener.onEmptied();
+            listener.onEmptied();
             return;
         }
         KeyType keyType = keyStroke.getKeyType();
         switch(keyType) {
             case Escape:
-                commandInput.setText("");
-                this.listener.onEmptied();
+                setCurrentInput("");
+                listener.onEmptied();
+                history.reset();
                 break;
             case Enter:
-                commandInput.setText("");
+                setCurrentInput("");
+                history.append(command);
                 this.listener.onCommand(command);
+                break;
+            case Tab:
+                String completed = commandAutoCompleter.complete(command);
+                setCurrentInput(completed);
+                break;
+            case ArrowUp:
+                history.back(commandInput.getText(), this::setCurrentInput);
+                break;
+            case ArrowDown:
+                history.forward(this::setCurrentInput);
                 break;
             default:
                 break;
         }
+        List<String> currentCommandOptions = commandAutoCompleter.getMatching(commandInput.getText());
+        completionPanel.addComponent(new MultiColoredLabel(
+                currentCommandOptions.stream()
+                        .map(opt -> new ColoredString(opt + " ", null, null))
+                        .collect(Collectors.toList()))
+                .asComponent()
+        );
     }
 
     @Override

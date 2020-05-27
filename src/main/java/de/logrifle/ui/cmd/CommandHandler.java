@@ -404,6 +404,12 @@ public class CommandHandler {
         this.mainController = mainController;
     }
 
+    public List<String> getAvailableCommands() {
+        List<String> commands = new ArrayList<>(this.commands.keySet());
+        commands.sort(Comparator.naturalOrder());
+        return commands;
+    }
+
     /**
      * @return whether the ui should be updated as a result of this command execution
      */
@@ -491,6 +497,15 @@ public class CommandHandler {
         for (KeyBind bind : binds) {
             sb.append(bind.render(bindLength)+"\n");
         }
+
+        sb.append("\n");
+        sb.append("Keybinds in command input mode:\n");
+        sb.append("======================================\n");
+        sb.append("ArrowDown        => Go to next command in history\n");
+        sb.append("ArrowUp          => Go to previous command in history\n");
+        sb.append("Enter            => Execute current input as command\n");
+        sb.append("Escape           => Close command input bar\n");
+
         return sb.toString();
     }
 

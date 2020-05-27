@@ -98,6 +98,8 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
+        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(commandHandler.getAvailableCommands());
+        this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
             public void onCommand(String commandLine) {
