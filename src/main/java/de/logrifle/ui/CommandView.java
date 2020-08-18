@@ -60,7 +60,7 @@ class CommandView implements InteractableKeystrokeListener {
         renderer.setUnusedSpaceCharacter(' ');
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
             .setRenderer(renderer);
-        messageBox = new Label("");
+        messageBox = new SanitizedLabel("");
     }
 
     void setListener(CommandViewListener listener) {

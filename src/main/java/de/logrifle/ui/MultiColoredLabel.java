@@ -36,7 +36,7 @@ public class MultiColoredLabel extends Panel {
         layout.setSpacing(0);
         panel = new Panel(layout);
         for (ColoredString coloredString : text) {
-            Label label = new Label(coloredString.getText());
+            Label label = new SanitizedLabel(coloredString.getText());
             label.setLabelWidth(null); // prevents word wrap
             coloredString.getBgColor().ifPresent(label::setBackgroundColor);
             coloredString.getFgColor().ifPresent(label::setForegroundColor);
