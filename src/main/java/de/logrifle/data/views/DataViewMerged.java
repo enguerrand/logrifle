@@ -142,10 +142,7 @@ public class DataViewMerged extends DataView {
         UI.checkGuiThreadOrThrow();
         DataView removed = this.sourceViews.remove(viewIndex);
         updateMaxLineLabelLengths();
-        getLogDispatcher().execute(() -> {
-            clearCache();
-            removed.addListener(this);
-        });
+        removed.destroy();
         return removed;
     }
 

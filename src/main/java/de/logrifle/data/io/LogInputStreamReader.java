@@ -81,4 +81,12 @@ public class LogInputStreamReader extends DataView {
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         // this should never happen
     }
+
+    @Override
+    public void onDestroyed(DataView source) {
+        if (this.equals(source)) {
+            this.lines.clear();
+        }
+        super.onDestroyed(source);
+    }
 }

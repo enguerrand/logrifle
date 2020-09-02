@@ -84,6 +84,10 @@ class LogView {
             @Override
             public void onCacheCleared(DataView source) {
             }
+
+            @Override
+            public void onDestroyed(DataView source) {
+            }
         };
     }
 
