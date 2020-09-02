@@ -202,9 +202,9 @@ public class Main {
         }
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
-        ViewsTree viewsTree = new ViewsTree(rootView);
-        HighlightsData highlightsData = new HighlightsData();
         Bookmarks bookmarks = new Bookmarks(charset);
+        ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
+        HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(

@@ -63,6 +63,10 @@ public class Line {
         return source.isActive();
     }
 
+    public boolean belongsTo(LineSource lineSource) {
+        return lineSource.equals(this.source);
+    }
+
     public TextColor getLabelColor() {
         return source.getViewColor();
     }
