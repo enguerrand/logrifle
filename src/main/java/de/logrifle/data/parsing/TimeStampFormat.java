@@ -25,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 public class TimeStampFormat {
     public static final String DEFAULT_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
     public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
+    public static final String SECONDS_TIME_MATCH_REGEX = ".*(\\d{2}:\\d{2}:\\d{2}).*";
+    public static final String SECONDS_DATE_FORMAT = "HH:mm:ss";
     private final String regex;
     private final String format;
 

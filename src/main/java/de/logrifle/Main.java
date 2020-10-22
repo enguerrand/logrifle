@@ -109,6 +109,9 @@ public class Main {
         parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
+        parser.addArgument("--seconds")
+                .action(Arguments.storeTrue())
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormat.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormat.SECONDS_TIME_MATCH_REGEX+"\"");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
@@ -168,8 +171,16 @@ public class Main {
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
 
         LogDispatcher logDispatcher = new LogDispatcher();
-        String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
-        String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        boolean timestampsSecondsFormat = getBooleanOption(defaults, parserResult, "seconds", false);
+        String timestampRegex;
+        String timestampFormat;
+        if (timestampsSecondsFormat) {
+            timestampRegex = TimeStampFormat.SECONDS_TIME_MATCH_REGEX;
+            timestampFormat = TimeStampFormat.SECONDS_DATE_FORMAT;
+        } else {
+            timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
+            timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        }
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         List<DataView> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
