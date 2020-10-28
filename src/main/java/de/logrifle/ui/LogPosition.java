@@ -45,8 +45,15 @@ class LogPosition {
         return topIndex;
     }
 
-    LogPosition scroll(int delta) {
-        return new LogPosition(this.topIndex + delta, this.focusOffset);
+    LogPosition scroll(int delta, int visibleRowsCount) {
+        int nextOffset = Math.max(
+                0,
+                Math.min(
+                        visibleRowsCount - 1,
+                        this.focusOffset - delta
+                )
+        );
+        return new LogPosition(this.topIndex + delta, nextOffset);
     }
 
     LogPosition moveFocus(int delta) {
