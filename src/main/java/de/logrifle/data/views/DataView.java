@@ -43,12 +43,18 @@ public abstract class DataView implements DataViewListener, LineSource {
     private final TextColor viewColor;
     private final AtomicReference<Boolean> active = new AtomicReference<>(true);
     private final AtomicBoolean logPositionInvalidated = new AtomicBoolean(false);
+    @Nullable
+    private Runnable closeHook;
 
     protected DataView(String title, TextColor viewColor, LogDispatcher logDispatcher, int maxLineLabelLength) {
         this.title = title;
         this.viewColor = viewColor;
         this.logDispatcher = logDispatcher;
         this.maxLineLabelLength = maxLineLabelLength;
+    }
+
+    public void setCloseHook(Runnable closeHook) {
+        this.closeHook = closeHook;
     }
 
     @Override
@@ -164,7 +170,24 @@ public abstract class DataView implements DataViewListener, LineSource {
         return logDispatcher;
     }
 
-    public void destroy() {
+    public final void destroy() {
+        getLogDispatcher().execute(() -> {
+            clearCache();
+            for (DataViewListener listener : this.listeners) {
+                listener.onDestroyed(DataView.this);
+            }
+            this.listeners.clear();
+            this.onDestroyed(this);
+        });
+    }
+
+    @Override
+    public void onDestroyed(DataView source) {
+        clearCacheImpl();
+        @Nullable Runnable closeHook = this.closeHook;
+        if (closeHook != null) {
+            closeHook.run();
+        }
     }
 
     public void invalidateLogPosition() {

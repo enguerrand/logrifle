@@ -125,8 +125,12 @@ public class LogReader extends DataView {
     }
 
     @Override
-    public void destroy() {
-        this.shutdown();
+    public void onDestroyed(DataView source) {
+        if (this.equals(source)) {
+            this.shutdown();
+        }
+        super.onDestroyed(source);
+        this.lines.clear();
     }
 
     public void shutdown() {

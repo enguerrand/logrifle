@@ -58,6 +58,7 @@ public class DataViewFiltered extends DataView {
     }
 
     public void updateTitle(String regex) {
+        this.regex = regex;
         super.setTitle(deriveTitleFromRegex(regex, this.inverted));
     }
 

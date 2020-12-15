@@ -20,6 +20,7 @@
 
 package de.logrifle.data.views;
 
+import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.util.List;
@@ -27,11 +28,13 @@ import java.util.List;
 public class ViewsTree {
     private final ViewsTreeNode rootNode;
     private final DataViewMerged rootView;
+    private final Bookmarks bookmarks;
     private ViewsTreeNode focusedNode;
 
-    public ViewsTree(DataViewMerged rootView) {
+    public ViewsTree(DataViewMerged rootView, Bookmarks bookmarks) {
         this.rootNode = new ViewsTreeNode(null, rootView);
         this.rootView = rootView;
+        this.bookmarks = bookmarks;
         this.focusedNode = rootNode;
     }
 
@@ -133,7 +136,9 @@ public class ViewsTree {
      * @throws IndexOutOfBoundsException
      */
     public DataView removeView(int viewIndex){
-        return this.rootView.removeView(viewIndex);
+        DataView removed = this.rootView.removeView(viewIndex);
+        this.bookmarks.removeBookmarksOf(removed);
+        return removed;
     }
 
     public ExecutionResult toggleView(int viewIndex){

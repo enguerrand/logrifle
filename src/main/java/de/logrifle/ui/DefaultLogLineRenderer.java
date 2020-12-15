@@ -87,7 +87,7 @@ public class DefaultLogLineRenderer implements LogLineRenderer {
                     lineLabelLength + digitCount + 2 + scrolledAdditionalLine.length(),
                     true
             );
-            Label additionalLineLabel = new Label(displayedText);
+            Label additionalLineLabel = new SanitizedLabel(displayedText);
             additionalLineLabel.setLabelWidth(null);
             wrapper.addComponent(additionalLineLabel);
         }

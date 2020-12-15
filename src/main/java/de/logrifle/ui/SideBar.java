@@ -69,7 +69,7 @@ public class SideBar {
         this.panel = new Panel(new BorderLayout());
 
         Panel openFilesPanel = new Panel(new BorderLayout());
-        openFilesLabel = new Label(FILES_TITLE);
+        openFilesLabel = new SanitizedLabel(FILES_TITLE);
         openFilesLabel.addStyle(SGR.BOLD);
         openFilesPanel.addComponent(openFilesLabel);
         openFilesLabel.setLayoutData(BorderLayout.Location.TOP);
@@ -79,7 +79,7 @@ public class SideBar {
         filesContentPanel.setLayoutData(BorderLayout.Location.CENTER);
 
         Panel filterViewsPanel = new Panel(new BorderLayout());
-        filtersTitleLabel = new Label(FILTERS_TITLE);
+        filtersTitleLabel = new SanitizedLabel(FILTERS_TITLE);
         filtersTitleLabel.addStyle(SGR.BOLD);
         filterViewsPanel.addComponent(filtersTitleLabel);
         filtersTitleLabel.setLayoutData(BorderLayout.Location.TOP);
@@ -89,7 +89,7 @@ public class SideBar {
         viewsTreeContentPanel.setLayoutData(BorderLayout.Location.CENTER);
 
         Panel highlightsPanel = new Panel(new BorderLayout());
-        highlightsTitleLabel = new Label(HIGHLIGHTS_TITLE);
+        highlightsTitleLabel = new SanitizedLabel(HIGHLIGHTS_TITLE);
         highlightsTitleLabel.addStyle(SGR.BOLD);
         highlightsPanel.addComponent(highlightsTitleLabel);
         highlightsLayout = new ZeroMarginsGridLayout(1);
@@ -242,7 +242,7 @@ public class SideBar {
     private Panel renderHighlight(Highlight highlight, int index, int maxIndexDigitCount, int maxLength) {
         GridLayout layoutManager = new ZeroMarginsGridLayout(1);
         Panel p = new Panel(layoutManager);
-        Label l = new Label(Strings.truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
+        Label l = new SanitizedLabel(Strings.truncateString(String.format("%" + maxIndexDigitCount + "d: %s", index, highlight.getRegex()), maxLength));
         if (highlight.getFgColor() != null) {
             l.setForegroundColor(highlight.getFgColor());
         }

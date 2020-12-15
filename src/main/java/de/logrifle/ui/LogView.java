@@ -84,6 +84,10 @@ class LogView {
             @Override
             public void onCacheCleared(DataView source) {
             }
+
+            @Override
+            public void onDestroyed(DataView source) {
+            }
         };
     }
 
@@ -170,7 +174,7 @@ class LogView {
         }
         this.lineDetailViewState.reset();
         LogPosition old = this.logPosition;
-        this.logPosition = this.logPosition.scroll(lineCountDelta);
+        this.logPosition = this.logPosition.scroll(lineCountDelta, rows);
         if (this.logPosition.isBefore(old)) {
             this.followTail = false;
         }

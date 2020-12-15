@@ -64,6 +64,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -108,6 +109,9 @@ public class Main {
         parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
+        parser.addArgument("--seconds")
+                .action(Arguments.storeTrue())
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormat.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormat.SECONDS_TIME_MATCH_REGEX+"\"");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
@@ -167,8 +171,16 @@ public class Main {
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
 
         LogDispatcher logDispatcher = new LogDispatcher();
-        String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
-        String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        boolean timestampsSecondsFormat = getBooleanOption(defaults, parserResult, "seconds", false);
+        String timestampRegex;
+        String timestampFormat;
+        if (timestampsSecondsFormat) {
+            timestampRegex = TimeStampFormat.SECONDS_TIME_MATCH_REGEX;
+            timestampFormat = TimeStampFormat.SECONDS_DATE_FORMAT;
+        } else {
+            timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
+            timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        }
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         List<DataView> logReaders = new ArrayList<>();
         TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
@@ -188,7 +200,14 @@ public class Main {
 
         for (Path logfile : logfiles) {
             try {
-                logReaders.addAll(fileOpener.open(logfile));
+                Collection<DataView> openedViews = fileOpener.open(logfile);
+                logReaders.addAll(openedViews);
+                for (DataView openedView : openedViews) {
+                    openedView.setCloseHook(() ->
+                            UI.runLater(() ->
+                                    logReaders.remove(openedView))
+                    );
+                }
             } catch (IOException e) {
                 System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
                 System.exit(-1);
@@ -202,9 +221,9 @@ public class Main {
         }
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
-        ViewsTree viewsTree = new ViewsTree(rootView);
-        HighlightsData highlightsData = new HighlightsData();
         Bookmarks bookmarks = new Bookmarks(charset);
+        ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
+        HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
         MainController mainController = new MainController(

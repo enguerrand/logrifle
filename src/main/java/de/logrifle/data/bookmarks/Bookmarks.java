@@ -22,6 +22,7 @@ package de.logrifle.data.bookmarks;
 
 import de.logrifle.base.Strings;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.views.LineSource;
 import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
@@ -64,6 +65,10 @@ public class Bookmarks {
 
     public Set<Bookmark> getAll() {
         return Collections.unmodifiableSortedSet(bookmarks);
+    }
+
+    public void removeBookmarksOf(LineSource lineSource) {
+        this.bookmarks.removeIf(next -> next.getLine().belongsTo(lineSource));
     }
 
     public boolean isLineBookmarked(Line line) {

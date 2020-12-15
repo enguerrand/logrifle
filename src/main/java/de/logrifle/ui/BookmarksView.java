@@ -58,7 +58,7 @@ class BookmarksView {
         } else {
             String title = "=== Bookmarks ";
             String padded = Strings.pad(title, Math.max(0, availableSpace.getColumns() - 1), "=", false);
-            Label titleLabel = new Label(padded);
+            Label titleLabel = new SanitizedLabel(padded);
             titleLabel.addStyle(SGR.BOLD);
 
             panel.addComponent(titleLabel);
