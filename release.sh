@@ -69,13 +69,14 @@ fi
 cd $(dirname $0)
 
 dst="./release"
+version=$(tail -n +2 pom.xml | grep version | head -n 1 | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/g')
 jar="./target/logrifle.jar"
+deb="./target/logrifle_${version}_all.deb"
 license="./LICENSE"
 third="./THIRD-PARTY.txt"
 readme="./README.md"
 released="${dst}/released.txt"
 changes="${dst}/changes.php"
-version=$(tail -n +2 pom.xml | grep version | head -n 1 | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/g')
 build_name="logrifle-${version}"
 build_dir=${dst}/${build_name}
 tarball=${build_name}.tar.gz
@@ -94,10 +95,12 @@ rm -rfv ${dst}/*
 
 mkdir -pv ${build_dir}
 cp -vt ${build_dir}/ ${license} ${third} ${readme} ${jar}
+cp -vt ${dst}/ ${deb}
 print_source_info >> ${build_dir}/${readme}
 (cd ${dst} && tar -cvzf ${tarball} ${build_name})
-rm -rfv ${build_dir}
 (cd ${dst} && sha256sum ${tarball} > sha256sum.txt)
+rm -rfv ${build_dir}
+(cd ${dst} && sha256sum $(basename ${deb}) > deb.sha256sum.txt)
 date > ${released}
 mv ${changelog_template} ${changes}
 echo ""
