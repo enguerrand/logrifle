@@ -81,15 +81,17 @@ public class LineParserTimestampedTextImpl implements LineParser {
             String dateString = matcher.group(1);
             try {
                 timestamp = timeParser.apply(dateString);
-            } catch (RuntimeException e) {
-                throw new IllegalStateException("Error while parsing datestring. \""+dateString+"\"." +
-                        "The date string pattern matches but the matched string cannot be parsed with the given date format! " +
-                        "Complete log line: \""+raw+"\"", e);
+                return new LineParseResult(new Line(index, raw, timestamp, source));
+            } catch (RuntimeException ignored) {
+                /*
+                 In rare cases this can legitimately happen e.g. for an unluckily logged MAC address such as AB:CD:EF:12:34:56
+                 (which looks like timestamp 12:34:56)
+                 This could arguably be avoided by tighter regex choice in many if not all cases but it seems more
+                 user-friendly to gracefully handle this case gracefully.
+                 */
             }
-        } else {
-            return new LineParseResult(raw);
         }
-        return new LineParseResult(new Line(index, raw, timestamp, source));
+        return new LineParseResult(raw);
     }
 
     private long parseDate(String input) {
