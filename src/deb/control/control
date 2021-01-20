@@ -1,0 +1,11 @@
+Package: [[name]]
+Version: [[version]]
+Section: admin
+Priority: optional
+Architecture: all
+Depends: jdk (>= 1.8)
+Maintainer: Enguerrand de Rochefort <support@logrifle.de>
+Description: A console-based logviewer written in java
+Homepage: https://www.logrifle.de
+Distribution: development
+Depends: default-jre-headless | java8-runtime-headless
