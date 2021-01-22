@@ -11,9 +11,9 @@ Run
 
 ```java -jar logrifle.jar --help```
 
-to display information on the invocation in in-application commands / shortcuts.
+to display information on the invocation of in-application commands / shortcuts.
 
 Go to https://www.logrifle.de/ for further information.
 
 ## Supported Platforms
-I only tested logrifle on Linux. I would assume it also runs fine on Windows and MacOS but I am not testing it on either of these.
+I only tested logrifle on Linux but it might run fine on other platforms.
