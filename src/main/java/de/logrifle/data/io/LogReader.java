@@ -79,12 +79,6 @@ public class LogReader extends DataView {
                 }
                 dispatcher.requestExecution();
             }
-
-            @Override
-            public void handle(Exception ex) {
-                super.handle(ex);
-                ex.printStackTrace();
-            }
         };
         tailer = new Tailer(logfile.toFile(), charset, tailerListener, 250, false, false, 4096);
         workerPool.submit(tailer);
