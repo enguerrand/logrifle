@@ -4,3 +4,6 @@
 /out/
 /release/
 /target/
+/podman/repo/
+dependency-reduced-pom.xml
+podman/config.inc.sh

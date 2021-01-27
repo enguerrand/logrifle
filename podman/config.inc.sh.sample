@@ -1,0 +1,3 @@
+host=apt.logrifle.de
+keyid=<MY_GPG_KEY_ID>
+webroot=<MY_WEBROOT_FOLDER>
