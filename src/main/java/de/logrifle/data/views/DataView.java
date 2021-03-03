@@ -93,11 +93,10 @@ public abstract class DataView implements DataViewListener, LineSource {
         if (snapshot == null || snapshot.isEmpty() || topIndex >= snapshot.size() || topIndex < 0) {
             return Collections.emptyList();
         }
-        int topIndexCorrected = Math.max(0, topIndex);
-        if (maxCount == null || snapshot.size() <= topIndexCorrected + maxCount) {
-            return snapshot.subList(topIndexCorrected, snapshot.size());
+        if (maxCount == null || snapshot.size() <= topIndex + maxCount) {
+            return snapshot.subList(topIndex, snapshot.size());
         } else {
-            return snapshot.subList(topIndexCorrected, topIndexCorrected + maxCount);
+            return snapshot.subList(topIndex, topIndex + maxCount);
         }
     }
     public void addListener(DataViewListener listener) {
