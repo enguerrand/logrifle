@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
@@ -64,12 +65,21 @@ public class LogReader extends DataView {
             public void handle(String s) {
                 LineParseResult parseResult = LogReader.this.lineParser.parse(currentLineIndex, s, LogReader.this);
                 if (parseResult.isNewLine()) {
-                    lines.add(parseResult.getParsedLine());
+                    lines.add(
+                            Objects.requireNonNull(
+                                    parseResult.getParsedLine(),
+                                    () -> "Unexpected NULL Line received from LogReader parseResult " + parseResult
+                            )
+                    );
 	                currentLineIndex++;
                 } else {
                     Line last;
                     if (lines.isEmpty()) {
-                        last = Line.initialTextLineOf(currentLineIndex, s, LogReader.this);
+                        Line initialTextLine = Line.initialTextLineOf(currentLineIndex, s, LogReader.this);
+                        last = Objects.requireNonNull(
+                                initialTextLine,
+                                () -> "Unexpected NULL Line received from initialTextLineOf call in LogReader on parseResult " + parseResult
+                        );
                         lines.add(last);
 	                    currentLineIndex++;
                     } else {

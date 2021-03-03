@@ -59,4 +59,13 @@ public class LineParseResult {
     public boolean isNewLine() {
         return newLine;
     }
+
+    @Override
+    public String toString() {
+        return "LineParseResult{" +
+                "parsedLine=" + parsedLine +
+                ", text='" + text + '\'' +
+                ", newLine=" + newLine +
+                '}';
+    }
 }
