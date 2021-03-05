@@ -187,7 +187,7 @@ public class MainController {
         DataView dataView = this.mainWindow.getDataView();
         List<Line> allLines = dataView.getAllLines();
         if (isEofReached(query, focusedLineIndex, allLines)) {
-            return new ExecutionResult(false, query + ": End of file reached.");
+            return new ExecutionResult(false, query.getSearchTerm() + ": End of file reached.");
         }
         if (query.isBackwards()) {
             for (int i = focusedLineIndex - 1; i >= 0; i--) {
@@ -207,7 +207,7 @@ public class MainController {
             }
         }
 
-        return new ExecutionResult(false, query + ": pattern not found.");
+        return new ExecutionResult(false, query.getSearchTerm() + ": pattern not found.");
     }
 
     public ExecutionResult addFilter(String args, boolean inverted, boolean caseInsensitive, boolean blocking) {
