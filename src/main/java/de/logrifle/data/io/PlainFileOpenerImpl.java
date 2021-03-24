@@ -20,11 +20,12 @@
 
 package de.logrifle.data.io;
 
+import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.views.DataView;
-import de.logrifle.ui.TextColorIterator;
+import de.logrifle.ui.RingIterator;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -34,13 +35,13 @@ import java.util.concurrent.ExecutorService;
 
 class PlainFileOpenerImpl implements FileOpener {
     private final LineParser lineParser;
-    private final TextColorIterator textColorIterator;
+    private final RingIterator<TextColor> textColorIterator;
     private final ExecutorService workerPool;
     private final LogDispatcher logDispatcher;
     private final RateLimiterFactory factory;
     private final Charset charset;
 
-    PlainFileOpenerImpl(LineParser lineParser, TextColorIterator textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
+    PlainFileOpenerImpl(LineParser lineParser, RingIterator<TextColor> textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
         this.lineParser = lineParser;
         this.textColorIterator = textColorIterator;
         this.workerPool = workerPool;

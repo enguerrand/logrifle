@@ -20,11 +20,11 @@
 
 package de.logrifle.data.io;
 
+import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
-import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.views.DataView;
-import de.logrifle.ui.TextColorIterator;
+import de.logrifle.ui.RingIterator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,29 +33,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 class ZipFileOpenerImpl implements FileOpener {
     private final LineParser lineParser;
-    private final TextColorIterator textColorIterator;
-    private final ExecutorService workerPool;
+    private final RingIterator<TextColor> textColorIterator;
     private final LogDispatcher logDispatcher;
-    private final RateLimiterFactory factory;
 
     ZipFileOpenerImpl(
             LineParser lineParser,
-            TextColorIterator textColorIterator,
-            ExecutorService workerPool,
-            LogDispatcher logDispatcher,
-            RateLimiterFactory factory) {
+            RingIterator<TextColor> textColorIterator,
+            LogDispatcher logDispatcher
+    ) {
         this.lineParser = lineParser;
         this.textColorIterator = textColorIterator;
-        this.workerPool = workerPool;
         this.logDispatcher = logDispatcher;
-        this.factory = factory;
     }
 
     @Override

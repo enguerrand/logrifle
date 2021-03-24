@@ -41,8 +41,8 @@ import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import de.logrifle.ui.MainWindow;
 import de.logrifle.ui.MainWindowListener;
+import de.logrifle.ui.RingIterator;
 import de.logrifle.ui.SideBar;
-import de.logrifle.ui.TextColorIterator;
 import de.logrifle.ui.UI;
 import de.logrifle.ui.cmd.CommandHandler;
 import de.logrifle.ui.cmd.ExecutionResult;
@@ -183,7 +183,7 @@ public class Main {
         }
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         List<DataView> logReaders = new ArrayList<>();
-        TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
+        RingIterator<TextColor> textColorIterator = new RingIterator<>(Arrays.asList(
                 TextColor.ANSI.BLUE,
                 TextColor.ANSI.GREEN,
                 TextColor.ANSI.MAGENTA,

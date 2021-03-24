@@ -20,18 +20,16 @@
 
 package de.logrifle.ui;
 
-import com.googlecode.lanterna.TextColor;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TextColorIterator implements Iterator<TextColor> {
-    private final List<TextColor> available;
+public class RingIterator<T> implements Iterator<T> {
+    private final List<T> items;
     private final AtomicInteger index = new AtomicInteger(0);
 
-    public TextColorIterator(List<TextColor> available) {
-        this.available = available;
+    public RingIterator(List<T> items) {
+        this.items = items;
     }
 
     @Override
@@ -40,14 +38,14 @@ public class TextColorIterator implements Iterator<TextColor> {
     }
 
     @Override
-    public TextColor next() {
+    public T next() {
         int nextIndex = index.getAndUpdate(prev -> {
-            if (prev >= available.size() - 1) {
+            if (prev >= items.size() - 1) {
                 return 0;
             } else {
                 return prev + 1;
             }
         });
-        return available.get(nextIndex);
+        return items.get(nextIndex);
     }
 }

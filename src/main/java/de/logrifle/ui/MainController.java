@@ -67,14 +67,14 @@ public class MainController {
     private final HighlightsData highlightsData;
     private final Bookmarks bookmarks;
     private final FileOpener logFileOpener;
-    private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
+    private final RingIterator<TextColor> highlightsFgIterator = new RingIterator<>(Arrays.asList(
             TextColor.ANSI.BLACK,
             TextColor.ANSI.BLACK,
             TextColor.ANSI.BLACK,
             TextColor.ANSI.WHITE,
             TextColor.ANSI.WHITE
     ));
-    private final TextColorIterator highlightsBgIterator = new TextColorIterator(Arrays.asList(
+    private final RingIterator<TextColor> highlightsBgIterator = new RingIterator<>(Arrays.asList(
             TextColor.ANSI.YELLOW,
             TextColor.ANSI.CYAN,
             TextColor.ANSI.MAGENTA,
