@@ -67,19 +67,12 @@ public class MainController {
     private final HighlightsData highlightsData;
     private final Bookmarks bookmarks;
     private final FileOpener logFileOpener;
-    private final RingIterator<TextColor> highlightsFgIterator = new RingIterator<>(Arrays.asList(
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.WHITE,
-            TextColor.ANSI.WHITE
-    ));
-    private final RingIterator<TextColor> highlightsBgIterator = new RingIterator<>(Arrays.asList(
-            TextColor.ANSI.YELLOW,
-            TextColor.ANSI.CYAN,
-            TextColor.ANSI.MAGENTA,
-            TextColor.ANSI.BLUE,
-            TextColor.ANSI.RED
+    private final RingIterator<TextColors> highlightsIterator = new RingIterator<>(Arrays.asList(
+            TextColors.Highlights.YELLOW.getColors(),
+            TextColors.Highlights.CYAN.getColors(),
+            TextColors.Highlights.MAGENTA.getColors(),
+            TextColors.Highlights.BLUE.getColors(),
+            TextColors.Highlights.RED.getColors()
     ));
 
     public MainController(
@@ -256,7 +249,7 @@ public class MainController {
 
     public ExecutionResult addHighlight(String args, boolean caseInsensitive) {
         String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
-        Highlight highlight = new Highlight(regex, highlightsFgIterator.next(), highlightsBgIterator.next());
+        Highlight highlight = new Highlight(regex, highlightsIterator.next());
         this.highlightsData.addHighlight(highlight);
         return new ExecutionResult(true);
 
