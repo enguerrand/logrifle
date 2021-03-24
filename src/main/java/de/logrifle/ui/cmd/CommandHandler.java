@@ -25,6 +25,7 @@ import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.Strings;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
+import de.logrifle.ui.TextColors;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -232,19 +233,36 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("highlight", "h", "Adds a highlight to line parts that match the regex provided as the first argument.") {
+        register(new Command("highlight", "h", "Adds an auto-color highlight to line parts that match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addHighlight(args, false);
+                return mainController.addHighlight(args, false, null);
             }
         });
 
-        register(new Command("ihighlight", "ih", "Adds a highlight to line parts that case-insensitively match the regex provided as the first argument.") {
+        register(new Command("ihighlight", "ih", "Adds an auto-color highlight to line parts that case-insensitively match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addHighlight(args, true);
+                return mainController.addHighlight(args, true, null);
             }
         });
+
+        for (TextColors.Highlights highlightColors : TextColors.Highlights.values()) {
+            String highlightName = highlightColors.name().toLowerCase();
+            register(new Command("highlight-" + highlightName, "h-"+highlightName, "Adds a " + highlightName + " highlight to line parts that match the regex provided as the first argument.") {
+                @Override
+                protected ExecutionResult execute(String args, boolean blocking) {
+                    return mainController.addHighlight(args, false, highlightColors.getColors());
+                }
+            });
+
+            register(new Command("ihighlight-" + highlightName, "ih-" + highlightName, "Adds a " +  highlightName + " highlight to line parts that case-insensitively match the regex provided as the first argument.") {
+                @Override
+                protected ExecutionResult execute(String args, boolean blocking) {
+                    return mainController.addHighlight(args, true, highlightColors.getColors());
+                }
+            });
+        }
 
         register(new Command("move-focus", null, "Moves the focus by the increment provided as the first argument. (Negative values move the focus upwards)") {
             @Override
