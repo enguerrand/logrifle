@@ -23,7 +23,6 @@ package de.logrifle.ui.completion;
 import de.logrifle.base.Strings;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -35,17 +34,19 @@ public class CommandAutoCompleter {
     private final String prefix;
     private final List<String> allCommands;
     private final int maximumCommandLength;
-    private final Map<String, AbstractCompleter> argumentCompletersLookup = new HashMap<>();
+    private final Map<String, AbstractArgumentCompleter> argumentCompletersLookup = new HashMap<>();
 
-    public CommandAutoCompleter(String prefix, List<String> allCommands, AbstractCompleter... argumentCompleters) {
+    public CommandAutoCompleter(String prefix, List<String> allCommands, AbstractArgumentCompleter... argumentCompleters) {
         this.prefix = prefix;
         this.allCommands = allCommands;
         this.maximumCommandLength = allCommands.stream()
                 .map(String::length)
                 .max(Comparator.naturalOrder())
                 .orElse(0) + prefix.length();
-        for (AbstractCompleter argumentCompleter : argumentCompleters) {
-            argumentCompletersLookup.put(argumentCompleter.getCommandName(), argumentCompleter);
+        for (AbstractArgumentCompleter argumentCompleter : argumentCompleters) {
+            for (String commandName : argumentCompleter.getCommandNames()) {
+                argumentCompletersLookup.put(commandName, argumentCompleter);
+            }
         }
     }
 
@@ -53,37 +54,48 @@ public class CommandAutoCompleter {
         return maximumCommandLength;
     }
 
-    public List<String> getMatching(String currentInput) {
+    public CompletionResult getCompletion(String currentInput) {
         if (!currentInput.startsWith(prefix)) {
-            return Collections.emptyList();
+            return CompletionResult.NO_MATCHES;
         }
         String currentCommand = currentInput.substring(prefix.length());
 
         String[] tokens = currentCommand.split("\\s+");
         if (tokens.length <= 1 && !Pattern.compile(".*\\s$").matcher(currentInput).matches()) {
-            return allCommands.stream()
+            List<String> matches = allCommands.stream()
                     .filter(c -> c.startsWith(currentCommand))
                     .collect(Collectors.toList());
+            return new CompletionResult(matches, matches);
         } else {
             String arguments = currentInput.substring(prefix.length() + tokens[0].length());
             String trimmedArguments = Strings.trimStart(arguments);
             String commandName = tokens[0];
-            @Nullable AbstractCompleter argumentCompleter = this.argumentCompletersLookup.get(commandName);
+            @Nullable AbstractArgumentCompleter argumentCompleter = this.argumentCompletersLookup.get(commandName);
             if (argumentCompleter != null) {
-                return argumentCompleter.getCompletions(trimmedArguments);
+                String keptPart = currentCommand.substring(0, currentCommand.length() - trimmedArguments.length());
+                List<String> matches = argumentCompleter.getCompletions(trimmedArguments);
+                List<String> matchingCompletions = matches.stream()
+                        .map(completion -> keptPart + completion)
+                        .collect(Collectors.toList());
+                return new CompletionResult(matches, matchingCompletions);
             } else {
-                return Collections.emptyList();
+                return CompletionResult.NO_MATCHES;
             }
         }
     }
 
+    public List<String> getMatching(String currentInput) {
+        return getCompletion(currentInput).getMatches();
+    }
+
     public String complete(String currentInput) {
-        List<String> matching = getMatching(currentInput);
-        if (matching.isEmpty()) {
+        List<String> completions = getCompletion(currentInput).getMatchingCompletions();
+        if (completions.isEmpty()) {
             return currentInput;
         }
-        String currentInputStripped = currentInput.substring(1);
-        List<String> stripped = matching.stream()
+        String currentInputStripped = currentInput.substring(prefix.length());
+
+        List<String> stripped = completions.stream()
                 .map(s -> s.replaceFirst(currentInputStripped, ""))
                 .collect(Collectors.toList());
         int maxLength = stripped.stream()

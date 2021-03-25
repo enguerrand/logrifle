@@ -40,12 +40,14 @@ import de.logrifle.ui.cmd.CommandHandler;
 import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
+import de.logrifle.ui.completion.AbstractArgumentCompleter;
 import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -92,7 +94,24 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
-        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(COMMAND_PREFIX, commandHandler.getAvailableCommands());
+        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(
+                COMMAND_PREFIX,
+                commandHandler.getAvailableCommands(),
+                new AbstractArgumentCompleter("dh", "delete-highlight", "eh", "edit-highlight") {
+                    @Override
+                    public List<String> getCompletions(String currentArgs) {
+                        // FIXME: refactor this to be more reusable for id options
+                        List<String> highlightIds = new ArrayList<>();
+                        for (int i = 0; i < highlightsData.getHighlights().size(); i++) {
+                            String hlId = String.valueOf(i);
+                            if (hlId.startsWith(currentArgs)) {
+                                highlightIds.add(hlId);
+                            }
+                        }
+                        return highlightIds;
+                    }
+                }
+        );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override

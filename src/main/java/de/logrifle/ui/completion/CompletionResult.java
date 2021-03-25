@@ -20,18 +20,24 @@
 
 package de.logrifle.ui.completion;
 
+import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractCompleter {
-    private final String commandName;
+public class CompletionResult {
+    public static CompletionResult NO_MATCHES = new CompletionResult(Collections.emptyList(), Collections.emptyList());
+    private final List<String> matches;
+    private final List<String> matchingCompletions;
 
-    protected AbstractCompleter(String commandName) {
-        this.commandName = commandName;
+    CompletionResult(List<String> matches, List<String> matchingCompletions) {
+        this.matches = matches;
+        this.matchingCompletions = matchingCompletions;
     }
 
-    public String getCommandName() {
-        return commandName;
+    public List<String> getMatches() {
+        return matches;
     }
 
-    public abstract List<String> getCompletions(String currentInput);
+    public List<String> getMatchingCompletions() {
+        return matchingCompletions;
+    }
 }
