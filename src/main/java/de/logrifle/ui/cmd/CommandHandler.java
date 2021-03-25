@@ -25,7 +25,7 @@ import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.Strings;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
-import de.logrifle.ui.TextColors;
+import de.logrifle.ui.HighlightingTextColors;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -247,19 +247,19 @@ public class CommandHandler {
             }
         });
 
-        for (TextColors.Highlights highlightColors : TextColors.Highlights.values()) {
+        for (HighlightingTextColors highlightColors : HighlightingTextColors.values()) {
             String highlightName = highlightColors.name().toLowerCase();
             register(new Command("highlight-" + highlightName, "h-"+highlightName, "Adds a " + highlightName + " highlight to line parts that match the regex provided as the first argument.") {
                 @Override
                 protected ExecutionResult execute(String args, boolean blocking) {
-                    return mainController.addHighlight(args, false, highlightColors.getColors());
+                    return mainController.addHighlight(args, false, highlightColors);
                 }
             });
 
             register(new Command("ihighlight-" + highlightName, "ih-" + highlightName, "Adds a " +  highlightName + " highlight to line parts that case-insensitively match the regex provided as the first argument.") {
                 @Override
                 protected ExecutionResult execute(String args, boolean blocking) {
-                    return mainController.addHighlight(args, true, highlightColors.getColors());
+                    return mainController.addHighlight(args, true, highlightColors);
                 }
             });
         }

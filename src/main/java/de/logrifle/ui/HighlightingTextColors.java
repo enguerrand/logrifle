@@ -22,33 +22,21 @@ package de.logrifle.ui;
 
 import com.googlecode.lanterna.TextColor;
 
-public class TextColors {
-    public enum Highlights {
-        YELLOW(new TextColors(TextColor.ANSI.BLACK, TextColor.ANSI.YELLOW)),
-        CYAN(new TextColors(TextColor.ANSI.BLACK, TextColor.ANSI.CYAN)),
-        MAGENTA(new TextColors(TextColor.ANSI.BLACK, TextColor.ANSI.MAGENTA)),
-        BLUE(new TextColors(TextColor.ANSI.WHITE, TextColor.ANSI.BLUE)),
-        RED(new TextColors(TextColor.ANSI.WHITE, TextColor.ANSI.RED)),
+public enum HighlightingTextColors {
+        YELLOW(TextColor.ANSI.BLACK, TextColor.ANSI.YELLOW),
+        CYAN(TextColor.ANSI.BLACK, TextColor.ANSI.CYAN),
+        MAGENTA(TextColor.ANSI.BLACK, TextColor.ANSI.MAGENTA),
+        BLUE(TextColor.ANSI.WHITE, TextColor.ANSI.BLUE),
+        RED(TextColor.ANSI.WHITE, TextColor.ANSI.RED),
         ;
 
-        private final TextColors colors;
+        private final TextColor foreground;
+        private final TextColor background;
 
-        Highlights(TextColors colors) {
-            this.colors = colors;
+    HighlightingTextColors(TextColor foreground, TextColor background) {
+            this.foreground = foreground;
+            this.background = background;
         }
-
-        public TextColors getColors() {
-            return colors;
-        }
-    }
-
-    private final TextColor foreground;
-    private final TextColor background;
-
-    public TextColors(TextColor foreground, TextColor background) {
-        this.foreground = foreground;
-        this.background = background;
-    }
 
     public TextColor getForeground() {
         return foreground;

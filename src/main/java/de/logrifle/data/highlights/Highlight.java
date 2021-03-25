@@ -22,7 +22,7 @@ package de.logrifle.data.highlights;
 
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
-import de.logrifle.ui.TextColors;
+import de.logrifle.ui.HighlightingTextColors;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class Highlight {
     private final @Nullable TextColor bgColor;
     private final List<SGR> styles;
 
-    public Highlight(String regex, @Nullable TextColors colors, SGR... styles) {
+    public Highlight(String regex, @Nullable HighlightingTextColors colors, SGR... styles) {
         this.pattern = Pattern.compile(regex);
         this.regex = regex;
         this.fgColor = colors == null ? null : colors.getForeground();
