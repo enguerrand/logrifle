@@ -30,6 +30,7 @@ import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextBox;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

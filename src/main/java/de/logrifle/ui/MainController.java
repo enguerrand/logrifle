@@ -40,6 +40,7 @@ import de.logrifle.ui.cmd.CommandHandler;
 import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
+import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;

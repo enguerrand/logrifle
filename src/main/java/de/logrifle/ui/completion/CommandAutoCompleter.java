@@ -18,7 +18,7 @@
  *
  */
 
-package de.logrifle.ui;
+package de.logrifle.ui.completion;
 
 import java.util.Collections;
 import java.util.Comparator;
