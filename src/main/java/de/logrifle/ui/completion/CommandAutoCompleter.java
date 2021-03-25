@@ -20,22 +20,33 @@
 
 package de.logrifle.ui.completion;
 
+import de.logrifle.base.Strings;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandAutoCompleter {
-    private static final String PREFIX = ":";
+    private final String prefix;
     private final List<String> allCommands;
     private final int maximumCommandLength;
+    private final Map<String, AbstractCompleter> argumentCompletersLookup = new HashMap<>();
 
-    public CommandAutoCompleter(List<String> allCommands) {
+    public CommandAutoCompleter(String prefix, List<String> allCommands, AbstractCompleter... argumentCompleters) {
+        this.prefix = prefix;
         this.allCommands = allCommands;
         this.maximumCommandLength = allCommands.stream()
                 .map(String::length)
                 .max(Comparator.naturalOrder())
-                .orElse(0) + PREFIX.length();
+                .orElse(0) + prefix.length();
+        for (AbstractCompleter argumentCompleter : argumentCompleters) {
+            argumentCompletersLookup.put(argumentCompleter.getCommandName(), argumentCompleter);
+        }
     }
 
     public int getMaximumCommandLength() {
@@ -43,13 +54,27 @@ public class CommandAutoCompleter {
     }
 
     public List<String> getMatching(String currentInput) {
-        if (!currentInput.startsWith(PREFIX)) {
+        if (!currentInput.startsWith(prefix)) {
             return Collections.emptyList();
         }
-        String currentCommand = currentInput.substring(1);
-        return allCommands.stream()
-                .filter(c -> c.startsWith(currentCommand))
-                .collect(Collectors.toList());
+        String currentCommand = currentInput.substring(prefix.length());
+
+        String[] tokens = currentCommand.split("\\s+");
+        if (tokens.length <= 1 && !Pattern.compile(".*\\s$").matcher(currentInput).matches()) {
+            return allCommands.stream()
+                    .filter(c -> c.startsWith(currentCommand))
+                    .collect(Collectors.toList());
+        } else {
+            String arguments = currentInput.substring(prefix.length() + tokens[0].length());
+            String trimmedArguments = Strings.trimStart(arguments);
+            String commandName = tokens[0];
+            @Nullable AbstractCompleter argumentCompleter = this.argumentCompletersLookup.get(commandName);
+            if (argumentCompleter != null) {
+                return argumentCompleter.getCompletions(trimmedArguments);
+            } else {
+                return Collections.emptyList();
+            }
+        }
     }
 
     public String complete(String currentInput) {

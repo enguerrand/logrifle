@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MainController {
-    private static final String COMMAND_PREFIX = ":";
+    public static final String COMMAND_PREFIX = ":";
     private static final String FIND_PREFIX = "/";
     private static final String FIND_BACKWARDS_PREFIX = "?";
     private final MainWindow mainWindow;
@@ -92,7 +92,7 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
-        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(commandHandler.getAvailableCommands());
+        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(COMMAND_PREFIX, commandHandler.getAvailableCommands());
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override

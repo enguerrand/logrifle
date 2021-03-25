@@ -20,44 +20,73 @@
 
 package de.logrifle.ui;
 
+import de.logrifle.ui.completion.AbstractCompleter;
 import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 class CommandAutoCompleterTest {
     private CommandAutoCompleter commandAutoCompleter;
 
     @BeforeEach
     void setUp() {
-        commandAutoCompleter = new CommandAutoCompleter(Arrays.asList(
-            "foo",
-            "foobar",
-            "foobas",
-            "bar"
-        ));
+        AbstractCompleter foobarArgCompleter = new AbstractCompleter("foobar") {
+            final CommandAutoCompleter firstArgCompleter = new CommandAutoCompleter(
+                    "",
+                    Arrays.asList(
+                            "foobarFirstArg1",
+                            "foobarFirstArg2"
+                    )
+            );
+            @Override
+            public List<String> getCompletions(String currentArgs) {
+                return firstArgCompleter.getMatching(currentArgs);
+            }
+        };
+        commandAutoCompleter = new CommandAutoCompleter(
+                MainController.COMMAND_PREFIX,
+                Arrays.asList(
+                        "foo",
+                        "foobar",
+                        "foobas",
+                        "bar"
+                ),
+                foobarArgCompleter);
     }
 
     @ParameterizedTest
-    @CsvSource({
-            ":f,foo;foobar;foobas",
-            ":foo,foo;foobar;foobas",
-            ":foob,foobar;foobas",
-            ":fooba,foobar;foobas",
-            ":foobar,foobar",
-            ":bar,bar",
-            ":bar arg,",
-            ":zzz,",
-    })
-    void getMatching(String currentInput, String matchingCsv) {
-        List<String> expectedMatches = matchingCsv == null ? Collections.emptyList() : Arrays.asList(matchingCsv.split(";"));
+    @MethodSource("getMatchingArgs")
+    void getMatching(String currentInput, List<String> expectedMatches) {
         List<String> matches = commandAutoCompleter.getMatching(currentInput);
         Assertions.assertEquals(expectedMatches, matches);
+    }
+
+    private static Stream<Arguments> getMatchingArgs() {
+        return Stream.of(
+                Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas")),
+                Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas")),
+                Arguments.of(":foob", Arrays.asList("foobar", "foobas")),
+                Arguments.of(":fooba", Arrays.asList("foobar", "foobas")),
+                Arguments.of(":foobar", Collections.singletonList("foobar")),
+                Arguments.of(":bar", Collections.singletonList("bar")),
+                Arguments.of(":bar arg", Collections.emptyList()),
+                Arguments.of(":zzz", Collections.emptyList()),
+                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar")),
+                Arguments.of("", Collections.emptyList()),
+                Arguments.of(":foobar ", Arrays.asList("foobarFirstArg1", "foobarFirstArg2")),
+                Arguments.of(":foobar foobarFirstArg", Arrays.asList("foobarFirstArg1", "foobarFirstArg2")),
+                Arguments.of(":foobar foobarFirstArg1", Collections.singletonList("foobarFirstArg1")),
+                Arguments.of(":foobar foobas", Collections.emptyList())
+        );
     }
 
     @ParameterizedTest
