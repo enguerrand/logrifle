@@ -57,4 +57,22 @@ class StringsTest {
         }
         Assertions.assertEquals(expectedOutput, Strings.truncateString(input, Integer.parseInt(maxLength)));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "abcdef,abcdef",
+            " abcdef,abcdef",
+            "  abcdef,abcdef",
+            "   abcdef,abcdef",
+            "       abcdef,abcdef",
+            "   a    abcdef,a    abcdef",
+            "   abcdef  ,abcdef  ",
+
+    })
+    void trimStart(String input, String expectedOutput) {
+        if (expectedOutput == null) {
+            expectedOutput = "";
+        }
+        Assertions.assertEquals(expectedOutput, Strings.trimStart(input));
+    }
 }

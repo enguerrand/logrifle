@@ -22,7 +22,11 @@ package de.logrifle.base;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 public class Strings {
+    private static final Pattern WHITE_SPACE_AT_BEGINNING = Pattern.compile("^\\s.*");
+
     public static String pad(String s, int length, boolean beginning) {
         return pad(s, length, " ", beginning);
     }
@@ -59,5 +63,13 @@ public class Strings {
 
     public static String expandPathPlaceHolders(String input) {
         return input.replaceAll("~", System.getProperty("user.home"));
+    }
+
+    public static String trimStart(String input) {
+        String result = input;
+        while (result.length() > 0 && WHITE_SPACE_AT_BEGINNING.matcher(result).matches()) {
+            result = result.substring(1);
+        }
+        return result;
     }
 }
