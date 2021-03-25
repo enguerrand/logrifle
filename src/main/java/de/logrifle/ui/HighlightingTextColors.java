@@ -28,6 +28,8 @@ public enum HighlightingTextColors {
         MAGENTA(TextColor.ANSI.BLACK, TextColor.ANSI.MAGENTA),
         BLUE(TextColor.ANSI.WHITE, TextColor.ANSI.BLUE),
         RED(TextColor.ANSI.WHITE, TextColor.ANSI.RED),
+        WHITE(TextColor.ANSI.BLACK, TextColor.ANSI.WHITE),
+        GREEN(TextColor.ANSI.BLACK, TextColor.ANSI.GREEN),
         ;
 
         private final TextColor foreground;
