@@ -100,6 +100,7 @@ public class MainController {
                 }
                 String prefix = commandLine.substring(0, 1);
                 String command = commandLine.substring(1);
+                //noinspection IfCanBeSwitch
                 if (prefix.equals(COMMAND_PREFIX)) {
                     result = commandHandler.handle(command);
                 } else if (prefix.equals(FIND_PREFIX)) {

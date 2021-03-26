@@ -25,6 +25,8 @@ import de.logrifle.data.parsing.TestLinesFactory;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
 import de.logrifle.data.views.TestDataView;
+import de.logrifle.data.views.ViewCreationFailedException;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -87,15 +89,16 @@ class LogPositionTest {
             "1,1,filtered,full,4,1",
             "2,0,filtered,full,5,0",
     })
-    void transferIfNeeded(int currentTopIndex, int currentFocusOffset, String fromView, String toView, int expectedTopIndex, int expectedFocusOffset) throws InterruptedException {
+    void transferIfNeeded(int currentTopIndex, int currentFocusOffset, String fromView, String toView, int expectedTopIndex, int expectedFocusOffset) throws InterruptedException, ViewCreationFailedException {
         TestLogDispatcher dispatcher = new TestLogDispatcher();
         DataView full = new TestDataView(dispatcher, "foobar", TestLinesFactory.buildTestLines());
         DataView filtered = new DataViewFiltered("line content [3-5]", full, false, dispatcher);
         dispatcher.execute(() -> filtered.onFullUpdate(full));
         dispatcher.awaitJobsDone();
-        DataView from = select(full, filtered, fromView);
-        DataView to = select(full, filtered, toView);
+        @Nullable DataView from = select(full, filtered, fromView);
+        @Nullable DataView to = select(full, filtered, toView);
         LogPosition current = new LogPosition(currentTopIndex, currentFocusOffset);
+        assert to != null;
         LogPosition logPosition = current.transferIfNeeded(from, to);
         int focusOffset = logPosition.getFocusOffset();
         int topIndex = logPosition.getTopIndex();
@@ -104,6 +107,7 @@ class LogPositionTest {
 
     }
 
+    @Nullable
     private static DataView select(DataView full, DataView filtered, String viewName) {
         switch(viewName) {
             case("filtered"): return filtered;
