@@ -69,11 +69,7 @@ public class MainController {
     private final Bookmarks bookmarks;
     private final FileOpener logFileOpener;
     private final RingIterator<HighlightingTextColors> highlightsIterator = new RingIterator<>(Arrays.asList(
-            HighlightingTextColors.YELLOW,
-            HighlightingTextColors.CYAN,
-            HighlightingTextColors.MAGENTA,
-            HighlightingTextColors.BLUE,
-            HighlightingTextColors.RED
+            HighlightingTextColors.values()
     ));
 
     public MainController(
