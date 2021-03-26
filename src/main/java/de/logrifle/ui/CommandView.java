@@ -110,7 +110,8 @@ class CommandView implements InteractableKeystrokeListener {
         if (commandBarSize != null) {
             int caretWidth = 1;
             int margin = 1;
-            int minWidth = commandAutoCompleter.getMaximumCommandLength() + caretWidth + margin;
+            String currentInput = commandInput.getText();
+            int minWidth = commandAutoCompleter.getMaximumCommandLength(currentInput) + caretWidth + margin;
             TerminalSize nextPreferredSize;
             if (commandBarSize.getColumns() <= minWidth || completionPanel.getPreferredSize().getColumns() == 0) {
                 nextPreferredSize = commandBarSize;
@@ -159,7 +160,7 @@ class CommandView implements InteractableKeystrokeListener {
             default:
                 break;
         }
-        List<String> currentCommandOptions = commandAutoCompleter.getMatching(commandInput.getText());
+        List<String> currentCommandOptions = commandAutoCompleter.getCompletion(commandInput.getText()).getOptions();
         completionPanel.addComponent(new MultiColoredLabel(
                 currentCommandOptions.stream()
                         .map(opt -> new ColoredString(opt + " ", null, null))

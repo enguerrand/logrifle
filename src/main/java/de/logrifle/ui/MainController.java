@@ -42,6 +42,9 @@ import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
 import de.logrifle.ui.completion.CommandAutoCompleter;
+import de.logrifle.ui.completion.FileArgumentsCompleter;
+import de.logrifle.ui.completion.IdArgumentsCompleter;
+import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -58,7 +61,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MainController {
-    private static final String COMMAND_PREFIX = ":";
+    public static final String COMMAND_PREFIX = ":";
     private static final String FIND_PREFIX = "/";
     private static final String FIND_BACKWARDS_PREFIX = "?";
     private final MainWindow mainWindow;
@@ -89,7 +92,13 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
-        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(commandHandler.getAvailableCommands());
+        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(
+                COMMAND_PREFIX,
+                commandHandler.getAvailableCommands(),
+                new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
+                new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump"),
+                new FileArgumentsCompleter(Paths.get(System.getProperty("user.dir")), "open", "of", "write-bookmarks", "wb")
+        );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
