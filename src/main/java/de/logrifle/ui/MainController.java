@@ -41,6 +41,7 @@ import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
 import de.logrifle.ui.completion.CommandAutoCompleter;
+import de.logrifle.ui.completion.FileArgumentsCompleter;
 import de.logrifle.ui.completion.IdArgumentsCompleter;
 import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
@@ -98,7 +99,8 @@ public class MainController {
                 COMMAND_PREFIX,
                 commandHandler.getAvailableCommands(),
                 new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
-                new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump")
+                new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump"),
+                new FileArgumentsCompleter(Paths.get(System.getProperty("user.dir")), "open", "of", "write-bookmarks", "wb")
         );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
