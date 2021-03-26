@@ -18,10 +18,9 @@
  *
  */
 
-package de.logrifle.ui;
+package de.logrifle.ui.completion;
 
-import de.logrifle.ui.completion.AbstractArgumentCompleter;
-import de.logrifle.ui.completion.CommandAutoCompleter;
+import de.logrifle.ui.MainController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
