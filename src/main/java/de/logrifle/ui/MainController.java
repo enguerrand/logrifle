@@ -34,6 +34,7 @@ import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
+import de.logrifle.data.views.ViewCreationFailedException;
 import de.logrifle.data.views.ViewsTree;
 import de.logrifle.data.views.ViewsTreeNode;
 import de.logrifle.ui.cmd.CommandHandler;
@@ -209,39 +210,43 @@ public class MainController {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
-        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
-        Runnable treeUpdater = () -> {
-            ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
-            viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
-        };
-        CompletableFuture<Void> f = CompletableFuture.supplyAsync(
-                () -> {
-                    focusedView.addListener(dataViewFiltered);
-                    dataViewFiltered.onFullUpdate(focusedView);
-                    if (!blocking) {
-                        UI.runLater(
-                                () -> {
-                                    treeUpdater.run();
-                                    mainWindow.updateView();
-                                }
-                        );
-                    }
-                    return null;
-                },
-                logDispatcher
-        );
-        if (!blocking) {
-            return new ExecutionResult(false);
-        }
         try {
-            f.get();
-            treeUpdater.run();
-            return new ExecutionResult(true);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return new ExecutionResult(false, "Thread was interrupted!");
-        } catch (ExecutionException e) {
-            return new ExecutionResult(false, e.getCause().toString());
+            DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
+            Runnable treeUpdater = () -> {
+                ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
+                viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
+            };
+            CompletableFuture<Void> f = CompletableFuture.supplyAsync(
+                    () -> {
+                        focusedView.addListener(dataViewFiltered);
+                        dataViewFiltered.onFullUpdate(focusedView);
+                        if (!blocking) {
+                            UI.runLater(
+                                    () -> {
+                                        treeUpdater.run();
+                                        mainWindow.updateView();
+                                    }
+                            );
+                        }
+                        return null;
+                    },
+                    logDispatcher
+            );
+            if (!blocking) {
+                return new ExecutionResult(false);
+            }
+            try {
+                f.get();
+                treeUpdater.run();
+                return new ExecutionResult(true);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Thread was interrupted!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, e.getCause().toString());
+            }
+        } catch (ViewCreationFailedException e) {
+            return new ExecutionResult(false, "Cannot create filter: " + e.getMessage());
         }
     }
 

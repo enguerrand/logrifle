@@ -43,7 +43,7 @@ class DataViewTest {
     private final TestLogDispatcher dispatcher = new TestLogDispatcher();
 
     @Test
-    void getAllLinesShouldBeSorted() throws InterruptedException {
+    void getAllLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 6;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -80,7 +80,7 @@ class DataViewTest {
     }
 
     @Test
-    void invisibleLinesShouldNotBeReturned() throws InterruptedException {
+    void invisibleLinesShouldNotBeReturned() throws InterruptedException, ViewCreationFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 2;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;

@@ -40,12 +40,16 @@ public class DataViewFiltered extends DataView {
     private String regex;
     private Pattern pattern;
 
-    public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) {
+    public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) throws ViewCreationFailedException {
         super(deriveTitleFromRegex(regex, inverted), parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
         this.regex = regex;
         this.parentView = parentView;
         this.inverted = inverted;
-        this.pattern = Pattern.compile(regex);
+        try {
+            this.pattern = Pattern.compile(regex);
+        } catch (RuntimeException e) {
+            throw ViewCreationFailedException.from(e);
+        }
     }
 
     @NotNull
