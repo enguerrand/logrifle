@@ -33,16 +33,11 @@ import java.util.stream.Collectors;
 public class CommandAutoCompleter {
     private final String prefix;
     private final List<String> allCommands;
-    private final int maximumCommandLength;
     private final Map<String, AbstractArgumentCompleter> argumentCompletersLookup = new HashMap<>();
 
     public CommandAutoCompleter(String prefix, List<String> allCommands, AbstractArgumentCompleter... argumentCompleters) {
         this.prefix = prefix;
         this.allCommands = allCommands;
-        this.maximumCommandLength = allCommands.stream()
-                .map(String::length)
-                .max(Comparator.naturalOrder())
-                .orElse(0) + prefix.length();
         for (AbstractArgumentCompleter argumentCompleter : argumentCompleters) {
             for (String commandName : argumentCompleter.getCommandNames()) {
                 argumentCompletersLookup.put(commandName, argumentCompleter);
@@ -50,8 +45,13 @@ public class CommandAutoCompleter {
         }
     }
 
-    public int getMaximumCommandLength() {
-        return maximumCommandLength;
+    public int getMaximumCommandLength(String currentInput) {
+        CompletionResult completion = getCompletion(currentInput);
+        int longestCompletion = completion.getMatchingFullCompletions().stream()
+                .map(String::length)
+                .max(Comparator.naturalOrder())
+                .orElse(0) + prefix.length();
+        return Math.max(longestCompletion, currentInput.length());
     }
 
     public CompletionResult getCompletion(String currentInput) {
@@ -85,7 +85,7 @@ public class CommandAutoCompleter {
     }
 
     public String complete(String currentInput) {
-        List<String> completions = getCompletion(currentInput).getMatchingCompletions();
+        List<String> completions = getCompletion(currentInput).getMatchingFullCompletions();
         if (completions.isEmpty()) {
             return currentInput;
         }

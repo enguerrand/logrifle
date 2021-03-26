@@ -25,19 +25,19 @@ import java.util.List;
 
 public class CompletionResult {
     public static CompletionResult NO_MATCHES = new CompletionResult(Collections.emptyList(), Collections.emptyList());
-    private final List<String> matches;
-    private final List<String> matchingCompletions;
+    private final List<String> options;
+    private final List<String> matchingFullCompletions;
 
-    CompletionResult(List<String> matches, List<String> matchingCompletions) {
-        this.matches = matches;
-        this.matchingCompletions = matchingCompletions;
+    CompletionResult(List<String> options, List<String> matchingFullCompletions) {
+        this.options = options;
+        this.matchingFullCompletions = matchingFullCompletions;
     }
 
-    public List<String> getMatches() {
-        return matches;
+    public List<String> getOptions() {
+        return options;
     }
 
-    public List<String> getMatchingCompletions() {
-        return matchingCompletions;
+    public List<String> getMatchingFullCompletions() {
+        return matchingFullCompletions;
     }
 }

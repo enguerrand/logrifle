@@ -47,7 +47,7 @@ class CommandAutoCompleterTest {
             );
             @Override
             public List<String> getCompletions(String currentArgs) {
-                return firstArgCompleter.getCompletion(currentArgs).getMatches();
+                return firstArgCompleter.getCompletion(currentArgs).getOptions();
             }
         };
         commandAutoCompleter = new CommandAutoCompleter(
@@ -64,27 +64,27 @@ class CommandAutoCompleterTest {
 
     @ParameterizedTest
     @MethodSource("getMatchingArgs")
-    void getMatching(String currentInput, List<String> expectedMatches) {
-        List<String> matches = commandAutoCompleter.getCompletion(currentInput).getMatches();
+    void getMatching(String currentInput, List<String> expectedMatches, int expectedMaximumCommandLength) {
+        List<String> matches = commandAutoCompleter.getCompletion(currentInput).getOptions();
         Assertions.assertEquals(expectedMatches, matches);
+        Assertions.assertEquals(expectedMaximumCommandLength, commandAutoCompleter.getMaximumCommandLength(currentInput));
     }
 
     private static Stream<Arguments> getMatchingArgs() {
         return Stream.of(
-                Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas")),
-                Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas")),
-                Arguments.of(":foob", Arrays.asList("foobar", "foobas")),
-                Arguments.of(":fooba", Arrays.asList("foobar", "foobas")),
-                Arguments.of(":foobar", Collections.singletonList("foobar")),
-                Arguments.of(":bar", Collections.singletonList("bar")),
-                Arguments.of(":bar arg", Collections.emptyList()),
-                Arguments.of(":zzz", Collections.emptyList()),
-                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar")),
-                Arguments.of("", Collections.emptyList()),
-                Arguments.of(":foobar ", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b")),
-                Arguments.of(":foobar foobarFirstArg", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b")),
-                Arguments.of(":foobar foobarFirstArg1", Collections.singletonList("foobarFirstArg1a")),
-                Arguments.of(":foobar foobas", Collections.emptyList())
+                Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas"), 7),
+                Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas"), 7),
+                Arguments.of(":foob", Arrays.asList("foobar", "foobas"), 7),
+                Arguments.of(":fooba", Arrays.asList("foobar", "foobas"), 7),
+                Arguments.of(":foobar", Collections.singletonList("foobar"), 7),
+                Arguments.of(":bar", Collections.singletonList("bar"), 4),
+                Arguments.of(":bar arg", Collections.emptyList(), 8),
+                Arguments.of(":zzz", Collections.emptyList(), 4),
+                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar"), 7),
+                Arguments.of(":foobar ", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 24),
+                Arguments.of(":foobar foobarFirstArg", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 24),
+                Arguments.of(":foobar foobarFirstArg1", Collections.singletonList("foobarFirstArg1a"), 24),
+                Arguments.of(":foobar foobas", Collections.emptyList(), 14)
         );
     }
 
