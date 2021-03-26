@@ -41,6 +41,7 @@ import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
 import de.logrifle.ui.completion.CommandAutoCompleter;
+import de.logrifle.ui.completion.IdArgumentsCompleter;
 import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,7 +97,8 @@ public class MainController {
         CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(
                 COMMAND_PREFIX,
                 commandHandler.getAvailableCommands(),
-                new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight")
+                new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
+                new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump")
         );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {

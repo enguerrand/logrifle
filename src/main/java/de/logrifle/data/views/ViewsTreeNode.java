@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ViewsTreeNode {
     private final int navIndex;
-    static final Map<Integer, ViewsTreeNode> NAV_INDEX_LOOKUP = new ConcurrentHashMap<>();
+    public static final Map<Integer, ViewsTreeNode> NAV_INDEX_LOOKUP = new ConcurrentHashMap<>();
     @Nullable
     private final ViewsTreeNode parent;
     private final List<ViewsTreeNode> children;
