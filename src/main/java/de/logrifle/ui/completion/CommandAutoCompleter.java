@@ -84,10 +84,6 @@ public class CommandAutoCompleter {
         }
     }
 
-    public List<String> getMatching(String currentInput) {
-        return getCompletion(currentInput).getMatches();
-    }
-
     public String complete(String currentInput) {
         List<String> completions = getCompletion(currentInput).getMatchingCompletions();
         if (completions.isEmpty()) {

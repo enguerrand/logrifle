@@ -48,7 +48,7 @@ class CommandAutoCompleterTest {
             );
             @Override
             public List<String> getCompletions(String currentArgs) {
-                return firstArgCompleter.getMatching(currentArgs);
+                return firstArgCompleter.getCompletion(currentArgs).getMatches();
             }
         };
         commandAutoCompleter = new CommandAutoCompleter(
@@ -66,7 +66,7 @@ class CommandAutoCompleterTest {
     @ParameterizedTest
     @MethodSource("getMatchingArgs")
     void getMatching(String currentInput, List<String> expectedMatches) {
-        List<String> matches = commandAutoCompleter.getMatching(currentInput);
+        List<String> matches = commandAutoCompleter.getCompletion(currentInput).getMatches();
         Assertions.assertEquals(expectedMatches, matches);
     }
 

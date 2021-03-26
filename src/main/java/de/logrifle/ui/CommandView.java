@@ -159,7 +159,7 @@ class CommandView implements InteractableKeystrokeListener {
             default:
                 break;
         }
-        List<String> currentCommandOptions = commandAutoCompleter.getMatching(commandInput.getText());
+        List<String> currentCommandOptions = commandAutoCompleter.getCompletion(commandInput.getText()).getMatches();
         completionPanel.addComponent(new MultiColoredLabel(
                 currentCommandOptions.stream()
                         .map(opt -> new ColoredString(opt + " ", null, null))
