@@ -62,8 +62,8 @@ import java.util.stream.Collectors;
 
 public class MainController {
     public static final String COMMAND_PREFIX = ":";
-    private static final String FIND_PREFIX = "/";
-    private static final String FIND_BACKWARDS_PREFIX = "?";
+    public static final String FIND_PREFIX = "/";
+    public static final String FIND_BACKWARDS_PREFIX = "?";
     private final MainWindow mainWindow;
     private final KeyStrokeHandler keyStrokeHandler;
     private final Deque<Query> queryHistory = new LinkedList<>();

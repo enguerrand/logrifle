@@ -35,6 +35,7 @@ import de.logrifle.base.Strings;
 import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,8 +120,8 @@ class CommandView implements InteractableKeystrokeListener {
 
     private void killWord() {
         TerminalPosition caretPosition = commandInput.getCaretPosition();
-        String[] tokenized = getTokenizedCurrentInput();
-        String lineStart = tokenized[0];
+        TokenizedCommandInput tokenized = getTokenizedCurrentInput();
+        String lineStart = tokenized.beforeCaret;
         Pattern lastWordPattern = Pattern.compile("(.*\\b)(\\S+\\s*)$");
         Matcher matcher = lastWordPattern.matcher(lineStart);
         int nextColumn;
@@ -133,30 +134,30 @@ class CommandView implements InteractableKeystrokeListener {
             rest = lineStart;
             nextColumn = caretPosition.getColumn();
         }
-        String remainder = tokenized[1];
-        setCurrentInput(MainController.COMMAND_PREFIX + rest + remainder);
+        String remainder = tokenized.afterCaret;
+        setCurrentInput(tokenized.prefix + rest + remainder);
         commandInput.setCaretPosition(nextColumn);
     }
 
     private void killBackward() {
-        String[] tokenized = getTokenizedCurrentInput();
-        this.killBuffer = tokenized[0];
-        String remainder = tokenized[1];
-        setCurrentInput(MainController.COMMAND_PREFIX + remainder);
+        TokenizedCommandInput tokenized = getTokenizedCurrentInput();
+        this.killBuffer = tokenized.beforeCaret;
+        String remainder = tokenized.afterCaret;
+        setCurrentInput(tokenized.prefix + remainder);
         commandInput.setCaretPosition(1);
     }
 
     private void killForward() {
-        String[] tokenized = getTokenizedCurrentInput();
-        this.killBuffer = tokenized[1];
-        String remainder = tokenized[0];
-        setCurrentInput(MainController.COMMAND_PREFIX + remainder);
+        TokenizedCommandInput tokenized = getTokenizedCurrentInput();
+        this.killBuffer = tokenized.afterCaret;
+        String remainder = tokenized.beforeCaret;
+        setCurrentInput(tokenized.prefix + remainder);
     }
 
     private void yank() {
-        String[] tokenized = getTokenizedCurrentInput();
-        String newLeft = MainController.COMMAND_PREFIX + tokenized[0] + this.killBuffer;
-        setCurrentInput(newLeft + tokenized[1]);
+        TokenizedCommandInput tokenized = getTokenizedCurrentInput();
+        String newLeft = tokenized.prefix + tokenized.beforeCaret + this.killBuffer;
+        setCurrentInput(newLeft + tokenized.afterCaret);
         commandInput.setCaretPosition(
                 newLeft.length()
         );
@@ -178,11 +179,26 @@ class CommandView implements InteractableKeystrokeListener {
         );
     }
 
-    private String[] getTokenizedCurrentInput() {
-        String text = commandInput.getText().substring(MainController.COMMAND_PREFIX.length());
+    private TokenizedCommandInput getTokenizedCurrentInput() {
+        String text = commandInput.getText();
+        String prefix = "";
+        for (String possiblePrefix : Arrays.asList(
+                MainController.COMMAND_PREFIX, MainController.FIND_PREFIX, MainController.FIND_BACKWARDS_PREFIX)
+        ) {
+            if (text.startsWith(possiblePrefix)) {
+                prefix = possiblePrefix;
+                text = text.substring(prefix.length());
+                break;
+            }
+        }
         TerminalPosition caretPosition = commandInput.getCaretPosition();
-        int caret = caretPosition.getColumn() - MainController.COMMAND_PREFIX.length();
-        return Strings.tokenizeAt(text, caret);
+        int caret = caretPosition.getColumn() - prefix.length();
+        String[] tokenized = Strings.tokenizeAt(text, caret);
+        return new TokenizedCommandInput(
+                prefix,
+                tokenized[0],
+                tokenized[1]
+        );
     }
 
     void setListener(CommandViewListener listener) {
@@ -301,5 +317,17 @@ class CommandView implements InteractableKeystrokeListener {
 
     public int getHeight() {
         return height;
+    }
+
+    private static class TokenizedCommandInput {
+        private final String prefix;
+        private final String beforeCaret;
+        private final String afterCaret;
+
+        public TokenizedCommandInput(String prefix, String beforeCaret, String afterCaret) {
+            this.prefix = prefix;
+            this.beforeCaret = beforeCaret;
+            this.afterCaret = afterCaret;
+        }
     }
 }
