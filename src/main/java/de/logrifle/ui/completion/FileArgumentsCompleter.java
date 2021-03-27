@@ -31,13 +31,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class FileArgumentsCompleter extends AbstractArgumentCompleter {
-    private static String FILE_SEPARATOR = System.getProperty("file.separator");
-    private static Pattern TRUNCATION_PATTERN = Pattern.compile(
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static final Pattern TRUNCATION_PATTERN = Pattern.compile(
                     "[^"
-                    +Pattern.quote(FILE_SEPARATOR)
+                    + Pattern.quote(FILE_SEPARATOR)
                     + "]*$"
     );
-    private static Pattern REMAINDER_PATTERN = Pattern.compile(
+    private static final Pattern REMAINDER_PATTERN = Pattern.compile(
             "^.*" + Pattern.quote(FILE_SEPARATOR)
     );
     private final Path workingDirectory;

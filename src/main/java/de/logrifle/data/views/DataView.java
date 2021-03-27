@@ -53,7 +53,7 @@ public abstract class DataView implements DataViewListener, LineSource {
         this.maxLineLabelLength = maxLineLabelLength;
     }
 
-    public void setCloseHook(Runnable closeHook) {
+    public void setCloseHook(@Nullable Runnable closeHook) {
         this.closeHook = closeHook;
     }
 

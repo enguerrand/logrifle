@@ -70,6 +70,7 @@ public class ViewsTreeNode {
         return Collections.unmodifiableList(children);
     }
 
+    @Nullable
     public ViewsTreeNode getParent() {
         return parent;
     }

@@ -23,7 +23,7 @@ package de.logrifle.data.views;
 import com.googlecode.lanterna.TextColor;
 
 public class LineSourceTestImpl implements LineSource {
-    private String title;
+    private final String title;
 
     public LineSourceTestImpl(String title) {
         this.title = title;

@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 
 public class LogDispatcher implements Executor {
     private final Executor singleThreadedExecutor;
-    private ThreadLocal<Boolean> onThread = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> onThread = new ThreadLocal<>();
 
     public LogDispatcher() {
         singleThreadedExecutor = Executors.newSingleThreadExecutor();

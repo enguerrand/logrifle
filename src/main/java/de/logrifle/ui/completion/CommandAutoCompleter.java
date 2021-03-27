@@ -113,7 +113,7 @@ public class CommandAutoCompleter {
                     break;
                 }
             }
-            if (charsMatching && c != null) {
+            if (charsMatching) {
                 toAppend.append(c);
             }
         }

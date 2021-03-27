@@ -72,9 +72,8 @@ public class MainFileOpenerImpl implements FileOpener {
                 FileOpener fileOpener = entry.getValue();
                 try {
                     return fileOpener.open(path);
-                } catch (UnexpectedFileFormatException e) {
+                } catch (UnexpectedFileFormatException ignored) {
                     // The pattern matched but the file's format was not consistent with its name. Continue trying other file openers.
-                    continue;
                 }
             }
         }

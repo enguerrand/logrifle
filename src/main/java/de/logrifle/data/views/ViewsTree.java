@@ -22,6 +22,7 @@ package de.logrifle.data.views;
 
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.ui.cmd.ExecutionResult;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class ViewsTree {
     }
 
     public ExecutionResult removeNode(ViewsTreeNode node) {
-        ViewsTreeNode parent = node.getParent();
+        @Nullable ViewsTreeNode parent = node.getParent();
         if (parent == null) {
             return new ExecutionResult(false, "Cannot delete the root view");
         }
@@ -59,7 +60,7 @@ public class ViewsTree {
     }
 
     public boolean moveFocusParent() {
-        ViewsTreeNode parent = focusedNode.getParent();
+        @Nullable ViewsTreeNode parent = focusedNode.getParent();
         if (parent == null) {
             return false;
         } else {
@@ -80,7 +81,7 @@ public class ViewsTree {
     }
 
     public boolean moveFocusPrev() {
-        ViewsTreeNode parent = focusedNode.getParent();
+        @Nullable ViewsTreeNode parent = focusedNode.getParent();
         if (parent == null) {
             return false;
         }
@@ -96,7 +97,7 @@ public class ViewsTree {
 
     public boolean moveFocusNext() {
         ViewsTreeNode current = this.focusedNode;
-        ViewsTreeNode parent = current.getParent();
+        @Nullable ViewsTreeNode parent = current.getParent();
         while (parent != null) {
             List<ViewsTreeNode> sameLevel = parent.getChildren();
             int index = sameLevel.indexOf(current);
