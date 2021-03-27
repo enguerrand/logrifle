@@ -40,7 +40,7 @@ public class Line {
         this.index = index;
         this.timestamp = timestamp;
         this.raw = sanitize(raw);
-        this.source = source;
+        this.source = Objects.requireNonNull(source);
     }
 
     public int getIndex() {
