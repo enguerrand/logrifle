@@ -582,7 +582,7 @@ public class MainController {
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
-        if (this.mainWindow.isCommandBarOpen()) {
+        if (this.mainWindow.isCommandBarEditing()) {
             return false;
         }
         if (keyStroke.getKeyType() == KeyType.Character) {
