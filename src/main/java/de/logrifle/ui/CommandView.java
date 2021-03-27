@@ -155,7 +155,11 @@ class CommandView implements InteractableKeystrokeListener {
 
     private void yank() {
         String[] tokenized = getTokenizedCurrentInput();
-        setCurrentInput(MainController.COMMAND_PREFIX + tokenized[0] + this.killBuffer + tokenized[1]);
+        String newLeft = MainController.COMMAND_PREFIX + tokenized[0] + this.killBuffer;
+        setCurrentInput(newLeft + tokenized[1]);
+        commandInput.setCaretPosition(
+                newLeft.length()
+        );
     }
 
     private void moveWordLeft() {
