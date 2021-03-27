@@ -523,6 +523,12 @@ public class CommandHandler {
         sb.append("ArrowUp          => Go to previous command in history\n");
         sb.append("Enter            => Execute current input as command\n");
         sb.append("Escape           => Close command input bar\n");
+        sb.append("CTRL+ArrowLeft   => Move caret one word left\n");
+        sb.append("CTRL+ArrowRight  => Move caret one word right\n");
+        sb.append("CTRL+k           => Kill (cut) everything after caret\n");
+        sb.append("CTRL+u           => Kill (cut) everything before caret\n");
+        sb.append("CTRL+w           => Kill (cut) word before caret\n");
+        sb.append("CTRL+y           => Yank (paste) kill buffer\n");
 
         return sb.toString();
     }
