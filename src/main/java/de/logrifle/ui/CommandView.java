@@ -20,6 +20,7 @@
 
 package de.logrifle.ui;
 
+import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.BorderLayout;
@@ -30,10 +31,13 @@ import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextBox;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import de.logrifle.base.Strings;
 import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class CommandView implements InteractableKeystrokeListener {
@@ -52,6 +56,8 @@ class CommandView implements InteractableKeystrokeListener {
     private CommandViewListener listener;
     private int height = 0;
 
+    private String killBuffer = "";
+
     CommandView() {
         history = new CommandHistory();
         LayoutManager layout = new BorderLayout();
@@ -61,7 +67,88 @@ class CommandView implements InteractableKeystrokeListener {
         renderer.setUnusedSpaceCharacter(' ');
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
             .setRenderer(renderer);
+        commandInput.setInputFilter((interactable, keyStroke) -> {
+            boolean ctrlDown = keyStroke.isCtrlDown();
+            if (ctrlDown) {
+                handleCtrlBind(keyStroke);
+                return false;
+            } else {
+                return true;
+            }
+        });
         messageBox = new SanitizedLabel("");
+    }
+
+    private void handleCtrlBind(KeyStroke keyStroke) {
+        if (keyStroke.getKeyType() != KeyType.Character) {
+            return;
+        }
+        switch (keyStroke.getCharacter()) {
+            case 'w': {
+                killWord();
+                break;
+            }
+            case 'k': {
+                killForward();
+                break;
+            }
+            case 'u': {
+                killBackward();
+                break;
+            }
+            case 'y': {
+                yank();
+                break;
+            }
+        }
+    }
+
+    private void killWord() {
+        TerminalPosition caretPosition = commandInput.getCaretPosition();
+        String[] tokenized = getTokenizedCurrentInput();
+        String lineStart = tokenized[0];
+        Pattern lastWordPattern = Pattern.compile("(.*\\b)(\\S+\\s*)$");
+        Matcher matcher = lastWordPattern.matcher(lineStart);
+        int nextColumn;
+        String rest;
+        if (matcher.matches()) {
+            rest = matcher.group(1);
+            this.killBuffer = matcher.group(2);
+            nextColumn = caretPosition.getColumn() - this.killBuffer.length();
+        } else {
+            rest = lineStart;
+            nextColumn = caretPosition.getColumn();
+        }
+        String remainder = tokenized[1];
+        setCurrentInput(MainController.COMMAND_PREFIX + rest + remainder);
+        commandInput.setCaretPosition(nextColumn);
+    }
+
+    private void killBackward() {
+        String[] tokenized = getTokenizedCurrentInput();
+        this.killBuffer = tokenized[0];
+        String remainder = tokenized[1];
+        setCurrentInput(MainController.COMMAND_PREFIX + remainder);
+        commandInput.setCaretPosition(1);
+    }
+
+    private void killForward() {
+        String[] tokenized = getTokenizedCurrentInput();
+        this.killBuffer = tokenized[1];
+        String remainder = tokenized[0];
+        setCurrentInput(MainController.COMMAND_PREFIX + remainder);
+    }
+
+    private void yank() {
+        String[] tokenized = getTokenizedCurrentInput();
+        setCurrentInput(MainController.COMMAND_PREFIX + tokenized[0] + this.killBuffer + tokenized[1]);
+    }
+
+    private String[] getTokenizedCurrentInput() {
+        String text = commandInput.getText().substring(MainController.COMMAND_PREFIX.length());
+        TerminalPosition caretPosition = commandInput.getCaretPosition();
+        int caret = caretPosition.getColumn() - MainController.COMMAND_PREFIX.length();
+        return Strings.tokenizeAt(text, caret);
     }
 
     void setListener(CommandViewListener listener) {

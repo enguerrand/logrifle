@@ -72,4 +72,10 @@ public class Strings {
         }
         return result;
     }
+
+    public static String[] tokenizeAt(String text, int index) {
+        String first = text.substring(0, index);
+        String second = text.substring(index);
+        return new String[] { first, second };
+    }
 }

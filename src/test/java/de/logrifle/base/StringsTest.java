@@ -75,4 +75,17 @@ class StringsTest {
         }
         Assertions.assertEquals(expectedOutput, Strings.trimStart(input));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "abcdef,2,ab,cdef",
+            "abcdef,0,,abcdef",
+            "abcdef,6,abcdef,"
+    })
+    void tokenizeAt(String input, String indexAsString, String expectedFirst, String expectedSecond) {
+        String[] tokenized = Strings.tokenizeAt(input, Integer.parseInt(indexAsString));
+        Assertions.assertEquals(2, tokenized.length);
+        Assertions.assertEquals(expectedFirst == null ? "" : expectedFirst, tokenized[0]);
+        Assertions.assertEquals(expectedSecond == null ? "" : expectedSecond, tokenized[1]);
+    }
 }
