@@ -80,10 +80,24 @@ class CommandView implements InteractableKeystrokeListener {
     }
 
     private void handleCtrlBind(KeyStroke keyStroke) {
-        if (keyStroke.getKeyType() != KeyType.Character) {
-            return;
+        switch (keyStroke.getKeyType()) {
+            case Character:
+                Character character = keyStroke.getCharacter();
+                handleCtrlBindCharacters(character);
+                break;
+            case ArrowLeft:
+                moveWordLeft();
+                break;
+            case ArrowRight:
+                moveWordRight();
+                break;
+            default:
+                break;
         }
-        switch (keyStroke.getCharacter()) {
+    }
+
+    private void handleCtrlBindCharacters(Character character) {
+        switch (character) {
             case 'w': {
                 killWord();
                 break;
@@ -142,6 +156,22 @@ class CommandView implements InteractableKeystrokeListener {
     private void yank() {
         String[] tokenized = getTokenizedCurrentInput();
         setCurrentInput(MainController.COMMAND_PREFIX + tokenized[0] + this.killBuffer + tokenized[1]);
+    }
+
+    private void moveWordLeft() {
+        int caretPosition = commandInput.getCaretPosition().getColumn();
+        String text = commandInput.getText();
+        commandInput.setCaretPosition(
+                Strings.findPreviousWordStartOrStrt(text, caretPosition)
+        );
+    }
+
+    private void moveWordRight() {
+        int caretPosition = commandInput.getCaretPosition().getColumn();
+        String text = commandInput.getText();
+        commandInput.setCaretPosition(
+                Strings.findNextWordStartOrEnd(text, caretPosition)
+        );
     }
 
     private String[] getTokenizedCurrentInput() {
