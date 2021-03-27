@@ -468,6 +468,10 @@ public class CommandHandler {
         sb.append(sep);
         sb.append("Options can be specified in the format of java properties (i.e. key = value) using the long command line option name with dashes (-) replaced by underscores (_).");
         sb.append(sep);
+        sb.append("Example:");
+        sb.append(sep);
+        sb.append("    timestamp_format = HH:mm:ss");
+        sb.append(sep);
         List<Command> values = new ArrayList<>(new HashSet<>(this.commands.values()));
         values.sort(Comparator.comparing(Command::getCommandName));
         List<HelpEntry> helpEntries = new ArrayList<>();
