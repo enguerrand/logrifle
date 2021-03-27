@@ -32,16 +32,38 @@ import com.googlecode.lanterna.gui2.TextBox;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.Strings;
+import de.logrifle.ui.cmd.KeyBind;
 import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class CommandView implements InteractableKeystrokeListener {
+public class CommandView implements InteractableKeystrokeListener {
+    private static final Map<KeyStroke, Consumer<CommandView>> KEY_BINDS = new HashMap<>();
+    private static List<KeyBind> BIND_HELP = new ArrayList<>();
+
+    static {
+        registerKeyBind(new KeyStroke(KeyType.ArrowDown, false, false), CommandView::historyForward, "Go to next command in history");
+        registerKeyBind(new KeyStroke(KeyType.ArrowUp, false, false), CommandView::historyBackward,"Go to previous command in history");
+        registerKeyBind(new KeyStroke(KeyType.Enter, false, false), CommandView::commitCommand,"Execute current input as command");
+        registerKeyBind(new KeyStroke(KeyType.Escape, false, false), CommandView::handleEscape,"Close command input bar");
+        registerKeyBind(new KeyStroke(KeyType.Tab, false, false), CommandView::autocomplete,"Autocomplete current command");
+        registerKeyBind(new KeyStroke(KeyType.ArrowLeft,  true, false), CommandView::moveWordLeft,"Move caret one word left");
+        registerKeyBind(new KeyStroke(KeyType.ArrowRight,true, false), CommandView::moveWordRight,"Move caret one word right");
+        registerKeyBind(new KeyStroke('k', true, false), CommandView::killForward,"Kill (cut) everything after caret");
+        registerKeyBind(new KeyStroke('u', true, false), CommandView::killBackward,"Kill (cut) everything before caret");
+        registerKeyBind(new KeyStroke('w', true, false), CommandView::killWord,"Kill (cut) word before caret");
+        registerKeyBind(new KeyStroke('y', true, false), CommandView::yank,"Yank (paste) kill buffer");
+    }
     private final Panel panel;
     private final TextBox commandInput;
     private final Label messageBox;
@@ -69,53 +91,13 @@ class CommandView implements InteractableKeystrokeListener {
         commandInput = new TextBox("", TextBox.Style.SINGLE_LINE)
             .setRenderer(renderer);
         commandInput.setInputFilter((interactable, keyStroke) -> {
-            boolean ctrlDown = keyStroke.isCtrlDown();
-            if (ctrlDown) {
-                handleCtrlBind(keyStroke);
-                return false;
-            } else {
-                return true;
-            }
+            return !KEY_BINDS.containsKey(keyStroke);
         });
         messageBox = new SanitizedLabel("");
     }
 
-    private void handleCtrlBind(KeyStroke keyStroke) {
-        switch (keyStroke.getKeyType()) {
-            case Character:
-                Character character = keyStroke.getCharacter();
-                handleCtrlBindCharacters(character);
-                break;
-            case ArrowLeft:
-                moveWordLeft();
-                break;
-            case ArrowRight:
-                moveWordRight();
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void handleCtrlBindCharacters(Character character) {
-        switch (character) {
-            case 'w': {
-                killWord();
-                break;
-            }
-            case 'k': {
-                killForward();
-                break;
-            }
-            case 'u': {
-                killBackward();
-                break;
-            }
-            case 'y': {
-                yank();
-                break;
-            }
-        }
+    public static Collection<KeyBind> getKeyBinds() {
+        return BIND_HELP;
     }
 
     private void killWord() {
@@ -270,37 +252,16 @@ class CommandView implements InteractableKeystrokeListener {
 
     @Override
     public void onKeyStroke(Interactable interactable, KeyStroke keyStroke) {
-        String command = commandInput.getText();
         completionPanel.removeAllComponents();
-        if(command.isEmpty()) {
+        if(commandInput.getText().isEmpty()) {
             listener.onEmptied();
             return;
         }
-        KeyType keyType = keyStroke.getKeyType();
-        switch(keyType) {
-            case Escape:
-                setCurrentInput("");
-                listener.onEmptied();
-                history.reset();
-                break;
-            case Enter:
-                setCurrentInput("");
-                history.append(command);
-                this.listener.onCommand(command);
-                break;
-            case Tab:
-                String completed = commandAutoCompleter.complete(command);
-                setCurrentInput(completed);
-                break;
-            case ArrowUp:
-                history.back(commandInput.getText(), this::setCurrentInput);
-                break;
-            case ArrowDown:
-                history.forward(this::setCurrentInput);
-                break;
-            default:
-                break;
+        Consumer<CommandView> action = KEY_BINDS.get(keyStroke);
+        if (action != null) {
+            action.accept(this);
         }
+
         List<String> currentCommandOptions = commandAutoCompleter.getCompletion(commandInput.getText()).getOptions();
         completionPanel.addComponent(new MultiColoredLabel(
                 currentCommandOptions.stream()
@@ -310,6 +271,32 @@ class CommandView implements InteractableKeystrokeListener {
         );
     }
 
+    private void commitCommand() {
+        String command = commandInput.getText();
+        setCurrentInput("");
+        history.append(command);
+        this.listener.onCommand(command);
+    }
+
+    private void autocomplete() {
+        String completed = commandAutoCompleter.complete(commandInput.getText());
+        setCurrentInput(completed);
+    }
+
+    private void historyBackward() {
+        history.back(commandInput.getText(), this::setCurrentInput);
+    }
+
+    private void historyForward() {
+        history.forward(this::setCurrentInput);
+    }
+
+    private void handleEscape() {
+        setCurrentInput("");
+        listener.onEmptied();
+        history.reset();
+    }
+
     @Override
     public Interactable getInteractable() {
         return this.commandInput;
@@ -317,6 +304,11 @@ class CommandView implements InteractableKeystrokeListener {
 
     public int getHeight() {
         return height;
+    }
+
+    private static void registerKeyBind(KeyStroke keyStroke, Consumer<CommandView> action, String description) {
+        KEY_BINDS.put(keyStroke, action);
+        BIND_HELP.add(new KeyBind(keyStroke, description));
     }
 
     private static class TokenizedCommandInput {

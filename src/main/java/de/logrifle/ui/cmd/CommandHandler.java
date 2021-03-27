@@ -23,13 +23,14 @@ package de.logrifle.ui.cmd;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.Strings;
+import de.logrifle.ui.HighlightingTextColors;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
-import de.logrifle.ui.HighlightingTextColors;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -457,8 +458,7 @@ public class CommandHandler {
         return command.execute(args, blocking);
     }
 
-
-    public String getHelp(Map<KeyStroke, String> keyMap) {
+    public String getHelp(Map<KeyStroke, String> keyMap, Collection<KeyBind> commandViewBinds) {
         String sep = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder();
         sb.append(sep);
@@ -513,22 +513,16 @@ public class CommandHandler {
         );
         int bindLength = binds.stream().mapToInt(e -> e.renderKeyStroke().length()).max().orElse(0);
         for (KeyBind bind : binds) {
-            sb.append(bind.render(bindLength)+"\n");
+            sb.append(bind.render(bindLength, ":")).append("\n");
         }
 
         sb.append("\n");
         sb.append("Keybinds in command input mode:\n");
         sb.append("======================================\n");
-        sb.append("ArrowDown        => Go to next command in history\n");
-        sb.append("ArrowUp          => Go to previous command in history\n");
-        sb.append("Enter            => Execute current input as command\n");
-        sb.append("Escape           => Close command input bar\n");
-        sb.append("CTRL+ArrowLeft   => Move caret one word left\n");
-        sb.append("CTRL+ArrowRight  => Move caret one word right\n");
-        sb.append("CTRL+k           => Kill (cut) everything after caret\n");
-        sb.append("CTRL+u           => Kill (cut) everything before caret\n");
-        sb.append("CTRL+w           => Kill (cut) word before caret\n");
-        sb.append("CTRL+y           => Yank (paste) kill buffer\n");
+        int commandViewBindLength = commandViewBinds.stream().mapToInt(e -> e.renderKeyStroke().length()).max().orElse(0);
+        for (KeyBind commandViewBind : commandViewBinds) {
+            sb.append(commandViewBind.render(commandViewBindLength, "")).append("\n");
+        }
 
         return sb.toString();
     }
@@ -553,54 +547,4 @@ public class CommandHandler {
         }
     }
 
-    private static class KeyBind {
-        private final KeyStroke keyStroke;
-        private final String mapping;
-
-        private KeyBind(KeyStroke keyStroke, String mapping) {
-            this.keyStroke = keyStroke;
-            this.mapping = mapping;
-        }
-
-        KeyStroke getKeyStroke() {
-            return keyStroke;
-        }
-
-        int getModifiersCount() {
-            int count = 0;
-            if (keyStroke.isCtrlDown()) {
-                ++count;
-            }
-            if (keyStroke.isAltDown()) {
-                ++count;
-            }
-            if (keyStroke.getKeyType() != KeyType.Character && keyStroke.isShiftDown()) {
-                ++count;
-            }
-            return count;
-        }
-
-        String render(int keyLength) {
-            return Strings.pad(renderKeyStroke(), keyLength, false) + " => :" + mapping;
-        }
-
-        String renderKeyStroke() {
-            StringBuilder sb = new StringBuilder();
-            if (keyStroke.isCtrlDown()) {
-                sb.append("CTRL+");
-            }
-            if (keyStroke.isAltDown()) {
-                sb.append("ALT+");
-            }
-            if (keyStroke.getKeyType() == KeyType.Character) {
-                sb.append(keyStroke.getCharacter());
-            } else {
-                if (keyStroke.isShiftDown()) {
-                    sb.append("SHIFT+");
-                }
-                sb.append(keyStroke.getKeyType().name());
-            }
-            return sb.toString();
-        }
-    }
 }

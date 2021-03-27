@@ -37,6 +37,7 @@ import de.logrifle.data.parsing.TimeStampFormat;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
+import de.logrifle.ui.CommandView;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import de.logrifle.ui.MainWindow;
@@ -125,7 +126,7 @@ public class Main {
 
         if (parserResult.getBoolean("help")) {
             parser.printHelp();
-            System.out.print(commandHandler.getHelp(keyMapFactory.get()));
+            System.out.print(commandHandler.getHelp(keyMapFactory.get(), CommandView.getKeyBinds()));
             System.exit(0);
         }
         if (parserResult.getBoolean("version")) {
