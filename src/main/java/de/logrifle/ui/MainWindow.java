@@ -222,6 +222,10 @@ public class MainWindow {
         updateView(screen.getTerminalSize());
     }
 
+    boolean isCommandBarOpen() {
+        return this.commandView.isVisible();
+    }
+
     void showCommandViewMessage(String message, TextColor textColor) {
         this.commandView.showMessage(message, textColor);
     }

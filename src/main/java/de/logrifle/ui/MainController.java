@@ -582,6 +582,9 @@ public class MainController {
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
+        if (this.mainWindow.isCommandBarOpen()) {
+            return false;
+        }
         if (keyStroke.getKeyType() == KeyType.Character) {
             Character character = keyStroke.getCharacter();
             if (character == ':' || character == '/' || character == '?') {

@@ -219,6 +219,10 @@ class CommandView implements InteractableKeystrokeListener {
         height = 0;
     }
 
+    boolean isVisible() {
+        return height > 0;
+    }
+
     Panel getPanel() {
         return panel;
     }
