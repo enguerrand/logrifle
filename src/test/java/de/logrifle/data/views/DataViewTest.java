@@ -43,7 +43,7 @@ class DataViewTest {
     private final TestLogDispatcher dispatcher = new TestLogDispatcher();
 
     @Test
-    void getAllLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
+    void mergedLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 6;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -63,8 +63,45 @@ class DataViewTest {
         addAndFire(dispatcher, viewOne, line2);
         addAndFire(dispatcher, viewOne, line3);
         addAndFire(dispatcher, viewTwo, line1);
-        addAndFire(dispatcher, viewOne, line6, line7);
+        addAndFire(dispatcher, viewOne, line4);
         addAndFire(dispatcher, viewOne, line5);
+        addAndFire(dispatcher, viewOne, line6, line7);
+        factory.awaitJobsDone();
+        Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
+        Assertions.assertEquals(7, merged.getLineCount());
+        Assertions.assertEquals(3, filtered.getLineCount());
+        UI.setTestMode();
+        Assertions.assertEquals(Arrays.asList(
+                line1, line2, line3, line4, line5, line6, line7
+        ), merged.getAllLines());
+        Assertions.assertEquals(Arrays.asList(
+                line3, line4, line5
+        ), filtered.getAllLines());
+    }
+
+    @Test
+    void mergedLinesShouldMaintainOrderFromSources() throws InterruptedException, ViewCreationFailedException {
+        int jobCountMergedViewInstantiation = 1;
+        int jobCountLineAddition = 6;
+        int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
+        RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(expectedJobCount);
+        Line line1 = parser.parse(0, "17:24:01.038 line1", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line2 = parser.parse(1, "15:24:02.038 line2", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line3 = parser.parse(2, "15:24:03.038 line3", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line4 = parser.parse(3, "16:24:04.038 line4", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line5 = parser.parse(4, "15:24:05.038 line5", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line6 = parser.parse(5, "15:24:06.038 line6", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        Line line7 = parser.parse(6, "15:24:06.038 line7", TestLinesFactory.TEST_SOURCE).getParsedLine();
+        DataView viewOne = new TestDataView(dispatcher, "one");
+        DataView viewTwo = new TestDataView(dispatcher, "two");
+        DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        dispatcher.execute(() -> merged.addListener(filtered));
+        addAndFire(dispatcher, viewOne, line2);
+        addAndFire(dispatcher, viewOne, line3);
+        addAndFire(dispatcher, viewTwo, line1);
+        addAndFire(dispatcher, viewOne, line6, line7);
+        addAndFire(dispatcher, viewTwo, line5);
         addAndFire(dispatcher, viewOne, line4);
         factory.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());

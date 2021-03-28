@@ -24,22 +24,28 @@ import com.googlecode.lanterna.TextColor;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.LineSource;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 public class Line {
+    public static final Comparator<Line> ORDERING_COMPARATOR = Comparator
+            .comparing(Line::getDateChangeCount)
+            .thenComparing(Line::getTimestamp);
     private int index;
+    private final long dateChangeCount;
     private final long timestamp;
     private final String raw;
     private final List<String> additionalLines = new CopyOnWriteArrayList<>();
     private final LineSource source;
 
-    Line(int index, String raw, long timestamp, LineSource source) {
+    Line(int index, String raw, long timestamp, long dateChangeCount, LineSource source) {
         this.index = index;
         this.timestamp = timestamp;
         this.raw = sanitize(raw);
+        this.dateChangeCount = dateChangeCount;
         this.source = Objects.requireNonNull(source);
     }
 
@@ -73,6 +79,10 @@ public class Line {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public long getDateChangeCount() {
+        return dateChangeCount;
     }
 
     public List<String> getAdditionalLines() {
@@ -109,6 +119,13 @@ public class Line {
     }
 
     public static Line initialTextLineOf(int index, String raw, DataView source) {
-        return new Line(index, raw, 0, source);
+        return new Line(index, raw, 0, 0, source);
+    }
+
+    @Override
+    public String toString() {
+        return "Line{" +
+                "raw='" + raw + '\'' +
+                '}';
     }
 }

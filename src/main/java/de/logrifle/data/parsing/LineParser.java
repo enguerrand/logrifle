@@ -22,6 +22,17 @@ package de.logrifle.data.parsing;
 
 import de.logrifle.data.views.LineSource;
 
-public interface LineParser {
-    LineParseResult parse(int index, String raw, LineSource source);
+public abstract class LineParser {
+    private long lastParsedTimestamp = 0L;
+    private long dateChangeCount = 0;
+
+    public abstract LineParseResult parse(int index, String raw, LineSource source);
+
+    protected long updateAndGetDateChangeCount(long parsedTimeStamp) {
+        if (parsedTimeStamp < lastParsedTimestamp) {
+            ++dateChangeCount;
+        }
+        lastParsedTimestamp = parsedTimeStamp;
+        return dateChangeCount;
+    }
 }

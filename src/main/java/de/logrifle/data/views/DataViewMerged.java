@@ -97,7 +97,7 @@ public class DataViewMerged extends DataView {
 
         // Now apply a new index for the merged view
         linesCache.addAll(newLines);
-        linesCache.sort(Comparator.comparing(Line::getTimestamp));
+        linesCache.sort(Line.ORDERING_COMPARATOR);
         for (int i = 0; i < linesCache.size(); i++) {
             Line line = linesCache.get(i);
             line.setIndex(i);
@@ -136,7 +136,7 @@ public class DataViewMerged extends DataView {
     }
 
     /**
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException when called with ane invalid index
      */
     DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();

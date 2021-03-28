@@ -22,9 +22,12 @@ package de.logrifle.data.parsing;
 
 import de.logrifle.data.views.LineSource;
 
-public class LineParserTextImpl implements LineParser {
+public class LineParserTextImpl extends LineParser {
+
     @Override
     public LineParseResult parse(int index, String raw, LineSource source) {
-        return new LineParseResult(new Line(index, raw, System.currentTimeMillis(), source));
+        long timestamp = System.currentTimeMillis();
+        long dateChangeCount = updateAndGetDateChangeCount(timestamp);
+        return new LineParseResult(new Line(index, raw, timestamp, dateChangeCount, source));
     }
 }
