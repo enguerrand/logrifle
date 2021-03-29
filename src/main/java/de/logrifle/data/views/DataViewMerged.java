@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
     private final List<DataView> sourceViews;
@@ -88,9 +87,11 @@ public class DataViewMerged extends DataView {
             int processedLinesCount = processedLinesMap.getOrDefault(viewId, 0);
             if (sourceView.getLineCount() > processedLinesCount) {
                 List<Line> newLinesInView = sourceView.getLines(processedLinesCount, null);
-                newLines.addAll(newLinesInView.stream()
-                        .filter(Line::isVisible)
-                        .collect(Collectors.toList()));
+                for (Line line : newLinesInView) {
+                    if (line.isVisible()) {
+                        newLines.add(line);
+                    }
+                }
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
