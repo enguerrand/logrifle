@@ -45,8 +45,9 @@ public class Bookmarks {
     private final Charset charset;
     private final AtomicReference<Boolean> forceBookmarksVisible = new AtomicReference<>(false);
 
-    public Bookmarks(Charset charset) {
+    public Bookmarks(Charset charset, boolean forcedBookmarksDisplay) {
         this.charset = charset;
+        this.forceBookmarksVisible.set(forcedBookmarksDisplay);
     }
 
     public ExecutionResult toggle(Line line) {

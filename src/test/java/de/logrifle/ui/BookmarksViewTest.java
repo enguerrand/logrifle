@@ -35,7 +35,7 @@ import java.util.List;
 class BookmarksViewTest {
 
     private static final List<Line> LINES = new ArrayList<>();
-    private static final Bookmarks BOOKMARKS = new Bookmarks(StandardCharsets.UTF_8);
+    private static final Bookmarks BOOKMARKS = new Bookmarks(StandardCharsets.UTF_8, false);
 
     @BeforeAll
     static void beforeAll() {

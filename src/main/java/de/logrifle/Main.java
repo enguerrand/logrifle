@@ -95,6 +95,9 @@ public class Main {
         parser.addArgument("logfile")
                 .nargs("*")
                 .help("Path to logfile");
+        parser.addArgument("-B", "--forced-bookmarks-display")
+                .action(Arguments.storeTrue())
+                .help("Always display lines that are bookmarked irrespectively of active filters");
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
@@ -222,7 +225,8 @@ public class Main {
         }
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
-        Bookmarks bookmarks = new Bookmarks(charset);
+        boolean forcedBookmarksDisplay = getBooleanOption(defaults, parserResult, "forced_bookmarks_display", false);
+        Bookmarks bookmarks = new Bookmarks(charset, forcedBookmarksDisplay);
         ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
         HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);

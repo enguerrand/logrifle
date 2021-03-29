@@ -45,7 +45,7 @@ public class BookmarksTest {
 
     @Test
     void toggleBookmark() {
-        Bookmarks bookmarks = new Bookmarks(charset);
+        Bookmarks bookmarks = new Bookmarks(charset, false);
         Line lineToBookmark = LINES.get(3);
         bookmarks.toggle(lineToBookmark);
         Assertions.assertEquals(1, bookmarks.count());
@@ -69,7 +69,7 @@ public class BookmarksTest {
             "8,5,2",
     })
     void findBookmark(String fromIndex, String expectedPreviousResultIndex, String expectedNextResultIndex) {
-        Bookmarks bookmarks = new Bookmarks(charset);
+        Bookmarks bookmarks = new Bookmarks(charset, false);
         Line first = LINES.get(2);
         Line second = LINES.get(4);
         Line third = LINES.get(5);
@@ -88,14 +88,14 @@ public class BookmarksTest {
 
     @Test
     void findBookmarksEmpty() {
-        Bookmarks bookmarks = new Bookmarks(charset);
+        Bookmarks bookmarks = new Bookmarks(charset, false);
         Assertions.assertEquals(Optional.empty(), bookmarks.findNext(0));
         Assertions.assertEquals(Optional.empty(), bookmarks.findPrevious(0));
     }
 
     @Test
     void removeBookmark() {
-        Bookmarks bookmarks = new Bookmarks(charset);
+        Bookmarks bookmarks = new Bookmarks(charset, false);
         Line lineToBookmark = LINES.get(3);
         bookmarks.toggle(lineToBookmark);
         bookmarks.remove(new Bookmark(lineToBookmark));
