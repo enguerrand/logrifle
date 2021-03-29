@@ -57,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -220,7 +221,7 @@ public class MainController {
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
         try {
-            DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
+            DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher, bookmarks::isLineForcedVisible);
             Runnable treeUpdater = () -> {
                 ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
                 viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
@@ -326,23 +327,12 @@ public class MainController {
         }
         DataViewFiltered currentFilter = (DataViewFiltered) focusedDataView;
         currentFilter.updateTitle(newRegex);
-        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(
-                () -> currentFilter.setPattern(newRegex), logDispatcher
+
+        return runAsyncIfPossible(
+                () -> currentFilter.setPattern(newRegex),
+                blocking,
+                "editing filter"
         );
-        if (blocking) {
-            try {
-                return f.get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return new ExecutionResult(false, "Interrupted while editing filter!");
-            } catch (ExecutionException e) {
-                return new ExecutionResult(false, "Error while editing filter: "+e.toString());
-            }
-        } else {
-            f.thenRunAsync(mainWindow::updateView, UI::runLater);
-            // need to update for the updated title anyway
-            return new ExecutionResult(true);
-        }
     }
 
     public ExecutionResult toggleBookmark() {
@@ -373,6 +363,24 @@ public class MainController {
         } catch (IOException e) {
             return new ExecutionResult(false, "Could not write bookmarks: "+e);
         }
+    }
+
+    public ExecutionResult toggleForceDisplayBookmarks(boolean blocking) {
+        return runAsyncIfPossible(
+                () -> {
+                    ExecutionResult executionResult = bookmarks.toggleForceBookmarksDisplay();
+                    ViewsTree viewsTree = this.viewsTree;
+                    ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
+                    @Nullable ViewsTreeNode parent = focusedTreeNode.getParent();
+                    if (parent != null) {
+                        DataView focusedView = focusedTreeNode.getDataView();
+                        focusedView.onFullUpdate(parent.getDataView());
+                    }
+                    return executionResult;
+                },
+                blocking,
+                "toggling forced bookmarks display"
+        );
     }
 
     public ExecutionResult toggleLineNumbers() {
@@ -570,6 +578,23 @@ public class MainController {
             return new ExecutionResult(true);
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             return new ExecutionResult(false, arg + ": Not a valid view index!");
+        }
+    }
+
+    public ExecutionResult runAsyncIfPossible(Supplier<ExecutionResult> task, boolean blocking, String descriptionInPresentParticiple) {
+        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(task, logDispatcher);
+        if (blocking) {
+            try {
+                return f.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Interrupted while " + descriptionInPresentParticiple + "!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, "Error while " + descriptionInPresentParticiple + ": "+e.toString());
+            }
+        } else {
+            f.thenRunAsync(mainWindow::updateView, UI::runLater);
+            return new ExecutionResult(true);
         }
     }
 

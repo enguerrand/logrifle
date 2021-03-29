@@ -73,6 +73,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("toggle-forced-bookmarks-display", "tfb", "Toggles the forced display of bookmarked lines.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleForceDisplayBookmarks(blocking);
+            }
+        });
+
         register(new Command("toggle-line-numbers", "tln", "Toggles display of line numbers on and off.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
@@ -458,6 +465,7 @@ public class CommandHandler {
         return command.execute(args, blocking);
     }
 
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
     public String getHelp(Map<KeyStroke, String> keyMap, Collection<KeyBind> commandViewBinds) {
         String sep = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder();

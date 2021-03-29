@@ -58,7 +58,7 @@ class DataViewTest {
         DataView viewOne = new TestDataView(dispatcher, "one");
         DataView viewTwo = new TestDataView(dispatcher, "two");
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
-        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> false);
         dispatcher.execute(() -> merged.addListener(filtered));
         addAndFire(dispatcher, viewOne, line2);
         addAndFire(dispatcher, viewOne, line3);
@@ -95,7 +95,7 @@ class DataViewTest {
         DataView viewOne = new TestDataView(dispatcher, "one");
         DataView viewTwo = new TestDataView(dispatcher, "two");
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
-        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> false);
         dispatcher.execute(() -> merged.addListener(filtered));
         addAndFire(dispatcher, viewOne, line2);
         addAndFire(dispatcher, viewOne, line3);
@@ -132,7 +132,7 @@ class DataViewTest {
         Line line6 = parser.parse(5, "15:24:06.038 line6", viewOne).getParsedLine();
         Line line7 = parser.parse(6, "15:24:06.038 line7", viewOne).getParsedLine();
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
-        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> false);
         dispatcher.execute(() -> merged.addListener(filtered));
         addAndFire(dispatcher, viewOne, line1, line3, line6, line7);
         addAndFire(dispatcher, viewTwo, line2, line4, line5);
@@ -152,6 +152,36 @@ class DataViewTest {
         dispatcher.awaitJobsDone();
         Assertions.assertEquals(4, merged.getLineCount());
         Assertions.assertEquals(1, filtered.getLineCount());
+    }
+
+
+    @Test
+    void bookmarkedLinesShouldNotBeFilteredIfForceBookmarkedDisplayIsTrue() throws InterruptedException, ViewCreationFailedException {
+        int jobCountMergedViewInstantiation = 1;
+        int jobCountLineAddition = 2;
+        int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
+        RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(expectedJobCount);
+        DataView viewOne = new TestDataView(dispatcher, "one");
+        DataView viewTwo = new TestDataView(dispatcher, "two");
+        Line line1 = parser.parse(0, "15:24:01.038 line1", viewOne).getParsedLine();
+        Line line2 = parser.parse(1, "15:24:02.038 line2", viewTwo).getParsedLine();
+        Line line3 = parser.parse(2, "15:24:03.038 line3", viewOne).getParsedLine();
+        Line line4 = parser.parse(3, "15:24:04.038 line4", viewTwo).getParsedLine();
+        Line line5 = parser.parse(4, "15:24:05.038 line5", viewTwo).getParsedLine();
+        Line line6 = parser.parse(5, "15:24:06.038 line6", viewOne).getParsedLine();
+        Line line7 = parser.parse(6, "15:24:06.038 line7", viewOne).getParsedLine();
+        DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> true);
+        dispatcher.execute(() -> merged.addListener(filtered));
+        addAndFire(dispatcher, viewOne, line1, line3, line6, line7);
+        addAndFire(dispatcher, viewTwo, line2, line4, line5);
+        dispatcher.awaitJobsDone();
+        Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
+        Assertions.assertEquals(7, filtered.getLineCount());
+        UI.setTestMode();
+        Assertions.assertEquals(Arrays.asList(
+                line1, line2, line3, line4, line5, line6, line7
+        ), filtered.getAllLines());
     }
 
     private void addAndFire(LogDispatcher dispatcher, DataView view, Line... lines) {

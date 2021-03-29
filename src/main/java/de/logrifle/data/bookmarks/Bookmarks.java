@@ -37,16 +37,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
     private final Charset charset;
+    private final AtomicReference<Boolean> forceBookmarksVisible = new AtomicReference<>(false);
 
     public Bookmarks(Charset charset) {
         this.charset = charset;
     }
-
 
     public ExecutionResult toggle(Line line) {
         Bookmark bookmark = new Bookmark(line);
@@ -61,6 +62,15 @@ public class Bookmarks {
     public ExecutionResult remove(Bookmark bookmark) {
         boolean removed = this.bookmarks.remove(bookmark);
         return new ExecutionResult(removed);
+    }
+
+    public ExecutionResult toggleForceBookmarksDisplay() {
+        this.forceBookmarksVisible.updateAndGet(b -> !b);
+        return new ExecutionResult(true);
+    }
+
+    public boolean isLineForcedVisible(Line line) {
+        return forceBookmarksVisible.get() && isLineBookmarked(line);
     }
 
     public Set<Bookmark> getAll() {

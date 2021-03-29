@@ -21,8 +21,8 @@
 package de.logrifle.data.views;
 
 
-import de.logrifle.data.parsing.Line;
 import de.logrifle.base.LogDispatcher;
+import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -39,12 +40,20 @@ public class DataViewFiltered extends DataView {
     private final boolean inverted;
     private String regex;
     private Pattern pattern;
+    private final Predicate<Line> forcedLineVisibilityCriterion;
 
-    public DataViewFiltered(String regex, DataView parentView, boolean inverted, LogDispatcher logDispatcher) throws ViewCreationFailedException {
+    public DataViewFiltered(
+            String regex,
+            DataView parentView,
+            boolean inverted,
+            LogDispatcher logDispatcher,
+            Predicate<Line> forcedLineVisibilityCriterion
+    ) throws ViewCreationFailedException {
         super(deriveTitleFromRegex(regex, inverted), parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
         this.regex = regex;
         this.parentView = parentView;
         this.inverted = inverted;
+        this.forcedLineVisibilityCriterion = forcedLineVisibilityCriterion;
         try {
             this.pattern = Pattern.compile(regex);
         } catch (RuntimeException e) {
@@ -66,8 +75,11 @@ public class DataViewFiltered extends DataView {
         super.setTitle(deriveTitleFromRegex(regex, this.inverted));
     }
 
-    private boolean lineMatches(Line l) {
+    private boolean isLineVisible(Line l) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
+        if (forcedLineVisibilityCriterion.test(l)) {
+            return true;
+        }
         boolean patternMatches = l.contains(pattern);
         return inverted != patternMatches;
     }
@@ -93,7 +105,7 @@ public class DataViewFiltered extends DataView {
         List<Line> sourceLines = source.getAllLines();
         this.visibleLines.clear();
         this.visibleLines.addAll(sourceLines.stream()
-                .filter(this::lineMatches)
+                .filter(this::isLineVisible)
                 .collect(Collectors.toList()));
         fireUpdated();
     }
@@ -102,7 +114,7 @@ public class DataViewFiltered extends DataView {
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         List<Line> newMatchingLines = newLines.stream()
-                .filter(this::lineMatches)
+                .filter(this::isLineVisible)
                 .collect(Collectors.toList());
         if (newMatchingLines.isEmpty()) {
             return;

@@ -92,7 +92,7 @@ class LogPositionTest {
     void transferIfNeeded(int currentTopIndex, int currentFocusOffset, String fromView, String toView, int expectedTopIndex, int expectedFocusOffset) throws InterruptedException, ViewCreationFailedException {
         TestLogDispatcher dispatcher = new TestLogDispatcher();
         DataView full = new TestDataView(dispatcher, "foobar", TestLinesFactory.buildTestLines());
-        DataView filtered = new DataViewFiltered("line content [3-5]", full, false, dispatcher);
+        DataView filtered = new DataViewFiltered("line content [3-5]", full, false, dispatcher, l -> false);
         dispatcher.execute(() -> filtered.onFullUpdate(full));
         dispatcher.awaitJobsDone();
         @Nullable DataView from = select(full, filtered, fromView);
