@@ -134,7 +134,7 @@ public class ViewsTree {
     }
 
     /**
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException if there is no View at the given index
      */
     public DataView removeView(int viewIndex){
         DataView removed = this.rootView.removeView(viewIndex);
@@ -155,6 +155,10 @@ public class ViewsTree {
         for (ViewsTreeNode child : currentNode.getChildren()) {
             walkImpl(walker, child, depth + 1);
         }
+    }
+
+    public void fireFullUpdate() {
+        rootNode.getDataView().fireUpdated();
     }
 
     public interface Walker {

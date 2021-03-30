@@ -369,13 +369,7 @@ public class MainController {
         return runAsyncIfPossible(
                 () -> {
                     ExecutionResult executionResult = bookmarks.toggleForceBookmarksDisplay();
-                    ViewsTree viewsTree = this.viewsTree;
-                    ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-                    @Nullable ViewsTreeNode parent = focusedTreeNode.getParent();
-                    if (parent != null) {
-                        DataView focusedView = focusedTreeNode.getDataView();
-                        focusedView.onFullUpdate(parent.getDataView());
-                    }
+                    this.viewsTree.fireFullUpdate();
                     return executionResult;
                 },
                 blocking,

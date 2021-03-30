@@ -67,7 +67,7 @@ public class Bookmarks {
 
     public ExecutionResult toggleForceBookmarksDisplay() {
         this.forceBookmarksVisible.updateAndGet(b -> !b);
-        return new ExecutionResult(true);
+        return new ExecutionResult(false);
     }
 
     public boolean isLineForcedVisible(Line line) {
