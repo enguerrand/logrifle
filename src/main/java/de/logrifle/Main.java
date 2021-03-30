@@ -295,8 +295,8 @@ public class Main {
 
     private static boolean getBooleanOption(Properties defaults, Namespace parserResult, String name, boolean fallBack) {
         Boolean value = parserResult.getBoolean(name);
-        if (value != null) {
-            return value;
+        if (value != null && value) {
+            return true;
         }
         String defaultValue = defaults.getProperty(name);
         if (defaultValue == null) {
