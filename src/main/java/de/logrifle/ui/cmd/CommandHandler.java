@@ -66,6 +66,13 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("clear-bookmarks", "cb", "Clears all bookmarks.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.clearBookmarks();
+            }
+        });
+
         register(new Command("write-bookmarks", "wb", "Writes all bookmarks to the file provided as the first parameter.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {

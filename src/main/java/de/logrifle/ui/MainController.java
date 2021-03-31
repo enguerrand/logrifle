@@ -353,6 +353,10 @@ public class MainController {
         return ExecutionResult.merged(toggleResult, moveFocusResult);
     }
 
+    public ExecutionResult clearBookmarks() {
+        return bookmarks.clear();
+    }
+
     public ExecutionResult writeBookmarks(String args) {
         if (Strings.isBlank(args)) {
             return new ExecutionResult(false, "Argument missing: path");

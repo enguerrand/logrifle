@@ -94,12 +94,11 @@ public class BookmarksTest {
     }
 
     @Test
-    void removeBookmark() {
+    void clearBookmarks() {
         Bookmarks bookmarks = new Bookmarks(charset, false);
-        Line lineToBookmark = LINES.get(3);
-        bookmarks.toggle(lineToBookmark);
-        bookmarks.remove(new Bookmark(lineToBookmark));
+        bookmarks.toggle(LINES.get(3));
+        bookmarks.toggle(LINES.get(2));
+        bookmarks.clear();
         Assertions.assertEquals(0, bookmarks.count());
-        Assertions.assertFalse(bookmarks.isLineBookmarked(lineToBookmark));
     }
 }

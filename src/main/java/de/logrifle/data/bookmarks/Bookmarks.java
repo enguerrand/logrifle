@@ -60,8 +60,9 @@ public class Bookmarks {
         return new ExecutionResult(true);
     }
 
-    public ExecutionResult remove(Bookmark bookmark) {
-        boolean removed = this.bookmarks.remove(bookmark);
+    public ExecutionResult clear() {
+        boolean removed = !this.bookmarks.isEmpty();
+        this.bookmarks.clear();
         return new ExecutionResult(removed);
     }
 
