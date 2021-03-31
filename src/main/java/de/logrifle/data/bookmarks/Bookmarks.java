@@ -107,6 +107,10 @@ public class Bookmarks {
                 .anyMatch(b -> b.getLine().equals(line));
     }
 
+    boolean isBookmarksDisplayForced() {
+        return forceBookmarksVisible.get();
+    }
+
     public int count() {
         return bookmarks.size();
     }

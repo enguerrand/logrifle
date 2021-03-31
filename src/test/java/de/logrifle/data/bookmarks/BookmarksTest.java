@@ -46,6 +46,7 @@ public class BookmarksTest {
     private LogDispatcher testLogDispatcher;
     private List<Bookmark> removedBookmarks;
     private List<Bookmark> addedBookmarks;
+    private boolean forcedDisplay;
     private BookmarksListener listener;
 
     @BeforeAll
@@ -58,6 +59,7 @@ public class BookmarksTest {
         testLogDispatcher = new DirectDispatcher();
         addedBookmarks = new ArrayList<>();
         removedBookmarks = new ArrayList<>();
+        forcedDisplay = false;
         listener = new BookmarksListener() {
             @Override
             public void added(Bookmarks source, Collection<Bookmark> added) {
@@ -71,7 +73,7 @@ public class BookmarksTest {
 
             @Override
             public void forcedDisplayChanged(Bookmarks source) {
-
+                forcedDisplay = source.isBookmarksDisplayForced();
             }
         };
     }
@@ -128,6 +130,19 @@ public class BookmarksTest {
         Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
         Assertions.assertEquals(Optional.empty(), bookmarks.findNext(0));
         Assertions.assertEquals(Optional.empty(), bookmarks.findPrevious(0));
+    }
+
+    @Test
+    void toggleForcedBookmarks() {
+        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        bookmarks.toggle(LINES.get(3));
+        bookmarks.addListener(listener);
+        Assertions.assertFalse(bookmarks.isBookmarksDisplayForced());
+        Assertions.assertFalse(bookmarks.isLineForcedVisible(LINES.get(3)));
+        bookmarks.toggleForceBookmarksDisplay();
+        Assertions.assertTrue(bookmarks.isBookmarksDisplayForced());
+        Assertions.assertTrue(bookmarks.isLineForcedVisible(LINES.get(3)));
+        Assertions.assertTrue(forcedDisplay);
     }
 
     @Test
