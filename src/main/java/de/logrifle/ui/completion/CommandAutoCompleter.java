@@ -73,11 +73,11 @@ public class CommandAutoCompleter {
             @Nullable AbstractArgumentCompleter argumentCompleter = this.argumentCompletersLookup.get(commandName);
             if (argumentCompleter != null) {
                 String keptPart = currentCommand.substring(0, currentCommand.length() - trimmedArguments.length());
-                List<String> matches = argumentCompleter.getCompletions(trimmedArguments);
-                List<String> matchingCompletions = matches.stream()
+                CompletionResult argumentCompletion = argumentCompleter.getCompletions(trimmedArguments);
+                List<String> matchingCompletions = argumentCompletion.getMatchingFullCompletions().stream()
                         .map(completion -> keptPart + completion)
                         .collect(Collectors.toList());
-                return new CompletionResult(matches, matchingCompletions);
+                return new CompletionResult(argumentCompletion.getOptions(), matchingCompletions);
             } else {
                 return CompletionResult.NO_MATCHES;
             }

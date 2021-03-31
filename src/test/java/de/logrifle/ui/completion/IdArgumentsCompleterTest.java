@@ -52,7 +52,9 @@ class IdArgumentsCompleterTest {
     void testCompletion(String currentInput, String idOptionsCsv, String expectedCompletionsCsv) {
         ids.addAll(Arrays.stream(idOptionsCsv.split(";")).map(Integer::parseInt).collect(Collectors.toList()));
         List<String> expected = Arrays.stream(expectedCompletionsCsv.split(";")).collect(Collectors.toList());
-        List<String> completions = completer.getCompletions(currentInput);
+        CompletionResult completionsResult = completer.getCompletions(currentInput);
+        List<String> completions = completionsResult.getMatchingFullCompletions();
+        Assertions.assertEquals(completions, completionsResult.getOptions());
         if (expectedCompletionsCsv.isEmpty()) {
             Assertions.assertTrue(completions.isEmpty());
         } else {

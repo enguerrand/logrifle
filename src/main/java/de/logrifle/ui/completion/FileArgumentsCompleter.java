@@ -24,11 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class FileArgumentsCompleter extends AbstractArgumentCompleter {
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -48,12 +47,14 @@ public class FileArgumentsCompleter extends AbstractArgumentCompleter {
     }
 
     @Override
-    public List<String> getCompletions(String currentInput) {
+    public CompletionResult getCompletions(String currentInput) {
         String truncated = TRUNCATION_PATTERN.matcher(currentInput).replaceAll("");
         String remainder = REMAINDER_PATTERN.matcher(currentInput).replaceAll("");
         Path lookingAt = workingDirectory.resolve(truncated);
         try {
-            return Files.list(lookingAt)
+            List<String> matchingFullCompletions = new ArrayList<>();
+            List<String> matchingFileNames = new ArrayList<>();
+            Files.list(lookingAt)
                     .map(f -> f.getFileName().toString())
                     .filter(name -> name.startsWith(remainder))
                     .map(name -> Paths.get(truncated, name))
@@ -62,12 +63,35 @@ public class FileArgumentsCompleter extends AbstractArgumentCompleter {
                         if (Files.isDirectory(workingDirectory.resolve(path))) {
                             stringified = stringified + FILE_SEPARATOR;
                         }
-                        return stringified;
+                        String filename = path.getFileName().toString();
+                        return new FileCompletionResult(stringified, filename);
                     })
-                    .sorted(Comparator.naturalOrder())
-                    .collect(Collectors.toList());
+                    .sorted(Comparator.comparing(FileCompletionResult::getFullPath))
+                    .forEach(fileCompletionResult -> {
+                        matchingFullCompletions.add(fileCompletionResult.getFullPath());
+                        matchingFileNames.add(fileCompletionResult.getFilename());
+                    });
+            return new CompletionResult(matchingFileNames, matchingFullCompletions);
         } catch (IOException e) {
-            return Collections.emptyList();
+            return CompletionResult.NO_MATCHES;
+        }
+    }
+
+    private static class FileCompletionResult {
+        private final String fullPath;
+        private final String filename;
+
+        private FileCompletionResult(String fullPath, String filename) {
+            this.fullPath = fullPath;
+            this.filename = filename;
+        }
+
+        public String getFullPath() {
+            return fullPath;
+        }
+
+        public String getFilename() {
+            return filename;
         }
     }
 }

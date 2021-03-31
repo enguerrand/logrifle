@@ -34,11 +34,12 @@ public class IdArgumentsCompleter extends AbstractArgumentCompleter {
     }
 
     @Override
-    public List<String> getCompletions(String currentArgs) {
-        return idsSupplier.get().stream()
+    public CompletionResult getCompletions(String currentArgs) {
+        List<String> options = idsSupplier.get().stream()
                 .map(String::valueOf)
                 .filter(s -> s.startsWith(currentArgs))
                 .distinct()
                 .collect(Collectors.toList());
+        return new CompletionResult(options);
     }
 }

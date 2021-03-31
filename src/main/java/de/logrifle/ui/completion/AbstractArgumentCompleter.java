@@ -34,5 +34,5 @@ public abstract class AbstractArgumentCompleter {
         return commandNames;
     }
 
-    public abstract List<String> getCompletions(String currentInput);
+    public abstract CompletionResult getCompletions(String currentInput);
 }

@@ -33,7 +33,7 @@ public class IndexArgumentsCompleter extends AbstractArgumentCompleter {
     }
 
     @Override
-    public List<String> getCompletions(String currentArgs) {
+    public CompletionResult getCompletions(String currentArgs) {
         List<String> options = new ArrayList<>();
         Integer size = collectionSizeSupplier.get();
         if (size == null)  {
@@ -45,6 +45,6 @@ public class IndexArgumentsCompleter extends AbstractArgumentCompleter {
                 options.add(index);
             }
         }
-        return options;
+        return new CompletionResult(options);
     }
 }

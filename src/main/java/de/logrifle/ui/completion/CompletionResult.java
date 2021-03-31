@@ -33,6 +33,11 @@ public class CompletionResult {
         this.matchingFullCompletions = matchingFullCompletions;
     }
 
+    CompletionResult(List<String> matchingFullCompletions) {
+        this.options = matchingFullCompletions;
+        this.matchingFullCompletions = matchingFullCompletions;
+    }
+
     public List<String> getOptions() {
         return options;
     }

@@ -30,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class CommandAutoCompleterTest {
@@ -41,13 +42,19 @@ class CommandAutoCompleterTest {
             final CommandAutoCompleter firstArgCompleter = new CommandAutoCompleter(
                     "",
                     Arrays.asList(
-                            "foobarFirstArg1a",
-                            "foobarFirstArg2b"
+                            "full/foobarFirstArg1a",
+                            "full/foobarFirstArg2b"
                     )
             );
             @Override
-            public List<String> getCompletions(String currentArgs) {
-                return firstArgCompleter.getCompletion(currentArgs).getOptions();
+            public CompletionResult getCompletions(String currentArgs) {
+                CompletionResult intermediate = firstArgCompleter.getCompletion(currentArgs);
+                return new CompletionResult(
+                        intermediate.getOptions().stream()
+                                .map(c -> c.substring(5))
+                                .collect(Collectors.toList()),
+                        intermediate.getOptions()
+                );
             }
         };
         commandAutoCompleter = new CommandAutoCompleter(
@@ -64,27 +71,30 @@ class CommandAutoCompleterTest {
 
     @ParameterizedTest
     @MethodSource("getMatchingArgs")
-    void getMatching(String currentInput, List<String> expectedMatches, int expectedMaximumCommandLength) {
-        List<String> matches = commandAutoCompleter.getCompletion(currentInput).getOptions();
-        Assertions.assertEquals(expectedMatches, matches);
+    void getMatching(String currentInput, List<String> expectedFullCompletions, List<String> expectedOptions, int expectedMaximumCommandLength) {
+        CompletionResult completionResult = commandAutoCompleter.getCompletion(currentInput);
+        List<String> fullCompletions = completionResult.getMatchingFullCompletions();
+        List<String> options = completionResult.getOptions();
+        Assertions.assertEquals(expectedFullCompletions, fullCompletions);
+        Assertions.assertEquals(expectedOptions, options);
         Assertions.assertEquals(expectedMaximumCommandLength, commandAutoCompleter.getMaximumCommandLength(currentInput));
     }
 
     private static Stream<Arguments> getMatchingArgs() {
         return Stream.of(
-                Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas"), 7),
-                Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas"), 7),
-                Arguments.of(":foob", Arrays.asList("foobar", "foobas"), 7),
-                Arguments.of(":fooba", Arrays.asList("foobar", "foobas"), 7),
-                Arguments.of(":foobar", Collections.singletonList("foobar"), 7),
-                Arguments.of(":bar", Collections.singletonList("bar"), 4),
-                Arguments.of(":bar arg", Collections.emptyList(), 8),
-                Arguments.of(":zzz", Collections.emptyList(), 4),
-                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar"), 7),
-                Arguments.of(":foobar ", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 24),
-                Arguments.of(":foobar foobarFirstArg", Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 24),
-                Arguments.of(":foobar foobarFirstArg1", Collections.singletonList("foobarFirstArg1a"), 24),
-                Arguments.of(":foobar foobas", Collections.emptyList(), 14)
+                Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas"), Arrays.asList("foo", "foobar", "foobas"), 7),
+                Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas"), Arrays.asList("foo", "foobar", "foobas"), 7),
+                Arguments.of(":foob", Arrays.asList("foobar", "foobas"), Arrays.asList("foobar", "foobas"), 7),
+                Arguments.of(":fooba", Arrays.asList("foobar", "foobas"), Arrays.asList("foobar", "foobas"), 7),
+                Arguments.of(":foobar", Collections.singletonList("foobar"), Collections.singletonList("foobar"), 7),
+                Arguments.of(":bar", Collections.singletonList("bar"), Collections.singletonList("bar"), 4),
+                Arguments.of(":bar arg", Collections.emptyList(), Collections.emptyList(), 8),
+                Arguments.of(":zzz", Collections.emptyList(), Collections.emptyList(), 4),
+                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar"), Arrays.asList("foo", "foobar", "foobas", "bar"), 7),
+                Arguments.of(":foobar ", Arrays.asList("foobar full/foobarFirstArg1a", "foobar full/foobarFirstArg2b"), Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 29),
+                Arguments.of(":foobar full/foobarFirstArg", Arrays.asList("foobar full/foobarFirstArg1a", "foobar full/foobarFirstArg2b"), Arrays.asList("foobarFirstArg1a", "foobarFirstArg2b"), 29),
+                Arguments.of(":foobar full/foobarFirstArg1", Collections.singletonList("foobar full/foobarFirstArg1a"), Collections.singletonList("foobarFirstArg1a"), 29),
+                Arguments.of(":foobar foobas", Collections.emptyList(), Collections.emptyList(), 14)
         );
     }
 
@@ -110,8 +120,8 @@ class CommandAutoCompleterTest {
                 Arguments.of(":bar", ":bar"),
                 Arguments.of(":zzz", ":zzz"),
                 Arguments.of("zzz", "zzz"),
-                Arguments.of(":foobar foobarFirst", ":foobar foobarFirstArg"),
-                Arguments.of(":foobar foobarFirstArg1", ":foobar foobarFirstArg1a")
+                Arguments.of(":foobar full/foobarFirst", ":foobar full/foobarFirstArg"),
+                Arguments.of(":foobar full/foobarFirstArg1", ":foobar full/foobarFirstArg1a")
         );
     }
 

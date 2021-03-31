@@ -48,7 +48,9 @@ class IndexArgumentsCompleterTest {
     void testCompletion(String currentInput, int sizeValue, String expectedCompletionsCsv) {
         size.set(sizeValue);
         List<String> expected = Arrays.stream(expectedCompletionsCsv.split(";")).collect(Collectors.toList());
-        List<String> completions = completer.getCompletions(currentInput);
+        CompletionResult completionResult = completer.getCompletions(currentInput);
+        List<String> completions = completionResult.getMatchingFullCompletions();
+        Assertions.assertEquals(completions, completionResult.getOptions());
         if (expectedCompletionsCsv.isEmpty()) {
             Assertions.assertTrue(completions.isEmpty());
         } else {
