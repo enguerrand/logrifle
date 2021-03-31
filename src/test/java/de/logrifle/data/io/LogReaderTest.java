@@ -21,9 +21,9 @@
 package de.logrifle.data.io;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.DirectDispatcher;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactoryTestImpl;
-import de.logrifle.base.TestLogDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTextImpl;
@@ -49,6 +49,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@SuppressWarnings("ConstantConditions")
 class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
     static ExecutorService WORKER_POOL;
@@ -150,7 +151,7 @@ class LogReaderTest {
 
     @Test
     void  logReaderShouldMaintainIncomingOrder() throws IOException, InterruptedException {
-        TestLogDispatcher dispatcher = new TestLogDispatcher();
+        LogDispatcher dispatcher = new DirectDispatcher();
         LineParser parser = new LineParserTimestampedTextImpl(
                 new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
         );

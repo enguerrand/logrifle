@@ -20,7 +20,8 @@
 
 package de.logrifle.ui;
 
-import de.logrifle.base.TestLogDispatcher;
+import de.logrifle.base.DirectDispatcher;
+import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.TestLinesFactory;
@@ -37,7 +38,6 @@ import java.util.List;
 class BookmarksViewTest {
 
     private static final List<Line> LINES = new ArrayList<>();
-    private TestLogDispatcher testLogDispatcher;
     private Bookmarks bookmarks;
 
     @BeforeAll
@@ -47,7 +47,7 @@ class BookmarksViewTest {
 
     @BeforeEach
     void beforeEach() {
-        testLogDispatcher = new TestLogDispatcher();
+        LogDispatcher testLogDispatcher = new DirectDispatcher();
         bookmarks = new Bookmarks(StandardCharsets.UTF_8, false, testLogDispatcher);
         bookmarks.toggle(LINES.get(1));
         bookmarks.toggle(LINES.get(3));

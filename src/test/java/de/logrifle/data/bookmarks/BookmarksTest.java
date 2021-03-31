@@ -21,6 +21,7 @@
 package de.logrifle.data.bookmarks;
 
 import de.logrifle.base.DirectDispatcher;
+import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.TestLinesFactory;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +43,7 @@ import java.util.Optional;
 public class BookmarksTest {
     private static final List<Line> LINES = new ArrayList<>();
     private static final Charset charset = StandardCharsets.UTF_8;
-    private DirectDispatcher testLogDispatcher;
+    private LogDispatcher testLogDispatcher;
     private List<Bookmark> removedBookmarks;
     private List<Bookmark> addedBookmarks;
     private BookmarksListener listener;

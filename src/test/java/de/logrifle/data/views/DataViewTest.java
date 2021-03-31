@@ -42,7 +42,7 @@ class DataViewTest {
             new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
     );
 
-    private final DirectDispatcher dispatcher = new DirectDispatcher();
+    private final LogDispatcher dispatcher = new DirectDispatcher();
 
     @Test
     void mergedLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
