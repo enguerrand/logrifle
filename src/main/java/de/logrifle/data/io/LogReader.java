@@ -35,6 +35,7 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -116,6 +117,11 @@ public class LogReader extends DataView {
     @Override
     public List<Line> getAllLines() {
         return new ArrayList<>(this.linesSnapshot);
+    }
+
+    @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+        // ignored - this should never happen
     }
 
     @Override

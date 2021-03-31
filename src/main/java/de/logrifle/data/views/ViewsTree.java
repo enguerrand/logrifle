@@ -20,11 +20,16 @@
 
 package de.logrifle.data.views;
 
+import de.logrifle.data.bookmarks.Bookmark;
 import de.logrifle.data.bookmarks.Bookmarks;
+import de.logrifle.data.bookmarks.BookmarksListener;
+import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ViewsTree {
     private final ViewsTreeNode rootNode;
@@ -159,6 +164,33 @@ public class ViewsTree {
 
     public void fireFullUpdate() {
         rootNode.getDataView().fireUpdated();
+    }
+
+    public void fireLinesVisiblityInvalidated(Collection<Line> invalidatedLines) {
+        rootNode.getDataView().fireLineVisibilityInvalidated(invalidatedLines);
+    }
+
+    public BookmarksListener buildBookmarksListener() {
+        return new BookmarksListener() {
+            @Override
+            public void added(Bookmarks source, Collection<Bookmark> added) {
+                fire(added);
+            }
+
+            @Override
+            public void removed(Bookmarks source, Collection<Bookmark> removed) {
+                fire(removed);
+            }
+
+            @Override
+            public void forcedDisplayChanged(Bookmarks source) {
+                fire(source.getAll());
+            }
+
+            private void fire(Collection<Bookmark> bookmarks) {
+                fireLinesVisiblityInvalidated(bookmarks.stream().map(Bookmark::getLine).collect(Collectors.toList()));
+            }
+        };
     }
 
     public interface Walker {

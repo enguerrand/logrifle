@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019, Enguerrand de Rochefort
+ *  Copyright 2021, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,17 +18,15 @@
  *
  */
 
-package de.logrifle.data.views;
-
-import de.logrifle.data.parsing.Line;
+package de.logrifle.data.bookmarks;
 
 import java.util.Collection;
-import java.util.List;
 
-public interface DataViewListener {
-    void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source);
-    void onFullUpdate(DataView source);
-    void onIncrementalUpdate(DataView source, List<Line> newLines);
-    void onCacheCleared(DataView source);
-    void onDestroyed(DataView source);
+/**
+ * Listener implementations may assume to be called on the log dispatch thread
+ */
+public interface BookmarksListener {
+    void added(Bookmarks source, Collection<Bookmark> added);
+    void removed(Bookmarks source, Collection<Bookmark> removed);
+    void forcedDisplayChanged(Bookmarks source);
 }

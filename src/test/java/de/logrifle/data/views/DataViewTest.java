@@ -20,9 +20,9 @@
 
 package de.logrifle.data.views;
 
+import de.logrifle.base.DirectDispatcher;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactoryTestImpl;
-import de.logrifle.base.TestLogDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class DataViewTest {
 
@@ -40,7 +42,7 @@ class DataViewTest {
             new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
     );
 
-    private final TestLogDispatcher dispatcher = new TestLogDispatcher();
+    private final DirectDispatcher dispatcher = new DirectDispatcher();
 
     @Test
     void mergedLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
@@ -117,7 +119,7 @@ class DataViewTest {
     }
 
     @Test
-    void invisibleLinesShouldNotBeReturned() throws InterruptedException, ViewCreationFailedException {
+    void invisibleLinesShouldNotBeReturned() throws ViewCreationFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 2;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -136,7 +138,6 @@ class DataViewTest {
         dispatcher.execute(() -> merged.addListener(filtered));
         addAndFire(dispatcher, viewOne, line1, line3, line6, line7);
         addAndFire(dispatcher, viewTwo, line2, line4, line5);
-        dispatcher.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
         Assertions.assertEquals(7, merged.getLineCount());
         Assertions.assertEquals(3, filtered.getLineCount());
@@ -149,14 +150,13 @@ class DataViewTest {
         ), filtered.getAllLines());
 
         merged.toggleView(1);
-        dispatcher.awaitJobsDone();
         Assertions.assertEquals(4, merged.getLineCount());
         Assertions.assertEquals(1, filtered.getLineCount());
     }
 
-
     @Test
-    void bookmarkedLinesShouldNotBeFilteredIfForceBookmarkedDisplayIsTrue() throws InterruptedException, ViewCreationFailedException {
+    void testForcedBookmarksDisplay() throws ViewCreationFailedException {
+        AtomicBoolean forceDisplay = new AtomicBoolean(true);
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 2;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -170,22 +170,29 @@ class DataViewTest {
         Line line5 = parser.parse(4, "15:24:05.038 line5", viewTwo).getParsedLine();
         Line line6 = parser.parse(5, "15:24:06.038 line6", viewOne).getParsedLine();
         Line line7 = parser.parse(6, "15:24:06.038 line7", viewOne).getParsedLine();
+        List<Line> bookmarked = Arrays.asList(line3, line7);
         DataViewMerged merged = new DataViewMerged(Arrays.asList(viewOne, viewTwo), dispatcher, factory);
-        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> true);
-        DataViewFiltered reFiltered = new DataViewFiltered("line3", filtered, false, dispatcher, l -> true);
+        DataViewFiltered filtered = new DataViewFiltered("line[3-5]", merged, false, dispatcher, l -> forceDisplay.get() && bookmarked.contains(l));
+        DataViewFiltered reFiltered = new DataViewFiltered("line7", filtered, false, dispatcher, l -> forceDisplay.get() && bookmarked.contains(l));
 
         dispatcher.execute(() -> merged.addListener(filtered));
         dispatcher.execute(() -> merged.addListener(reFiltered));
         addAndFire(dispatcher, viewOne, line1, line3, line6, line7);
         addAndFire(dispatcher, viewTwo, line2, line4, line5);
-        dispatcher.awaitJobsDone();
         Assertions.assertEquals(expectedJobCount, factory.getExecutedJobCount());
-        Assertions.assertEquals(7, filtered.getLineCount());
-        Assertions.assertEquals(7, reFiltered.getLineCount());
+        Assertions.assertEquals(Arrays.asList(line3, line4, line5, line7), filtered.getAllLines());
+        Assertions.assertEquals(bookmarked, reFiltered.getAllLines());
         UI.setTestMode();
-        Assertions.assertEquals(Arrays.asList(
-                line1, line2, line3, line4, line5, line6, line7
-        ), filtered.getAllLines());
+
+        forceDisplay.set(false);
+        merged.onLineVisibilityStateInvalidated(bookmarked, merged);
+        Assertions.assertEquals(Arrays.asList(line3, line4, line5), filtered.getAllLines());
+        Assertions.assertEquals(0, reFiltered.getLineCount());
+
+        forceDisplay.set(true);
+        merged.onLineVisibilityStateInvalidated(bookmarked, merged);
+        Assertions.assertEquals(Arrays.asList(line3, line4, line5, line7), filtered.getAllLines());
+        Assertions.assertEquals(bookmarked, reFiltered.getAllLines());
     }
 
     private void addAndFire(LogDispatcher dispatcher, DataView view, Line... lines) {

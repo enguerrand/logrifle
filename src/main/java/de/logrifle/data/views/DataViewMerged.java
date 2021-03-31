@@ -73,6 +73,11 @@ public class DataViewMerged extends DataView {
     }
 
     @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+        fireLineVisibilityInvalidated(invalidatedLines);
+    }
+
+    @Override
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         this.updater.requestExecution();

@@ -20,6 +20,7 @@
 
 package de.logrifle.data.bookmarks;
 
+import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Strings;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.views.LineSource;
@@ -31,22 +32,29 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
     private final Charset charset;
+    private final Set<BookmarksListener> listeners = new LinkedHashSet<>();
+    private final LogDispatcher dispatcher;
     private final AtomicReference<Boolean> forceBookmarksVisible = new AtomicReference<>(false);
 
-    public Bookmarks(Charset charset, boolean forcedBookmarksDisplay) {
+    public Bookmarks(Charset charset, boolean forcedBookmarksDisplay, LogDispatcher dispatcher) {
         this.charset = charset;
+        this.dispatcher = dispatcher;
         this.forceBookmarksVisible.set(forcedBookmarksDisplay);
     }
 
@@ -54,20 +62,24 @@ public class Bookmarks {
         Bookmark bookmark = new Bookmark(line);
         if (this.bookmarks.contains(bookmark)) {
             this.bookmarks.remove(bookmark);
+            fireRemoved(Collections.singleton(bookmark));
         } else {
             this.bookmarks.add(bookmark);
+            fireAdded(Collections.singleton(bookmark));
         }
         return new ExecutionResult(true);
     }
 
     public ExecutionResult clear() {
-        boolean removed = !this.bookmarks.isEmpty();
+        List<Bookmark> removed = new ArrayList<>(this.bookmarks);
         this.bookmarks.clear();
-        return new ExecutionResult(removed);
+        fireRemoved(removed);
+        return new ExecutionResult(!removed.isEmpty());
     }
 
     public ExecutionResult toggleForceBookmarksDisplay() {
         this.forceBookmarksVisible.updateAndGet(b -> !b);
+        fireForcedDisplayChanged();
         return new ExecutionResult(false);
     }
 
@@ -80,7 +92,14 @@ public class Bookmarks {
     }
 
     public void removeBookmarksOf(LineSource lineSource) {
-        this.bookmarks.removeIf(next -> next.getLine().belongsTo(lineSource));
+        List<Bookmark> toBeRemoved = this.bookmarks.stream()
+                .filter(l -> l.getLine().belongsTo(lineSource))
+                .collect(Collectors.toList());
+        if (toBeRemoved.isEmpty()){
+            return;
+        }
+        this.bookmarks.removeAll(toBeRemoved);
+        fireRemoved(toBeRemoved);
     }
 
     public boolean isLineBookmarked(Line line) {
@@ -130,5 +149,25 @@ public class Bookmarks {
                 charset,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    public void addListener(BookmarksListener listener) {
+        dispatcher.execute(() -> listeners.add(listener));
+    }
+
+    private void fireListeners(Consumer<BookmarksListener> action) {
+        dispatcher.execute(() -> listeners.forEach(action));
+    }
+
+    private void fireAdded(Collection<Bookmark> added) {
+        fireListeners(l -> l.added(this, added));
+    }
+
+    private void fireRemoved(Collection<Bookmark> removed) {
+        fireListeners(l -> l.removed(this, removed));
+    }
+
+    private void fireForcedDisplayChanged() {
+        fireListeners(l -> l.forcedDisplayChanged(this));
     }
 }

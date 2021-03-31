@@ -20,10 +20,12 @@
 
 package de.logrifle.data.bookmarks;
 
+import de.logrifle.base.DirectDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.TestLinesFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -31,29 +33,63 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class BookmarksTest {
     private static final List<Line> LINES = new ArrayList<>();
     private static final Charset charset = StandardCharsets.UTF_8;
+    private DirectDispatcher testLogDispatcher;
+    private List<Bookmark> removedBookmarks;
+    private List<Bookmark> addedBookmarks;
+    private BookmarksListener listener;
 
     @BeforeAll
     static void beforeAll() {
         LINES.addAll(TestLinesFactory.buildTestLines());
     }
 
+    @BeforeEach
+    void setUp() {
+        testLogDispatcher = new DirectDispatcher();
+        addedBookmarks = new ArrayList<>();
+        removedBookmarks = new ArrayList<>();
+        listener = new BookmarksListener() {
+            @Override
+            public void added(Bookmarks source, Collection<Bookmark> added) {
+                addedBookmarks.addAll(added);
+            }
+
+            @Override
+            public void removed(Bookmarks source, Collection<Bookmark> removed) {
+                removedBookmarks.addAll(removed);
+            }
+
+            @Override
+            public void forcedDisplayChanged(Bookmarks source) {
+
+            }
+        };
+    }
+
     @Test
     void toggleBookmark() {
-        Bookmarks bookmarks = new Bookmarks(charset, false);
+        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        bookmarks.addListener(listener);
         Line lineToBookmark = LINES.get(3);
         bookmarks.toggle(lineToBookmark);
         Assertions.assertEquals(1, bookmarks.count());
         Assertions.assertTrue(bookmarks.isLineBookmarked(lineToBookmark));
-        Assertions.assertTrue(bookmarks.getAll().contains(new Bookmark(lineToBookmark)));
+        Bookmark expectedBookmark = new Bookmark(lineToBookmark);
+        Assertions.assertTrue(bookmarks.getAll().contains(expectedBookmark));
+        Assertions.assertEquals(Collections.singletonList(expectedBookmark), this.addedBookmarks);
         bookmarks.toggle(lineToBookmark);
         Assertions.assertEquals(0, bookmarks.count());
         Assertions.assertFalse(bookmarks.isLineBookmarked(lineToBookmark));
+        Assertions.assertEquals(Collections.singletonList(expectedBookmark), this.removedBookmarks);
     }
 
     @ParameterizedTest
@@ -69,7 +105,7 @@ public class BookmarksTest {
             "8,5,2",
     })
     void findBookmark(String fromIndex, String expectedPreviousResultIndex, String expectedNextResultIndex) {
-        Bookmarks bookmarks = new Bookmarks(charset, false);
+        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
         Line first = LINES.get(2);
         Line second = LINES.get(4);
         Line third = LINES.get(5);
@@ -88,17 +124,22 @@ public class BookmarksTest {
 
     @Test
     void findBookmarksEmpty() {
-        Bookmarks bookmarks = new Bookmarks(charset, false);
+        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
         Assertions.assertEquals(Optional.empty(), bookmarks.findNext(0));
         Assertions.assertEquals(Optional.empty(), bookmarks.findPrevious(0));
     }
 
     @Test
     void clearBookmarks() {
-        Bookmarks bookmarks = new Bookmarks(charset, false);
+        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        bookmarks.addListener(listener);
         bookmarks.toggle(LINES.get(3));
         bookmarks.toggle(LINES.get(2));
         bookmarks.clear();
         Assertions.assertEquals(0, bookmarks.count());
+        Assertions.assertEquals(
+                Arrays.asList(new Bookmark(LINES.get(2)), new Bookmark(LINES.get(3))),
+                removedBookmarks
+        );
     }
 }

@@ -368,16 +368,8 @@ public class MainController {
         }
     }
 
-    public ExecutionResult toggleForceDisplayBookmarks(boolean blocking) {
-        return runAsyncIfPossible(
-                () -> {
-                    ExecutionResult executionResult = bookmarks.toggleForceBookmarksDisplay();
-                    this.viewsTree.fireFullUpdate();
-                    return executionResult;
-                },
-                blocking,
-                "toggling forced bookmarks display"
-        );
+    public ExecutionResult toggleForceDisplayBookmarks() {
+        return bookmarks.toggleForceBookmarksDisplay();
     }
 
     public ExecutionResult toggleLineNumbers() {

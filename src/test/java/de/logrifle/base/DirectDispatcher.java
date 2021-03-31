@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019, Enguerrand de Rochefort
+ *  Copyright 2020, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,17 +18,18 @@
  *
  */
 
-package de.logrifle.data.views;
+package de.logrifle.base;
 
-import de.logrifle.data.parsing.Line;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.List;
+public class DirectDispatcher extends LogDispatcher {
+    @Override
+    public void execute(@NotNull Runnable runnable) {
+        runnable.run();
+    }
 
-public interface DataViewListener {
-    void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source);
-    void onFullUpdate(DataView source);
-    void onIncrementalUpdate(DataView source, List<Line> newLines);
-    void onCacheCleared(DataView source);
-    void onDestroyed(DataView source);
+    @Override
+    public boolean isOnThread() {
+        return true;
+    }
 }

@@ -27,6 +27,7 @@ import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -75,13 +76,21 @@ public class DataViewFiltered extends DataView {
         super.setTitle(deriveTitleFromRegex(regex, this.inverted));
     }
 
-    private boolean isLineVisible(Line l) {
+    private boolean isLineVisibleNonRecursive(Line l) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         if (forcedLineVisibilityCriterion.test(l)) {
             return true;
         }
         boolean patternMatches = l.contains(pattern);
         return inverted != patternMatches;
+    }
+
+    @Override
+    protected boolean isLineVisible(Line l) {
+        if (!isLineVisibleNonRecursive(l)) {
+            return false;
+        }
+        return parentView.isLineVisible(l);
     }
 
     public ExecutionResult setPattern(String regex) {
@@ -100,12 +109,27 @@ public class DataViewFiltered extends DataView {
     }
 
     @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+        getLogDispatcher().checkOnDispatchThreadOrThrow();
+        for (Line invalidatedLine : invalidatedLines) {
+            boolean shouldBeVisible = isLineVisible(invalidatedLine);
+            if (shouldBeVisible && !this.visibleLines.contains(invalidatedLine)) {
+                this.visibleLines.add(invalidatedLine);
+                this.visibleLines.sort(Line.ORDERING_COMPARATOR);
+            } else if (!shouldBeVisible) {
+                this.visibleLines.remove(invalidatedLine);
+            }
+        }
+        fireLineVisibilityInvalidated(invalidatedLines);
+    }
+
+    @Override
     public void onFullUpdate(DataView source) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         List<Line> sourceLines = source.getAllLines();
         this.visibleLines.clear();
         this.visibleLines.addAll(sourceLines.stream()
-                .filter(this::isLineVisible)
+                .filter(this::isLineVisibleNonRecursive)
                 .collect(Collectors.toList()));
         fireUpdated();
     }
@@ -114,7 +138,7 @@ public class DataViewFiltered extends DataView {
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         List<Line> newMatchingLines = newLines.stream()
-                .filter(this::isLineVisible)
+                .filter(this::isLineVisibleNonRecursive)
                 .collect(Collectors.toList());
         if (newMatchingLines.isEmpty()) {
             return;

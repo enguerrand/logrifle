@@ -226,8 +226,13 @@ public class Main {
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
         boolean forcedBookmarksDisplay = getBooleanOption(defaults, parserResult, "forced_bookmarks_display", false);
-        Bookmarks bookmarks = new Bookmarks(charset, forcedBookmarksDisplay);
+        Bookmarks bookmarks = new Bookmarks(
+                charset,
+                forcedBookmarksDisplay,
+                logDispatcher
+        );
         ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
+        bookmarks.addListener(viewsTree.buildBookmarksListener());
         HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,6 +90,11 @@ public class LogInputStreamReader extends DataView {
 
     @Override
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
+        // this should never happen
+    }
+
+    @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
         // this should never happen
     }
 

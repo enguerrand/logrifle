@@ -83,7 +83,7 @@ public class CommandHandler {
         register(new Command("toggle-forced-bookmarks-display", "tfb", "Toggles the forced display of bookmarked lines.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.toggleForceDisplayBookmarks(blocking);
+                return mainController.toggleForceDisplayBookmarks();
             }
         });
 
