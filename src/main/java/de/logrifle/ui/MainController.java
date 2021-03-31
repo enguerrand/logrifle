@@ -308,7 +308,6 @@ public class MainController {
     public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        String title = focusedTreeNode.getTitle();
         DataView dataView = focusedTreeNode.getDataView();
         if (!(dataView instanceof DataViewFiltered)) {
             return new ExecutionResult(false, "Cannot edit this view!");
