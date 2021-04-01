@@ -23,7 +23,9 @@ package de.logrifle.data.bookmarks;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.Strings;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.parsing.Lines;
 import de.logrifle.data.views.LineSource;
+import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.cmd.ExecutionResult;
 
 import java.io.IOException;
@@ -142,14 +144,17 @@ public class Bookmarks {
         return Optional.of(this.bookmarks.last());
     }
 
-    public void write(String path) throws IOException {
+    public void write(String path, LineLabelDisplayMode lineLabelDisplayMode) throws IOException {
         Files.write(
                 Paths.get(
                         Strings.expandPathPlaceHolders(path)
                 ),
-                bookmarks.stream()
-                        .map(Bookmark::toWritableString)
-                        .collect(Collectors.toList()),
+                Lines.export(
+                        bookmarks.stream()
+                                .map(bookmark -> bookmark.getLine())
+                                .collect(Collectors.toList()),
+                        lineLabelDisplayMode
+                ),
                 charset,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);

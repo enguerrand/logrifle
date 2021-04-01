@@ -286,6 +286,10 @@ class LogView {
         return new ExecutionResult(true);
     }
 
+    public LineLabelDisplayMode getLineLabelDisplayMode() {
+        return lineLabelDisplayMode;
+    }
+
     ExecutionResult toggleFollowTail() {
         this.lineDetailViewState.reset();
         if (this.followTail) {

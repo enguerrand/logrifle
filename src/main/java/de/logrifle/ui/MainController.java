@@ -360,8 +360,9 @@ public class MainController {
         if (Strings.isBlank(args)) {
             return new ExecutionResult(false, "Argument missing: path");
         }
+        LineLabelDisplayMode lineLabelDisplayMode = this.mainWindow.getLogView().getLineLabelDisplayMode();
         try {
-            bookmarks.write(args);
+            bookmarks.write(args, lineLabelDisplayMode);
             return new ExecutionResult(false);
         } catch (IOException e) {
             return new ExecutionResult(false, "Could not write bookmarks: "+e);
