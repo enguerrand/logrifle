@@ -21,19 +21,24 @@
 package de.logrifle.data.parsing;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.Strings;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.LineSource;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Line {
     public static final Comparator<Line> ORDERING_COMPARATOR = Comparator
             .comparing(Line::getDateChangeCount)
             .thenComparing(Line::getTimestamp);
+    public static final String EXPORT_LABEL_SEPARATOR = ": ";
     private int index;
     private final long dateChangeCount;
     private final long timestamp;
@@ -127,5 +132,27 @@ public class Line {
         return "Line{" +
                 "raw='" + raw + '\'' +
                 '}';
+    }
+
+    public Collection<String> export(int wantedLabelLength) {
+        List<String> raw = new ArrayList<>();
+        raw.add(this.raw);
+        raw.addAll(this.additionalLines);
+        if (wantedLabelLength == 0) {
+            return raw;
+        }
+
+        String fullLabel = getLineLabel();
+        String label;
+        if (fullLabel.length() > wantedLabelLength) {
+            label = fullLabel.substring(0, wantedLabelLength);
+        } else if (fullLabel.length() < wantedLabelLength) {
+            label = Strings.pad(fullLabel, wantedLabelLength, false);
+        } else {
+            label = fullLabel;
+        }
+        return raw.stream()
+                .map(r -> label + EXPORT_LABEL_SEPARATOR + r)
+                .collect(Collectors.toList());
     }
 }
