@@ -85,38 +85,11 @@ public class CommandAutoCompleter {
     }
 
     public String complete(String currentInput) {
-        List<String> completions = getCompletion(currentInput).getMatchingFullCompletions();
+        CompletionResult completion = getCompletion(currentInput);
+        List<String> completions = completion.getMatchingFullCompletions();
         if (completions.isEmpty()) {
             return currentInput;
         }
-        String currentInputStripped = currentInput.substring(prefix.length());
-
-        List<String> stripped = completions.stream()
-                .map(s -> s.replaceFirst(currentInputStripped, ""))
-                .collect(Collectors.toList());
-        int maxLength = stripped.stream()
-                .map(String::length)
-                .min(Comparator.naturalOrder())
-                .orElse(0);
-
-        StringBuilder toAppend = new StringBuilder();
-        boolean charsMatching = true;
-        for (int charIndex = 0; charIndex < maxLength && charsMatching; charIndex++) {
-            Character c = null;
-            for (int i = 0; i < stripped.size(); i++) {
-                String s = stripped.get(i);
-                char nextChar = s.charAt(charIndex);
-                if (i == 0) {
-                    c = nextChar;
-                } else if (c != nextChar) {
-                    charsMatching = false;
-                    break;
-                }
-            }
-            if (charsMatching) {
-                toAppend.append(c);
-            }
-        }
-        return currentInput + toAppend.toString();
+        return prefix + Strings.getMatchingStart(completions);
     }
 }

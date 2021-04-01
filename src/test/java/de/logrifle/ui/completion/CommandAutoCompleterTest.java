@@ -23,6 +23,7 @@ package de.logrifle.ui.completion;
 import de.logrifle.ui.MainController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -125,4 +126,26 @@ class CommandAutoCompleterTest {
         );
     }
 
+    @Test
+    void testExpandedCompletions() {
+        commandAutoCompleter = new CommandAutoCompleter(
+                MainController.COMMAND_PREFIX,
+                Collections.singletonList("foo"),
+                new AbstractArgumentCompleter("foo") {
+                    @Override
+                    public CompletionResult getCompletions(String currentInput) {
+                        return new CompletionResult(Collections.singletonList("sub"), Collections.singletonList("/home/user/sub"));
+                    }
+                }
+        );
+
+        String currentInput = ":foo ~/s";
+        String expectedFullCompletion = "foo /home/user/sub";
+
+        CompletionResult completionResult = commandAutoCompleter.getCompletion(currentInput);
+        Assertions.assertEquals(Collections.singletonList(expectedFullCompletion), completionResult.getMatchingFullCompletions());
+        Assertions.assertEquals(Collections.singletonList("sub"), completionResult.getOptions());
+        String completion = commandAutoCompleter.complete(currentInput);
+        Assertions.assertEquals(":" + expectedFullCompletion, completion);
+    }
 }

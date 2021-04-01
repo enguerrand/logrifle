@@ -106,7 +106,11 @@ public class MainController {
                 commandHandler.getAvailableCommands(),
                 new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
                 new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump"),
-                new FileArgumentsCompleter(Paths.get(System.getProperty("user.dir")), "open", "of", "write-bookmarks", "wb", "wcv", "write-current-view")
+                new FileArgumentsCompleter(
+                        Paths.get(System.getProperty("user.dir")),
+                        Strings::expandPathPlaceHolders,
+                        "open", "of", "write-bookmarks", "wb", "wcv", "write-current-view"
+                )
         );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {

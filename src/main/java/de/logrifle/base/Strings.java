@@ -22,6 +22,7 @@ package de.logrifle.base;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,5 +118,34 @@ public class Strings {
     public static int findPreviousWordStartOrStrt(String text, int currentIndex) {
         String[] strings = tokenizeAt(text, currentIndex);
         return findLastWordStartOrStart(strings[0]);
+    }
+
+    public static String getMatchingStart(List<String> options) {
+        if (options.isEmpty()) {
+            return "";
+        }
+        StringBuilder commonStart = new StringBuilder();
+        boolean charsMatching = true;
+        for (int charIndex = 0; charsMatching; charIndex++) {
+            Character c = null;
+            for (int optionIndex = 0; optionIndex < options.size(); optionIndex++) {
+                String option = options.get(optionIndex);
+                if (option.length() <= charIndex) {
+                    charsMatching = false;
+                    break;
+                }
+                char nextChar = option.charAt(charIndex);
+                if (optionIndex == 0) {
+                    c = nextChar;
+                } else if (c != nextChar) {
+                    charsMatching = false;
+                    break;
+                }
+            }
+            if (charsMatching) {
+                commonStart.append(c);
+            }
+        }
+        return commonStart.toString();
     }
 }

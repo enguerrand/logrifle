@@ -26,6 +26,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 class StringsTest {
@@ -192,6 +195,24 @@ class StringsTest {
                 Arguments.of("abc def  ghi ",12, 9),
                 Arguments.of("abc def  ghi ",13, 9),
                 Arguments.of("abc def ghi",11, 8)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getMatchingStartArgs")
+    void getMatchingStart(String expectedResult, List<String> options){
+        String matchingStart = Strings.getMatchingStart(options);
+        Assertions.assertEquals(expectedResult, matchingStart);
+    }
+
+    private static Stream<Arguments> getMatchingStartArgs() {
+        return Stream.of(
+                Arguments.of("", Collections.emptyList()),
+                Arguments.of("foo", Collections.singletonList("foo")),
+                Arguments.of("", Arrays.asList("foo", "bar")),
+                Arguments.of("fooba", Arrays.asList("foobar", "foobas")),
+                Arguments.of("foo", Arrays.asList("foobar", "foobas", "foozzz")),
+                Arguments.of("f", Arrays.asList("foobar", "foobas", "fzzz"))
         );
     }
 }

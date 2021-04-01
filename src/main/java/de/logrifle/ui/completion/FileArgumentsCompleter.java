@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class FileArgumentsCompleter extends AbstractArgumentCompleter {
@@ -41,15 +42,19 @@ public class FileArgumentsCompleter extends AbstractArgumentCompleter {
     );
     private final Path workingDirectory;
 
-    public FileArgumentsCompleter(Path workingDirectory, String... commandNames) {
+    private final Function<String, String> pathPlaceHolderExpander;
+
+    public FileArgumentsCompleter(Path workingDirectory, Function<String, String> pathPlaceHolderExpander, String... commandNames) {
         super(commandNames);
         this.workingDirectory = workingDirectory;
+        this.pathPlaceHolderExpander = pathPlaceHolderExpander;
     }
 
     @Override
     public CompletionResult getCompletions(String currentInput) {
-        String truncated = TRUNCATION_PATTERN.matcher(currentInput).replaceAll("");
-        String remainder = REMAINDER_PATTERN.matcher(currentInput).replaceAll("");
+        String expandedPathPlaceHolders = pathPlaceHolderExpander.apply(currentInput);
+        String truncated = TRUNCATION_PATTERN.matcher(expandedPathPlaceHolders).replaceAll("");
+        String remainder = REMAINDER_PATTERN.matcher(expandedPathPlaceHolders).replaceAll("");
         Path lookingAt = workingDirectory.resolve(truncated);
         try {
             List<String> matchingFullCompletions = new ArrayList<>();

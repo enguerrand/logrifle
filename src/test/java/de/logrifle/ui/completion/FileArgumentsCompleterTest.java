@@ -22,6 +22,7 @@ package de.logrifle.ui.completion;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -34,16 +35,22 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 class FileArgumentsCompleterTest {
     @TempDir
     Path workingDirectory;
 
+    Function<String, String> pathPlaceHolderExpander;
+    private String homeDir;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @BeforeEach
     void setUp() throws IOException {
+        homeDir = workingDirectory.toAbsolutePath().toString();
+        pathPlaceHolderExpander = i -> i.replaceAll("~", homeDir);
+
         for (Path sub : Arrays.asList(
                 Paths.get("foo", "bar", "bas"),
                 Paths.get("foo", "bas", "baz"),
@@ -55,13 +62,12 @@ class FileArgumentsCompleterTest {
             file.getParentFile().mkdirs();
             file.createNewFile();
         }
-        System.out.println(workingDirectory.toAbsolutePath().toString());
     }
 
     @ParameterizedTest
     @MethodSource("getCompletionTestArguments")
     void testCompletion(String currentInput, List<String> expectedCompletions, List<String> expectedOptions) {
-        FileArgumentsCompleter fileArgumentsCompleter = new FileArgumentsCompleter(workingDirectory);
+        FileArgumentsCompleter fileArgumentsCompleter = new FileArgumentsCompleter(workingDirectory, pathPlaceHolderExpander);
         CompletionResult completionResult = fileArgumentsCompleter.getCompletions(currentInput);
         Assertions.assertEquals(expectedCompletions, completionResult.getMatchingFullCompletions());
         Assertions.assertEquals(expectedOptions, completionResult.getOptions());
@@ -94,10 +100,20 @@ class FileArgumentsCompleterTest {
         );
     }
 
+    @Test
+    void testPlaceHolderCompletion() {
+        FileArgumentsCompleter fileArgumentsCompleter = new FileArgumentsCompleter(workingDirectory, pathPlaceHolderExpander);
+        CompletionResult completionResult = fileArgumentsCompleter.getCompletions("~/f");
+        List<String> expectedCompletions = Collections.singletonList(homeDir + "/foo/");
+        List<String> expectedOptions = Collections.singletonList("foo");
+        Assertions.assertEquals(expectedCompletions, completionResult.getMatchingFullCompletions());
+        Assertions.assertEquals(expectedOptions, completionResult.getOptions());
+    }
+
     @ParameterizedTest
     @MethodSource("getCompletionParentTestArguments")
     void testCompletionParent(String currentInput, List<String> expectedCompletions, List<String> expectedOptions) {
-        FileArgumentsCompleter fileArgumentsCompleter = new FileArgumentsCompleter(workingDirectory.resolve("foo"));
+        FileArgumentsCompleter fileArgumentsCompleter = new FileArgumentsCompleter(workingDirectory.resolve("foo"), pathPlaceHolderExpander);
         CompletionResult fullCompletions = fileArgumentsCompleter.getCompletions(currentInput);
         Assertions.assertEquals(expectedCompletions, fullCompletions.getMatchingFullCompletions());
         Assertions.assertEquals(expectedOptions, fullCompletions.getOptions());
