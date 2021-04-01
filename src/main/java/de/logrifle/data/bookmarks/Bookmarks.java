@@ -21,18 +21,12 @@
 package de.logrifle.data.bookmarks;
 
 import de.logrifle.base.LogDispatcher;
-import de.logrifle.base.Strings;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.Lines;
 import de.logrifle.data.views.LineSource;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.cmd.ExecutionResult;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,13 +43,11 @@ import java.util.stream.Collectors;
 
 public class Bookmarks {
     private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
-    private final Charset charset;
     private final Set<BookmarksListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher dispatcher;
     private final AtomicReference<Boolean> forceBookmarksVisible = new AtomicReference<>(false);
 
-    public Bookmarks(Charset charset, boolean forcedBookmarksDisplay, LogDispatcher dispatcher) {
-        this.charset = charset;
+    public Bookmarks(boolean forcedBookmarksDisplay, LogDispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.forceBookmarksVisible.set(forcedBookmarksDisplay);
     }
@@ -144,20 +136,13 @@ public class Bookmarks {
         return Optional.of(this.bookmarks.last());
     }
 
-    public void write(String path, LineLabelDisplayMode lineLabelDisplayMode) throws IOException {
-        Files.write(
-                Paths.get(
-                        Strings.expandPathPlaceHolders(path)
-                ),
-                Lines.export(
-                        bookmarks.stream()
-                                .map(bookmark -> bookmark.getLine())
-                                .collect(Collectors.toList()),
-                        lineLabelDisplayMode
-                ),
-                charset,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING);
+    public Collection<String> export(LineLabelDisplayMode lineLabelDisplayMode) {
+        return Lines.export(
+                bookmarks.stream()
+                        .map(Bookmark::getLine)
+                        .collect(Collectors.toList()),
+                lineLabelDisplayMode
+        );
     }
 
     public void addListener(BookmarksListener listener) {

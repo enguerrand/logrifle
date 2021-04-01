@@ -80,7 +80,7 @@ public class BookmarksTest {
 
     @Test
     void toggleBookmark() {
-        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
         bookmarks.addListener(listener);
         Line lineToBookmark = LINES.get(3);
         bookmarks.toggle(lineToBookmark);
@@ -108,7 +108,7 @@ public class BookmarksTest {
             "8,5,2",
     })
     void findBookmark(String fromIndex, String expectedPreviousResultIndex, String expectedNextResultIndex) {
-        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
         Line first = LINES.get(2);
         Line second = LINES.get(4);
         Line third = LINES.get(5);
@@ -127,14 +127,14 @@ public class BookmarksTest {
 
     @Test
     void findBookmarksEmpty() {
-        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
         Assertions.assertEquals(Optional.empty(), bookmarks.findNext(0));
         Assertions.assertEquals(Optional.empty(), bookmarks.findPrevious(0));
     }
 
     @Test
     void toggleForcedBookmarks() {
-        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
         bookmarks.toggle(LINES.get(3));
         bookmarks.addListener(listener);
         Assertions.assertFalse(bookmarks.isBookmarksDisplayForced());
@@ -147,7 +147,7 @@ public class BookmarksTest {
 
     @Test
     void clearBookmarks() {
-        Bookmarks bookmarks = new Bookmarks(charset, false, testLogDispatcher);
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
         bookmarks.addListener(listener);
         bookmarks.toggle(LINES.get(3));
         bookmarks.toggle(LINES.get(2));

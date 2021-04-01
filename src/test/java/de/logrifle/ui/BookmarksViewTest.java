@@ -31,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +47,7 @@ class BookmarksViewTest {
     @BeforeEach
     void beforeEach() {
         LogDispatcher testLogDispatcher = new DirectDispatcher();
-        bookmarks = new Bookmarks(StandardCharsets.UTF_8, false, testLogDispatcher);
+        bookmarks = new Bookmarks(false, testLogDispatcher);
         bookmarks.toggle(LINES.get(1));
         bookmarks.toggle(LINES.get(3));
         bookmarks.toggle(LINES.get(5));

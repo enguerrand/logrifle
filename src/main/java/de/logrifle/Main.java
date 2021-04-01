@@ -226,11 +226,7 @@ public class Main {
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
         boolean forcedBookmarksDisplay = getBooleanOption(defaults, parserResult, "forced_bookmarks_display", false);
-        Bookmarks bookmarks = new Bookmarks(
-                charset,
-                forcedBookmarksDisplay,
-                logDispatcher
-        );
+        Bookmarks bookmarks = new Bookmarks(forcedBookmarksDisplay,logDispatcher);
         ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
         bookmarks.addListener(viewsTree.buildBookmarksListener());
         HighlightsData highlightsData = new HighlightsData();
@@ -244,7 +240,9 @@ public class Main {
                 viewsTree,
                 highlightsData,
                 bookmarks,
-                fileOpener);
+                fileOpener,
+                charset
+        );
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override

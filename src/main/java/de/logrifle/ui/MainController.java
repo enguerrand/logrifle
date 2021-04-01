@@ -32,6 +32,7 @@ import de.logrifle.data.highlights.Highlight;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.parsing.Lines;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
 import de.logrifle.data.views.ViewCreationFailedException;
@@ -48,8 +49,11 @@ import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -76,6 +80,7 @@ public class MainController {
     private final RingIterator<HighlightingTextColors> highlightsIterator = new RingIterator<>(Arrays.asList(
             HighlightingTextColors.values()
     ));
+    private final Charset charset;
 
     public MainController(
             MainWindow mainWindow,
@@ -85,7 +90,9 @@ public class MainController {
             ViewsTree viewsTree,
             HighlightsData highlightsData,
             Bookmarks bookmarks,
-            FileOpener logFileOpener) {
+            FileOpener logFileOpener,
+            Charset charset
+    ) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
@@ -93,12 +100,13 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
+        this.charset = charset;
         CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(
                 COMMAND_PREFIX,
                 commandHandler.getAvailableCommands(),
                 new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
                 new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump"),
-                new FileArgumentsCompleter(Paths.get(System.getProperty("user.dir")), "open", "of", "write-bookmarks", "wb")
+                new FileArgumentsCompleter(Paths.get(System.getProperty("user.dir")), "open", "of", "write-bookmarks", "wb", "wcv", "write-current-view")
         );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
@@ -356,16 +364,41 @@ public class MainController {
         return bookmarks.clear();
     }
 
-    public ExecutionResult writeBookmarks(String args) {
-        if (Strings.isBlank(args)) {
+    public ExecutionResult writeBookmarks(String path) {
+        if (Strings.isBlank(path)) {
             return new ExecutionResult(false, "Argument missing: path");
         }
         LineLabelDisplayMode lineLabelDisplayMode = this.mainWindow.getLogView().getLineLabelDisplayMode();
+        Collection<String> export = bookmarks.export(lineLabelDisplayMode);
+        if (export.isEmpty()) {
+            return new ExecutionResult(false, "Could not write bookmarks: No bookmarks found!");
+        }
+        return writeToFile(path, "write bookmarks", export);
+    }
+
+    public ExecutionResult writeView(String path) {
+        if (Strings.isBlank(path)) {
+            return new ExecutionResult(false, "Argument missing: path");
+        }
+        LineLabelDisplayMode lineLabelDisplayMode = this.mainWindow.getLogView().getLineLabelDisplayMode();
+        List<Line> linesInView = this.viewsTree.getFocusedNode().getDataView().getAllLines();
+        Collection<String> export = Lines.export(linesInView, lineLabelDisplayMode);
+        return writeToFile(path, "write view", export);
+    }
+
+    private ExecutionResult writeToFile(String path, String operationDescription, Collection<String> linesToWrite) {
         try {
-            bookmarks.write(args, lineLabelDisplayMode);
+            Files.write(
+                    Paths.get(
+                            Strings.expandPathPlaceHolders(path)
+                    ),
+                    linesToWrite,
+                    charset,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
             return new ExecutionResult(false);
         } catch (IOException e) {
-            return new ExecutionResult(false, "Could not write bookmarks: "+e);
+            return new ExecutionResult(false, "Could not " + operationDescription+": " + e);
         }
     }
 
