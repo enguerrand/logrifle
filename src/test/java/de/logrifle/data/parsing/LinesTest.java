@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 class LinesTest {
@@ -44,6 +45,14 @@ class LinesTest {
         lineParserText = new LineParserTextImpl();
         lineSourceTest1 = new LineSourceTestImpl(LINE_SOURCE_1);
         lineSourceTest2 = new LineSourceTestImpl(LINE_SOURCE_2);
+    }
+
+    @Test
+    void exportEmpty() {
+        Assertions.assertEquals(
+                Collections.emptyList(),
+                Lines.export(Collections.emptyList(), LineLabelDisplayMode.LONG)
+        );
     }
 
     @Test
