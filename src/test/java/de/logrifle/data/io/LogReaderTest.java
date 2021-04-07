@@ -21,16 +21,20 @@
 package de.logrifle.data.io;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.DirectDispatcher;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactoryTestImpl;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTextImpl;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
+import de.logrifle.data.parsing.TimeStampFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -39,15 +43,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@SuppressWarnings("ConstantConditions")
 class LogReaderTest {
     static Path LOGFILE = Paths.get("./out/log.log");
     static ExecutorService WORKER_POOL;
     static final Charset charset = StandardCharsets.UTF_8;
+
+    @TempDir
+    Path tempDir;
 
     @BeforeAll
     static void setUp() {
@@ -138,5 +147,37 @@ class LogReaderTest {
         Assertions.assertEquals(2, logReader.getLines(3, 2).size(), "at bounds index");
         Assertions.assertEquals(3, logReader.getLines(2, 3).size(), "at bounds index");
         Assertions.assertEquals(2, logReader.getLines(2, 2).size(), "in bounds index");
+    }
+
+    @Test
+    void  logReaderShouldMaintainIncomingOrder() throws IOException, InterruptedException {
+        LogDispatcher dispatcher = new DirectDispatcher();
+        LineParser parser = new LineParserTimestampedTextImpl(
+                new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
+        );
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Path logfile = tempDir.resolve("log1.log");
+        RateLimiterFactoryTestImpl factory = new RateLimiterFactoryTestImpl(4);
+        LogReader logReader = new LogReader(parser, logfile, TextColor.ANSI.RED, executorService, dispatcher, factory, StandardCharsets.UTF_8);
+        writeLogLine(logfile, "23:20:58.268 [main] DEBUG de.logrifle.data.io.TestLogWriter - line 0");
+        writeLogLine(logfile, "23:50:58.268 [main] DEBUG de.logrifle.data.io.TestLogWriter - line 1");
+        writeLogLine(logfile, "00:07:18.268 [main] DEBUG de.logrifle.data.io.TestLogWriter - line 2");
+        writeLogLine(logfile, "01:07:18.268 [main] DEBUG de.logrifle.data.io.TestLogWriter - line 3");
+        factory.awaitJobsDone();
+        List<Line> read = logReader.getAllLines();
+        for (int i = 0, readSize = read.size(); i < readSize; i++) {
+            Line line = read.get(i);
+            Assertions.assertTrue(line.getRaw().endsWith(String.valueOf(i)));
+        }
+    }
+
+    private void writeLogLine(Path logfile, String line) throws IOException {
+        Files.write(
+                logfile,
+                Collections.singleton(line),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND
+        );
     }
 }

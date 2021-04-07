@@ -32,19 +32,28 @@ import de.logrifle.data.highlights.Highlight;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.parsing.Line;
+import de.logrifle.data.parsing.Lines;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
+import de.logrifle.data.views.ViewCreationFailedException;
 import de.logrifle.data.views.ViewsTree;
 import de.logrifle.data.views.ViewsTreeNode;
 import de.logrifle.ui.cmd.CommandHandler;
 import de.logrifle.ui.cmd.ExecutionResult;
 import de.logrifle.ui.cmd.KeyStrokeHandler;
 import de.logrifle.ui.cmd.Query;
+import de.logrifle.ui.completion.CommandAutoCompleter;
+import de.logrifle.ui.completion.FileArgumentsCompleter;
+import de.logrifle.ui.completion.IdArgumentsCompleter;
+import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -52,13 +61,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MainController {
-    private static final String COMMAND_PREFIX = ":";
-    private static final String FIND_PREFIX = "/";
-    private static final String FIND_BACKWARDS_PREFIX = "?";
+    public static final String COMMAND_PREFIX = ":";
+    public static final String FIND_PREFIX = "/";
+    public static final String FIND_BACKWARDS_PREFIX = "?";
     private final MainWindow mainWindow;
     private final KeyStrokeHandler keyStrokeHandler;
     private final Deque<Query> queryHistory = new LinkedList<>();
@@ -67,20 +77,10 @@ public class MainController {
     private final HighlightsData highlightsData;
     private final Bookmarks bookmarks;
     private final FileOpener logFileOpener;
-    private final TextColorIterator highlightsFgIterator = new TextColorIterator(Arrays.asList(
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.BLACK,
-            TextColor.ANSI.WHITE,
-            TextColor.ANSI.WHITE
+    private final RingIterator<HighlightingTextColors> highlightsIterator = new RingIterator<>(Arrays.asList(
+            HighlightingTextColors.values()
     ));
-    private final TextColorIterator highlightsBgIterator = new TextColorIterator(Arrays.asList(
-            TextColor.ANSI.YELLOW,
-            TextColor.ANSI.CYAN,
-            TextColor.ANSI.MAGENTA,
-            TextColor.ANSI.BLUE,
-            TextColor.ANSI.RED
-    ));
+    private final Charset charset;
 
     public MainController(
             MainWindow mainWindow,
@@ -90,7 +90,9 @@ public class MainController {
             ViewsTree viewsTree,
             HighlightsData highlightsData,
             Bookmarks bookmarks,
-            FileOpener logFileOpener) {
+            FileOpener logFileOpener,
+            Charset charset
+    ) {
         this.mainWindow = mainWindow;
         this.keyStrokeHandler = keyStrokeHandler;
         this.logDispatcher = logDispatcher;
@@ -98,7 +100,18 @@ public class MainController {
         this.highlightsData = highlightsData;
         this.bookmarks = bookmarks;
         this.logFileOpener = logFileOpener;
-        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(commandHandler.getAvailableCommands());
+        this.charset = charset;
+        CommandAutoCompleter commandAutoCompleter = new CommandAutoCompleter(
+                COMMAND_PREFIX,
+                commandHandler.getAvailableCommands(),
+                new IndexArgumentsCompleter(() -> highlightsData.getHighlights().size(), "dh", "delete-highlight", "eh", "edit-highlight"),
+                new IdArgumentsCompleter(ViewsTreeNode.NAV_INDEX_LOOKUP::keySet, "jump"),
+                new FileArgumentsCompleter(
+                        Paths.get(System.getProperty("user.dir")),
+                        Strings::expandPathPlaceHolders,
+                        "open", "of", "write-bookmarks", "wb", "wcv", "write-current-view"
+                )
+        );
         this.mainWindow.setCommandAutoCompleter(commandAutoCompleter);
         this.mainWindow.setCommandViewListener(new CommandViewListener() {
             @Override
@@ -110,6 +123,7 @@ public class MainController {
                 }
                 String prefix = commandLine.substring(0, 1);
                 String command = commandLine.substring(1);
+                //noinspection IfCanBeSwitch
                 if (prefix.equals(COMMAND_PREFIX)) {
                     result = commandHandler.handle(command);
                 } else if (prefix.equals(FIND_PREFIX)) {
@@ -187,7 +201,7 @@ public class MainController {
         DataView dataView = this.mainWindow.getDataView();
         List<Line> allLines = dataView.getAllLines();
         if (isEofReached(query, focusedLineIndex, allLines)) {
-            return new ExecutionResult(false, query + ": End of file reached.");
+            return new ExecutionResult(false, query.getSearchTerm() + ": End of file reached.");
         }
         if (query.isBackwards()) {
             for (int i = focusedLineIndex - 1; i >= 0; i--) {
@@ -207,7 +221,7 @@ public class MainController {
             }
         }
 
-        return new ExecutionResult(false, query + ": pattern not found.");
+        return new ExecutionResult(false, query.getSearchTerm() + ": pattern not found.");
     }
 
     public ExecutionResult addFilter(String args, boolean inverted, boolean caseInsensitive, boolean blocking) {
@@ -218,50 +232,54 @@ public class MainController {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
         DataView focusedView = focusedTreeNode.getDataView();
-        DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher);
-        Runnable treeUpdater = () -> {
-            ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
-            viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
-        };
-        CompletableFuture<Void> f = CompletableFuture.supplyAsync(
-                () -> {
-                    focusedView.addListener(dataViewFiltered);
-                    dataViewFiltered.onFullUpdate(focusedView);
-                    if (!blocking) {
-                        UI.runLater(
-                                () -> {
-                                    treeUpdater.run();
-                                    mainWindow.updateView();
-                                }
-                        );
-                    }
-                    return null;
-                },
-                logDispatcher
-        );
-        if (!blocking) {
-            return new ExecutionResult(false);
-        }
         try {
-            f.get();
-            treeUpdater.run();
-            return new ExecutionResult(true);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return new ExecutionResult(false, "Thread was interrupted!");
-        } catch (ExecutionException e) {
-            return new ExecutionResult(false, e.getCause().toString());
+            DataViewFiltered dataViewFiltered = new DataViewFiltered(regex, focusedView, inverted, logDispatcher, bookmarks::isLineForcedVisible);
+            Runnable treeUpdater = () -> {
+                ViewsTreeNode child = new ViewsTreeNode(focusedTreeNode, dataViewFiltered);
+                viewsTree.addNodeAndSetFocus(focusedTreeNode, child);
+            };
+            CompletableFuture<Void> f = CompletableFuture.supplyAsync(
+                    () -> {
+                        focusedView.addListener(dataViewFiltered);
+                        dataViewFiltered.onFullUpdate(focusedView);
+                        if (!blocking) {
+                            UI.runLater(
+                                    () -> {
+                                        treeUpdater.run();
+                                        mainWindow.updateView();
+                                    }
+                            );
+                        }
+                        return null;
+                    },
+                    logDispatcher
+            );
+            if (!blocking) {
+                return new ExecutionResult(false);
+            }
+            try {
+                f.get();
+                treeUpdater.run();
+                return new ExecutionResult(true);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Thread was interrupted!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, e.getCause().toString());
+            }
+        } catch (ViewCreationFailedException e) {
+            return new ExecutionResult(false, "Cannot create filter: " + e.getMessage());
         }
     }
 
-    public ExecutionResult addHighlight(String args, boolean caseInsensitive) {
+    public ExecutionResult addHighlight(String args, boolean caseInsensitive, @Nullable HighlightingTextColors colors) {
         String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
-        Highlight highlight = new Highlight(regex, highlightsFgIterator.next(), highlightsBgIterator.next());
+        Highlight highlight = new Highlight(regex, colors != null ? colors : highlightsIterator.next());
         this.highlightsData.addHighlight(highlight);
         return new ExecutionResult(true);
 
     }
-;
+
     public ExecutionResult deleteHighlight(String args) {
         try {
             int index = Integer.parseInt(args);
@@ -302,7 +320,6 @@ public class MainController {
     public ExecutionResult editFilter() {
         ViewsTree viewsTree = this.viewsTree;
         ViewsTreeNode focusedTreeNode = viewsTree.getFocusedNode();
-        String title = focusedTreeNode.getTitle();
         DataView dataView = focusedTreeNode.getDataView();
         if (!(dataView instanceof DataViewFiltered)) {
             return new ExecutionResult(false, "Cannot edit this view!");
@@ -321,23 +338,12 @@ public class MainController {
         }
         DataViewFiltered currentFilter = (DataViewFiltered) focusedDataView;
         currentFilter.updateTitle(newRegex);
-        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(
-                () -> currentFilter.setPattern(newRegex), logDispatcher
+
+        return runAsyncIfPossible(
+                () -> currentFilter.setPattern(newRegex),
+                blocking,
+                "editing filter"
         );
-        if (blocking) {
-            try {
-                return f.get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return new ExecutionResult(false, "Interrupted while editing filter!");
-            } catch (ExecutionException e) {
-                return new ExecutionResult(false, "Error while editing filter: "+e.toString());
-            }
-        } else {
-            f.thenRunAsync(mainWindow::updateView, UI::runLater);
-            // need to update for the updated title anyway
-            return new ExecutionResult(true);
-        }
     }
 
     public ExecutionResult toggleBookmark() {
@@ -358,16 +364,50 @@ public class MainController {
         return ExecutionResult.merged(toggleResult, moveFocusResult);
     }
 
-    public ExecutionResult writeBookmarks(String args) {
-        if (Strings.isBlank(args)) {
+    public ExecutionResult clearBookmarks() {
+        return bookmarks.clear();
+    }
+
+    public ExecutionResult writeBookmarks(String path) {
+        if (Strings.isBlank(path)) {
             return new ExecutionResult(false, "Argument missing: path");
         }
+        LineLabelDisplayMode lineLabelDisplayMode = this.mainWindow.getLogView().getLineLabelDisplayMode();
+        Collection<String> export = bookmarks.export(lineLabelDisplayMode);
+        if (export.isEmpty()) {
+            return new ExecutionResult(false, "Could not write bookmarks: No bookmarks found!");
+        }
+        return writeToFile(path, "write bookmarks", export);
+    }
+
+    public ExecutionResult writeView(String path) {
+        if (Strings.isBlank(path)) {
+            return new ExecutionResult(false, "Argument missing: path");
+        }
+        LineLabelDisplayMode lineLabelDisplayMode = this.mainWindow.getLogView().getLineLabelDisplayMode();
+        List<Line> linesInView = this.viewsTree.getFocusedNode().getDataView().getAllLines();
+        Collection<String> export = Lines.export(linesInView, lineLabelDisplayMode);
+        return writeToFile(path, "write view", export);
+    }
+
+    private ExecutionResult writeToFile(String path, String operationDescription, Collection<String> linesToWrite) {
         try {
-            bookmarks.write(args);
+            Files.write(
+                    Paths.get(
+                            Strings.expandPathPlaceHolders(path)
+                    ),
+                    linesToWrite,
+                    charset,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
             return new ExecutionResult(false);
         } catch (IOException e) {
-            return new ExecutionResult(false, "Could not write bookmarks: "+e);
+            return new ExecutionResult(false, "Could not " + operationDescription+": " + e);
         }
+    }
+
+    public ExecutionResult toggleForceDisplayBookmarks() {
+        return bookmarks.toggleForceBookmarksDisplay();
     }
 
     public ExecutionResult toggleLineNumbers() {
@@ -568,6 +608,23 @@ public class MainController {
         }
     }
 
+    public ExecutionResult runAsyncIfPossible(Supplier<ExecutionResult> task, boolean blocking, String descriptionInPresentParticiple) {
+        CompletableFuture<ExecutionResult> f = CompletableFuture.supplyAsync(task, logDispatcher);
+        if (blocking) {
+            try {
+                return f.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ExecutionResult(false, "Interrupted while " + descriptionInPresentParticiple + "!");
+            } catch (ExecutionException e) {
+                return new ExecutionResult(false, "Error while " + descriptionInPresentParticiple + ": "+e.toString());
+            }
+        } else {
+            f.thenRunAsync(mainWindow::updateView, UI::runLater);
+            return new ExecutionResult(true);
+        }
+    }
+
     private boolean isEofReached(Query query, int focusedLineIndex, List<Line> allLines) {
         if (query.isBackwards()) {
             return focusedLineIndex == 0;
@@ -577,6 +634,9 @@ public class MainController {
     }
 
     public boolean handleKeyStroke(KeyStroke keyStroke) {
+        if (this.mainWindow.isCommandBarEditing()) {
+            return false;
+        }
         if (keyStroke.getKeyType() == KeyType.Character) {
             Character character = keyStroke.getCharacter();
             if (character == ':' || character == '/' || character == '?') {

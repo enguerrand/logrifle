@@ -33,6 +33,7 @@ import de.logrifle.data.views.DataViewListener;
 import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -82,12 +83,15 @@ class LogView {
             }
 
             @Override
-            public void onCacheCleared(DataView source) {
+            public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+                onFullUpdate(source);
             }
 
             @Override
-            public void onDestroyed(DataView source) {
-            }
+            public void onCacheCleared(DataView source) {}
+
+            @Override
+            public void onDestroyed(DataView source) {}
         };
     }
 
@@ -280,6 +284,10 @@ class LogView {
     ExecutionResult cycleLineLabelDisplayMode() {
         this.lineLabelDisplayMode = this.lineLabelDisplayMode.next();
         return new ExecutionResult(true);
+    }
+
+    public LineLabelDisplayMode getLineLabelDisplayMode() {
+        return lineLabelDisplayMode;
     }
 
     ExecutionResult toggleFollowTail() {

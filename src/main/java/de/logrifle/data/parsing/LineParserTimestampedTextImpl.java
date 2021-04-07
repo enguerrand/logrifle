@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LineParserTimestampedTextImpl implements LineParser {
+public class LineParserTimestampedTextImpl extends LineParser {
     private final Pattern timeStampPattern;
     private final DateTimeFormatter dateFormatter;
     private final Function<String, Long> timeParser;
@@ -81,7 +81,8 @@ public class LineParserTimestampedTextImpl implements LineParser {
             String dateString = matcher.group(1);
             try {
                 timestamp = timeParser.apply(dateString);
-                return new LineParseResult(new Line(index, raw, timestamp, source));
+                long dateChangeCount = updateAndGetDateChangeCount(timestamp);
+                return new LineParseResult(new Line(index, raw, timestamp, dateChangeCount, source));
             } catch (RuntimeException ignored) {
                 /*
                  In rare cases this can legitimately happen e.g. for an unluckily logged MAC address such as AB:CD:EF:12:34:56

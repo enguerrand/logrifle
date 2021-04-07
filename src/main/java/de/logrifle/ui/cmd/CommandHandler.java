@@ -23,12 +23,14 @@ package de.logrifle.ui.cmd;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import de.logrifle.base.Strings;
+import de.logrifle.ui.HighlightingTextColors;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,10 +66,31 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("clear-bookmarks", "cb", "Clears all bookmarks.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.clearBookmarks();
+            }
+        });
+
         register(new Command("write-bookmarks", "wb", "Writes all bookmarks to the file provided as the first parameter.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
                 return mainController.writeBookmarks(args);
+            }
+        });
+
+        register(new Command("toggle-forced-bookmarks-display", "tfb", "Toggles the forced display of bookmarked lines.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.toggleForceDisplayBookmarks();
+            }
+        });
+
+        register(new Command("write-current-view", "wcv", "Writes all lines in the current view to the file provided as the first parameter.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                return mainController.writeView(args);
             }
         });
 
@@ -232,19 +255,36 @@ public class CommandHandler {
             }
         });
 
-        register(new Command("highlight", "h", "Adds a highlight to line parts that match the regex provided as the first argument.") {
+        register(new Command("highlight", "h", "Adds an auto-color highlight to line parts that match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addHighlight(args, false);
+                return mainController.addHighlight(args, false, null);
             }
         });
 
-        register(new Command("ihighlight", "ih", "Adds a highlight to line parts that case-insensitively match the regex provided as the first argument.") {
+        register(new Command("ihighlight", "ih", "Adds an auto-color highlight to line parts that case-insensitively match the regex provided as the first argument.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
-                return mainController.addHighlight(args, true);
+                return mainController.addHighlight(args, true, null);
             }
         });
+
+        for (HighlightingTextColors highlightColors : HighlightingTextColors.values()) {
+            String highlightName = highlightColors.name().toLowerCase();
+            register(new Command("highlight-" + highlightName, "h-"+highlightName, "Adds a " + highlightName + " highlight to line parts that match the regex provided as the first argument.") {
+                @Override
+                protected ExecutionResult execute(String args, boolean blocking) {
+                    return mainController.addHighlight(args, false, highlightColors);
+                }
+            });
+
+            register(new Command("ihighlight-" + highlightName, "ih-" + highlightName, "Adds a " +  highlightName + " highlight to line parts that case-insensitively match the regex provided as the first argument.") {
+                @Override
+                protected ExecutionResult execute(String args, boolean blocking) {
+                    return mainController.addHighlight(args, true, highlightColors);
+                }
+            });
+        }
 
         register(new Command("move-focus", null, "Moves the focus by the increment provided as the first argument. (Negative values move the focus upwards)") {
             @Override
@@ -439,8 +479,8 @@ public class CommandHandler {
         return command.execute(args, blocking);
     }
 
-
-    public String getHelp(Map<KeyStroke, String> keyMap) {
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
+    public String getHelp(Map<KeyStroke, String> keyMap, Collection<KeyBind> commandViewBinds) {
         String sep = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder();
         sb.append(sep);
@@ -449,6 +489,14 @@ public class CommandHandler {
         sb.append("The name of this file should be .logriflerc");
         sb.append(sep);
         sb.append("Options can be specified in the format of java properties (i.e. key = value) using the long command line option name with dashes (-) replaced by underscores (_).");
+        sb.append(sep);
+        sb.append("Boolean options must be assigned the desired value (as opposed to how it is done on the command line where you only specify the option without arguments).");
+        sb.append(sep);
+        sb.append("Example:");
+        sb.append(sep);
+        sb.append("    timestamp_format = HH:mm:ss");
+        sb.append(sep);
+        sb.append("    forced_bookmarks_display = true");
         sb.append(sep);
         List<Command> values = new ArrayList<>(new HashSet<>(this.commands.values()));
         values.sort(Comparator.comparing(Command::getCommandName));
@@ -495,16 +543,16 @@ public class CommandHandler {
         );
         int bindLength = binds.stream().mapToInt(e -> e.renderKeyStroke().length()).max().orElse(0);
         for (KeyBind bind : binds) {
-            sb.append(bind.render(bindLength)+"\n");
+            sb.append(bind.render(bindLength, ":")).append("\n");
         }
 
         sb.append("\n");
         sb.append("Keybinds in command input mode:\n");
         sb.append("======================================\n");
-        sb.append("ArrowDown        => Go to next command in history\n");
-        sb.append("ArrowUp          => Go to previous command in history\n");
-        sb.append("Enter            => Execute current input as command\n");
-        sb.append("Escape           => Close command input bar\n");
+        int commandViewBindLength = commandViewBinds.stream().mapToInt(e -> e.renderKeyStroke().length()).max().orElse(0);
+        for (KeyBind commandViewBind : commandViewBinds) {
+            sb.append(commandViewBind.render(commandViewBindLength, "")).append("\n");
+        }
 
         return sb.toString();
     }
@@ -529,54 +577,4 @@ public class CommandHandler {
         }
     }
 
-    private static class KeyBind {
-        private final KeyStroke keyStroke;
-        private final String mapping;
-
-        private KeyBind(KeyStroke keyStroke, String mapping) {
-            this.keyStroke = keyStroke;
-            this.mapping = mapping;
-        }
-
-        KeyStroke getKeyStroke() {
-            return keyStroke;
-        }
-
-        int getModifiersCount() {
-            int count = 0;
-            if (keyStroke.isCtrlDown()) {
-                ++count;
-            }
-            if (keyStroke.isAltDown()) {
-                ++count;
-            }
-            if (keyStroke.getKeyType() != KeyType.Character && keyStroke.isShiftDown()) {
-                ++count;
-            }
-            return count;
-        }
-
-        String render(int keyLength) {
-            return Strings.pad(renderKeyStroke(), keyLength, false) + " => :" + mapping;
-        }
-
-        String renderKeyStroke() {
-            StringBuilder sb = new StringBuilder();
-            if (keyStroke.isCtrlDown()) {
-                sb.append("CTRL+");
-            }
-            if (keyStroke.isAltDown()) {
-                sb.append("ALT+");
-            }
-            if (keyStroke.getKeyType() == KeyType.Character) {
-                sb.append(keyStroke.getCharacter());
-            } else {
-                if (keyStroke.isShiftDown()) {
-                    sb.append("SHIFT+");
-                }
-                sb.append(keyStroke.getKeyType().name());
-            }
-            return sb.toString();
-        }
-    }
 }

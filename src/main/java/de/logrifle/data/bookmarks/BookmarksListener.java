@@ -1,5 +1,5 @@
 /*
- *  Copyright 2020, Enguerrand de Rochefort
+ *  Copyright 2021, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,29 +18,15 @@
  *
  */
 
-package de.logrifle.data.views;
+package de.logrifle.data.bookmarks;
 
-import com.googlecode.lanterna.TextColor;
+import java.util.Collection;
 
-public class LineSourceTestImpl implements LineSource {
-    private final String title;
-
-    public LineSourceTestImpl(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public TextColor getViewColor() {
-        return TextColor.ANSI.DEFAULT;
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
+/**
+ * Listener implementations may assume to be called on the log dispatch thread
+ */
+public interface BookmarksListener {
+    void added(Bookmarks source, Collection<Bookmark> added);
+    void removed(Bookmarks source, Collection<Bookmark> removed);
+    void forcedDisplayChanged(Bookmarks source);
 }

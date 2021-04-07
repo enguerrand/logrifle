@@ -1,5 +1,5 @@
 /*
- *  Copyright 2020, Enguerrand de Rochefort
+ *  Copyright 2021, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,29 +18,21 @@
  *
  */
 
-package de.logrifle.data.views;
+package de.logrifle.ui.completion;
 
-import com.googlecode.lanterna.TextColor;
+import java.util.Arrays;
+import java.util.List;
 
-public class LineSourceTestImpl implements LineSource {
-    private final String title;
+public abstract class AbstractArgumentCompleter {
+    private final List<String> commandNames;
 
-    public LineSourceTestImpl(String title) {
-        this.title = title;
+    protected AbstractArgumentCompleter(String... commandNames) {
+        this.commandNames = Arrays.asList(commandNames);
     }
 
-    @Override
-    public String getTitle() {
-        return title;
+    public List<String> getCommandNames() {
+        return commandNames;
     }
 
-    @Override
-    public TextColor getViewColor() {
-        return TextColor.ANSI.DEFAULT;
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
+    public abstract CompletionResult getCompletions(String currentInput);
 }

@@ -20,30 +20,38 @@
 
 package de.logrifle.ui;
 
+import de.logrifle.base.DirectDispatcher;
+import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.TestLinesFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 class BookmarksViewTest {
 
     private static final List<Line> LINES = new ArrayList<>();
-    private static final Bookmarks BOOKMARKS = new Bookmarks(StandardCharsets.UTF_8);
+    private Bookmarks bookmarks;
 
     @BeforeAll
     static void beforeAll() {
         LINES.addAll(TestLinesFactory.buildTestLines());
-        BOOKMARKS.toggle(LINES.get(1));
-        BOOKMARKS.toggle(LINES.get(3));
-        BOOKMARKS.toggle(LINES.get(5));
-        BOOKMARKS.toggle(LINES.get(7));
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        LogDispatcher testLogDispatcher = new DirectDispatcher();
+        bookmarks = new Bookmarks(false, testLogDispatcher);
+        bookmarks.toggle(LINES.get(1));
+        bookmarks.toggle(LINES.get(3));
+        bookmarks.toggle(LINES.get(5));
+        bookmarks.toggle(LINES.get(7));
     }
 
     @ParameterizedTest
@@ -65,7 +73,7 @@ class BookmarksViewTest {
             "2,7,1,3"
     })
     void updateStartIndexIfNeeded(int currentStartIndex, int focusedLineIndex, int visibleBookmarksCount, int expectedStartIndex) {
-        int newStartIndex = BookmarksView.updateStartIndexIfNeeded(currentStartIndex, focusedLineIndex, visibleBookmarksCount, new ArrayList<>(BOOKMARKS.getAll()));
+        int newStartIndex = BookmarksView.updateStartIndexIfNeeded(currentStartIndex, focusedLineIndex, visibleBookmarksCount, new ArrayList<>(bookmarks.getAll()));
         Assertions.assertEquals(expectedStartIndex, newStartIndex);
     }
 }

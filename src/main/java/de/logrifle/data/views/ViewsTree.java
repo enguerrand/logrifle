@@ -20,10 +20,16 @@
 
 package de.logrifle.data.views;
 
+import de.logrifle.data.bookmarks.Bookmark;
 import de.logrifle.data.bookmarks.Bookmarks;
+import de.logrifle.data.bookmarks.BookmarksListener;
+import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ViewsTree {
     private final ViewsTreeNode rootNode;
@@ -44,7 +50,7 @@ public class ViewsTree {
     }
 
     public ExecutionResult removeNode(ViewsTreeNode node) {
-        ViewsTreeNode parent = node.getParent();
+        @Nullable ViewsTreeNode parent = node.getParent();
         if (parent == null) {
             return new ExecutionResult(false, "Cannot delete the root view");
         }
@@ -59,7 +65,7 @@ public class ViewsTree {
     }
 
     public boolean moveFocusParent() {
-        ViewsTreeNode parent = focusedNode.getParent();
+        @Nullable ViewsTreeNode parent = focusedNode.getParent();
         if (parent == null) {
             return false;
         } else {
@@ -80,7 +86,7 @@ public class ViewsTree {
     }
 
     public boolean moveFocusPrev() {
-        ViewsTreeNode parent = focusedNode.getParent();
+        @Nullable ViewsTreeNode parent = focusedNode.getParent();
         if (parent == null) {
             return false;
         }
@@ -96,7 +102,7 @@ public class ViewsTree {
 
     public boolean moveFocusNext() {
         ViewsTreeNode current = this.focusedNode;
-        ViewsTreeNode parent = current.getParent();
+        @Nullable ViewsTreeNode parent = current.getParent();
         while (parent != null) {
             List<ViewsTreeNode> sameLevel = parent.getChildren();
             int index = sameLevel.indexOf(current);
@@ -133,7 +139,7 @@ public class ViewsTree {
     }
 
     /**
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException if there is no View at the given index
      */
     public DataView removeView(int viewIndex){
         DataView removed = this.rootView.removeView(viewIndex);
@@ -154,6 +160,37 @@ public class ViewsTree {
         for (ViewsTreeNode child : currentNode.getChildren()) {
             walkImpl(walker, child, depth + 1);
         }
+    }
+
+    public void fireFullUpdate() {
+        rootNode.getDataView().fireUpdated();
+    }
+
+    public void fireLinesVisiblityInvalidated(Collection<Line> invalidatedLines) {
+        rootNode.getDataView().fireLineVisibilityInvalidated(invalidatedLines);
+    }
+
+    public BookmarksListener buildBookmarksListener() {
+        return new BookmarksListener() {
+            @Override
+            public void added(Bookmarks source, Collection<Bookmark> added) {
+                fire(added);
+            }
+
+            @Override
+            public void removed(Bookmarks source, Collection<Bookmark> removed) {
+                fire(removed);
+            }
+
+            @Override
+            public void forcedDisplayChanged(Bookmarks source) {
+                fire(source.getAll());
+            }
+
+            private void fire(Collection<Bookmark> bookmarks) {
+                fireLinesVisiblityInvalidated(bookmarks.stream().map(Bookmark::getLine).collect(Collectors.toList()));
+            }
+        };
     }
 
     public interface Walker {

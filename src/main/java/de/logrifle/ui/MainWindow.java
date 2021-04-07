@@ -39,6 +39,7 @@ import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.ViewsTree;
+import de.logrifle.ui.completion.CommandAutoCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -219,6 +220,10 @@ public class MainWindow {
     void closeCommandBar() {
         this.commandView.hide();
         updateView(screen.getTerminalSize());
+    }
+
+    boolean isCommandBarEditing() {
+        return this.commandView.isEditing();
     }
 
     void showCommandViewMessage(String message, TextColor textColor) {

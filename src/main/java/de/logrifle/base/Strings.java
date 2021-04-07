@@ -22,7 +22,14 @@ package de.logrifle.base;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Strings {
+    private static final Pattern WHITE_SPACE_AT_BEGINNING = Pattern.compile("^\\s.*");
+    private static final Pattern WHITE_SPACE_AT_END = Pattern.compile("\\s.*");
+
     public static String pad(String s, int length, boolean beginning) {
         return pad(s, length, " ", beginning);
     }
@@ -59,5 +66,86 @@ public class Strings {
 
     public static String expandPathPlaceHolders(String input) {
         return input.replaceAll("~", System.getProperty("user.home"));
+    }
+
+    public static String trimStart(String input) {
+        String result = input;
+        while (result.length() > 0 && WHITE_SPACE_AT_BEGINNING.matcher(result).matches()) {
+            result = result.substring(1);
+        }
+        return result;
+    }
+
+    public static String[] tokenizeAt(String text, int index) {
+        String first = text.substring(0, index);
+        String second = text.substring(index);
+        return new String[] { first, second };
+    }
+
+    public static int findFirstWordStartOrEnd(String text) {
+        String trimmed = trimStart(text);
+        int trimOffset = text.length() - trimmed.length();
+        if (trimOffset != 0) {
+            return trimOffset;
+        }
+        Matcher matcher = Pattern.compile("\\s(\\S)").matcher(trimmed);
+        if (matcher.find()) {
+            return matcher.start(1);
+        } else {
+            return text.length();
+        }
+    }
+
+    public static int findLastWordStartOrStart(String text) {
+        String reversed = new StringBuilder(text).reverse().toString();
+        String trimmed = trimStart(reversed);
+        int trimOffset = reversed.length() - trimmed.length();
+        int index;
+        Matcher matcher = Pattern.compile("\\s").matcher(trimmed);
+        if (matcher.find()) {
+            index = matcher.start() + trimOffset;
+        } else {
+            index = reversed.length();
+        }
+        return reversed.length() - index;
+    }
+
+    public static int findNextWordStartOrEnd(String text, int currentIndex) {
+        String[] strings = tokenizeAt(text, currentIndex);
+        return findFirstWordStartOrEnd(strings[1]) + currentIndex;
+    }
+
+    public static int findPreviousWordStartOrStrt(String text, int currentIndex) {
+        String[] strings = tokenizeAt(text, currentIndex);
+        return findLastWordStartOrStart(strings[0]);
+    }
+
+    public static String getMatchingStart(List<String> options) {
+        if (options.isEmpty()) {
+            return "";
+        }
+        StringBuilder commonStart = new StringBuilder();
+        boolean charsMatching = true;
+        for (int charIndex = 0; charsMatching; charIndex++) {
+            Character c = null;
+            for (int optionIndex = 0; optionIndex < options.size(); optionIndex++) {
+                String option = options.get(optionIndex);
+                if (option.length() <= charIndex) {
+                    charsMatching = false;
+                    break;
+                }
+                char nextChar = option.charAt(charIndex);
+                if (optionIndex == 0) {
+                    c = nextChar;
+                } else if (c != nextChar) {
+                    charsMatching = false;
+                    break;
+                }
+            }
+            if (charsMatching) {
+                commonStart.append(c);
+            }
+        }
+        return commonStart.toString();
     }
 }

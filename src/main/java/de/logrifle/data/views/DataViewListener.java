@@ -22,9 +22,11 @@ package de.logrifle.data.views;
 
 import de.logrifle.data.parsing.Line;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface DataViewListener {
+    void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source);
     void onFullUpdate(DataView source);
     void onIncrementalUpdate(DataView source, List<Line> newLines);
     void onCacheCleared(DataView source);

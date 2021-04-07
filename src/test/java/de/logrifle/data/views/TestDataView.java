@@ -46,6 +46,10 @@ public class TestDataView extends DataView {
     }
 
     @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+    }
+
+    @Override
     public void onFullUpdate(DataView source) {
     }
 

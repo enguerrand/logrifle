@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class LogInputStreamReader extends DataView {
     private final List<Line> lines = new ArrayList<>();
@@ -45,12 +47,21 @@ public class LogInputStreamReader extends DataView {
         while ((raw = reader.readLine()) != null) {
             LineParseResult parseResult = lineParser.parse(currentLineIndex++, raw, this);
             if (parseResult.isNewLine()) {
-                lines.add(parseResult.getParsedLine());
+                lines.add(
+                        Objects.requireNonNull(
+                                parseResult.getParsedLine(),
+                                () -> "Unexpected NULL Line received from LogInputStreamReader parseResult " + parseResult
+                        )
+                );
                 currentLineIndex++;
             } else {
                 Line last;
                 if (lines.isEmpty()) {
-                    last = Line.initialTextLineOf(currentLineIndex, raw, this);
+                    Line initialTextLine = Line.initialTextLineOf(currentLineIndex, raw, this);
+                    last = Objects.requireNonNull(
+                            initialTextLine,
+                            () -> "Unexpected NULL Line received from initialTextLineOf call in LogInputStreamReader on parseResult " + parseResult
+                    );
                     lines.add(last);
                     currentLineIndex++;
                 } else {
@@ -79,6 +90,11 @@ public class LogInputStreamReader extends DataView {
 
     @Override
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
+        // this should never happen
+    }
+
+    @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
         // this should never happen
     }
 

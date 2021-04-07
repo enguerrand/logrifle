@@ -20,11 +20,12 @@
 
 package de.logrifle.data.io;
 
+import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.views.DataView;
-import de.logrifle.ui.TextColorIterator;
+import de.logrifle.ui.RingIterator;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -42,7 +43,7 @@ public class MainFileOpenerImpl implements FileOpener {
 
     public MainFileOpenerImpl(
             LineParser lineParser,
-            TextColorIterator textColorIterator,
+            RingIterator<TextColor> textColorIterator,
             ExecutorService workerPool,
             LogDispatcher logDispatcher,
             RateLimiterFactory factory,
@@ -51,9 +52,7 @@ public class MainFileOpenerImpl implements FileOpener {
         fileOpeners.put(Pattern.compile(".*\\.zip"), new ZipFileOpenerImpl(
                 lineParser,
                 textColorIterator,
-                workerPool,
-                logDispatcher,
-                factory
+                logDispatcher
         ));
         fileOpeners.put(Pattern.compile(".*"), new PlainFileOpenerImpl(
                 lineParser,
@@ -73,9 +72,8 @@ public class MainFileOpenerImpl implements FileOpener {
                 FileOpener fileOpener = entry.getValue();
                 try {
                     return fileOpener.open(path);
-                } catch (UnexpectedFileFormatException e) {
+                } catch (UnexpectedFileFormatException ignored) {
                     // The pattern matched but the file's format was not consistent with its name. Continue trying other file openers.
-                    continue;
                 }
             }
         }

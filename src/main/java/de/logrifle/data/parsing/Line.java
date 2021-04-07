@@ -21,26 +21,37 @@
 package de.logrifle.data.parsing;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.Strings;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.LineSource;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Line {
+    public static final Comparator<Line> ORDERING_COMPARATOR = Comparator
+            .comparing(Line::getDateChangeCount)
+            .thenComparing(Line::getTimestamp);
+    public static final String EXPORT_LABEL_SEPARATOR = ": ";
     private int index;
+    private final long dateChangeCount;
     private final long timestamp;
     private final String raw;
     private final List<String> additionalLines = new CopyOnWriteArrayList<>();
     private final LineSource source;
 
-    Line(int index, String raw, long timestamp, LineSource source) {
+    Line(int index, String raw, long timestamp, long dateChangeCount, LineSource source) {
         this.index = index;
         this.timestamp = timestamp;
         this.raw = sanitize(raw);
-        this.source = source;
+        this.dateChangeCount = dateChangeCount;
+        this.source = Objects.requireNonNull(source);
     }
 
     public int getIndex() {
@@ -73,6 +84,10 @@ public class Line {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public long getDateChangeCount() {
+        return dateChangeCount;
     }
 
     public List<String> getAdditionalLines() {
@@ -109,6 +124,35 @@ public class Line {
     }
 
     public static Line initialTextLineOf(int index, String raw, DataView source) {
-        return new Line(index, raw, 0, source);
+        return new Line(index, raw, 0, 0, source);
+    }
+
+    @Override
+    public String toString() {
+        return "Line{" +
+                "raw='" + raw + '\'' +
+                '}';
+    }
+
+    public Collection<String> export(int wantedLabelLength) {
+        List<String> raw = new ArrayList<>();
+        raw.add(this.raw);
+        raw.addAll(this.additionalLines);
+        if (wantedLabelLength == 0) {
+            return raw;
+        }
+
+        String fullLabel = getLineLabel();
+        String label;
+        if (fullLabel.length() > wantedLabelLength) {
+            label = fullLabel.substring(0, wantedLabelLength);
+        } else if (fullLabel.length() < wantedLabelLength) {
+            label = Strings.pad(fullLabel, wantedLabelLength, false);
+        } else {
+            label = fullLabel;
+        }
+        return raw.stream()
+                .map(r -> label + EXPORT_LABEL_SEPARATOR + r)
+                .collect(Collectors.toList());
     }
 }

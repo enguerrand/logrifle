@@ -30,7 +30,7 @@ class MatchedSectionTest {
 
     @Test
     void removePartsMatchedByAtEnd() {
-        Highlight foo = new Highlight("foo", null, null);
+        Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 16);
         MatchedSection chopped = a.removePartsMatchedBy(new MatchedSection(foo, 14, 18));
         assertEquals(12, chopped.getStartIndex());
@@ -39,7 +39,7 @@ class MatchedSectionTest {
 
     @Test
     void removePartsMatchedByAtStart() {
-        Highlight foo = new Highlight("foo", null, null);
+        Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 16);
         MatchedSection chopped = a.removePartsMatchedBy(new MatchedSection(foo, 4, 14));
         assertEquals(14, chopped.getStartIndex());
@@ -48,7 +48,7 @@ class MatchedSectionTest {
 
     @Test
     void split() {
-        Highlight foo = new Highlight("foo", null, null);
+        Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 18);
         List<MatchedSection> split = a.splitBy(new MatchedSection(foo, 14, 16));
         assertEquals(12, split.get(0).getStartIndex());

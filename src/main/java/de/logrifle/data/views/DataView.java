@@ -26,6 +26,7 @@ import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -53,7 +54,7 @@ public abstract class DataView implements DataViewListener, LineSource {
         this.maxLineLabelLength = maxLineLabelLength;
     }
 
-    public void setCloseHook(Runnable closeHook) {
+    public void setCloseHook(@Nullable Runnable closeHook) {
         this.closeHook = closeHook;
     }
 
@@ -93,11 +94,10 @@ public abstract class DataView implements DataViewListener, LineSource {
         if (snapshot == null || snapshot.isEmpty() || topIndex >= snapshot.size() || topIndex < 0) {
             return Collections.emptyList();
         }
-        int topIndexCorrected = Math.max(0, topIndex);
-        if (maxCount == null || snapshot.size() <= topIndexCorrected + maxCount) {
-            return snapshot.subList(topIndexCorrected, snapshot.size());
+        if (maxCount == null || snapshot.size() <= topIndex + maxCount) {
+            return snapshot.subList(topIndex, snapshot.size());
         } else {
-            return snapshot.subList(topIndexCorrected, topIndexCorrected + maxCount);
+            return snapshot.subList(topIndex, topIndex + maxCount);
         }
     }
     public void addListener(DataViewListener listener) {
@@ -127,6 +127,13 @@ public abstract class DataView implements DataViewListener, LineSource {
         }
     }
 
+    protected void fireLineVisibilityInvalidated(Collection<Line> invalidatedLines) {
+        logDispatcher.checkOnDispatchThreadOrThrow();
+        for (DataViewListener listener : this.listeners) {
+            listener.onLineVisibilityStateInvalidated(invalidatedLines, DataView.this);
+        }
+    }
+
     protected void fireCacheCleared() {
         logDispatcher.checkOnDispatchThreadOrThrow();
         for (DataViewListener listener : this.listeners) {
@@ -148,6 +155,10 @@ public abstract class DataView implements DataViewListener, LineSource {
     }
 
     public abstract List<Line> getAllLines();
+
+    protected boolean isLineVisible(Line line) {
+        return isActive();
+    }
 
     public int indexOfClosestTo(int indexToHit, int startSearchAt) {
         List<Line> allLines = getAllLines();

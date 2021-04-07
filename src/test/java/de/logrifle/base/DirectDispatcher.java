@@ -20,12 +20,16 @@
 
 package de.logrifle.base;
 
-import java.util.concurrent.CountDownLatch;
+import org.jetbrains.annotations.NotNull;
 
-public class TestLogDispatcher extends LogDispatcher {
-    public void awaitJobsDone() throws InterruptedException {
-        CountDownLatch l = new CountDownLatch(1);
-        execute(l::countDown);
-        l.await();
+public class DirectDispatcher extends LogDispatcher {
+    @Override
+    public void execute(@NotNull Runnable runnable) {
+        runnable.run();
+    }
+
+    @Override
+    public boolean isOnThread() {
+        return true;
     }
 }

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class KeyMapFactory {
-    private Map<KeyStroke, String> keyMap = new HashMap<>();
+    private final Map<KeyStroke, String> keyMap = new HashMap<>();
 
     public KeyMapFactory() {
         keyMap.put(new KeyStroke(KeyType.ArrowUp), "move-focus -1");

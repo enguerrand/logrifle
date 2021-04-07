@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 public class DataViewMerged extends DataView {
     private final List<DataView> sourceViews;
@@ -74,6 +73,11 @@ public class DataViewMerged extends DataView {
     }
 
     @Override
+    public void onLineVisibilityStateInvalidated(Collection<Line> invalidatedLines, DataView source) {
+        fireLineVisibilityInvalidated(invalidatedLines);
+    }
+
+    @Override
     public void onIncrementalUpdate(DataView source, List<Line> newLines) {
         getLogDispatcher().checkOnDispatchThreadOrThrow();
         this.updater.requestExecution();
@@ -88,16 +92,18 @@ public class DataViewMerged extends DataView {
             int processedLinesCount = processedLinesMap.getOrDefault(viewId, 0);
             if (sourceView.getLineCount() > processedLinesCount) {
                 List<Line> newLinesInView = sourceView.getLines(processedLinesCount, null);
-                newLines.addAll(newLinesInView.stream()
-                        .filter(Line::isVisible)
-                        .collect(Collectors.toList()));
+                for (Line line : newLinesInView) {
+                    if (line.isVisible()) {
+                        newLines.add(line);
+                    }
+                }
                 processedLinesMap.put(viewId, processedLinesCount + newLinesInView.size());
             }
         }
 
         // Now apply a new index for the merged view
         linesCache.addAll(newLines);
-        linesCache.sort(Comparator.comparing(Line::getTimestamp));
+        linesCache.sort(Line.ORDERING_COMPARATOR);
         for (int i = 0; i < linesCache.size(); i++) {
             Line line = linesCache.get(i);
             line.setIndex(i);
@@ -136,7 +142,7 @@ public class DataViewMerged extends DataView {
     }
 
     /**
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException when called with ane invalid index
      */
     DataView removeView(int viewIndex) {
         UI.checkGuiThreadOrThrow();

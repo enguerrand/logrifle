@@ -37,12 +37,13 @@ import de.logrifle.data.parsing.TimeStampFormat;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
+import de.logrifle.ui.CommandView;
 import de.logrifle.ui.LineLabelDisplayMode;
 import de.logrifle.ui.MainController;
 import de.logrifle.ui.MainWindow;
 import de.logrifle.ui.MainWindowListener;
+import de.logrifle.ui.RingIterator;
 import de.logrifle.ui.SideBar;
-import de.logrifle.ui.TextColorIterator;
 import de.logrifle.ui.UI;
 import de.logrifle.ui.cmd.CommandHandler;
 import de.logrifle.ui.cmd.ExecutionResult;
@@ -94,6 +95,9 @@ public class Main {
         parser.addArgument("logfile")
                 .nargs("*")
                 .help("Path to logfile");
+        parser.addArgument("-B", "--forced-bookmarks-display")
+                .action(Arguments.storeTrue())
+                .help("Always display lines that are bookmarked irrespectively of active filters");
         parser.addArgument("-c", "--commands-file")
                 .type(String.class)
                 .help("File to read commands from");
@@ -111,7 +115,7 @@ public class Main {
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
         parser.addArgument("--seconds")
                 .action(Arguments.storeTrue())
-                .help("Shorthand for --timestamp-regex \"" + TimeStampFormat.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormat.SECONDS_TIME_MATCH_REGEX+"\"");
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormat.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormat.SECONDS_DATE_FORMAT+"\"");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
@@ -125,7 +129,7 @@ public class Main {
 
         if (parserResult.getBoolean("help")) {
             parser.printHelp();
-            System.out.print(commandHandler.getHelp(keyMapFactory.get()));
+            System.out.print(commandHandler.getHelp(keyMapFactory.get(), CommandView.getKeyBinds()));
             System.exit(0);
         }
         if (parserResult.getBoolean("version")) {
@@ -183,7 +187,7 @@ public class Main {
         }
         LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         List<DataView> logReaders = new ArrayList<>();
-        TextColorIterator textColorIterator = new TextColorIterator(Arrays.asList(
+        RingIterator<TextColor> textColorIterator = new RingIterator<>(Arrays.asList(
                 TextColor.ANSI.BLUE,
                 TextColor.ANSI.GREEN,
                 TextColor.ANSI.MAGENTA,
@@ -221,8 +225,10 @@ public class Main {
         }
         DataViewMerged rootView = new DataViewMerged(logReaders, logDispatcher, factory);
 
-        Bookmarks bookmarks = new Bookmarks(charset);
+        boolean forcedBookmarksDisplay = getBooleanOption(defaults, parserResult, "forced_bookmarks_display", false);
+        Bookmarks bookmarks = new Bookmarks(forcedBookmarksDisplay,logDispatcher);
         ViewsTree viewsTree = new ViewsTree(rootView, bookmarks);
+        bookmarks.addListener(viewsTree.buildBookmarksListener());
         HighlightsData highlightsData = new HighlightsData();
         MainWindow mainWindow = new MainWindow(viewsTree, highlightsData, bookmarks, logDispatcher, followTail, maxSidebarWidthCols, maxSidebarWidthRatio, lineLabelDisplayMode);
         KeyStrokeHandler keyStrokeHandler = new KeyStrokeHandler(keyMapFactory.get(), commandHandler);
@@ -234,7 +240,9 @@ public class Main {
                 viewsTree,
                 highlightsData,
                 bookmarks,
-                fileOpener);
+                fileOpener,
+                charset
+        );
         commandHandler.setMainController(mainController);
         mainWindow.start(workerPool, new MainWindowListener() {
             @Override
@@ -290,8 +298,8 @@ public class Main {
 
     private static boolean getBooleanOption(Properties defaults, Namespace parserResult, String name, boolean fallBack) {
         Boolean value = parserResult.getBoolean(name);
-        if (value != null) {
-            return value;
+        if (value != null && value) {
+            return true;
         }
         String defaultValue = defaults.getProperty(name);
         if (defaultValue == null) {

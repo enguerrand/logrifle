@@ -28,7 +28,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HighlightTest {
-    private Highlight highlightRed = new Highlight("foobar", TextColor.ANSI.RED, null);
+    private final Highlight highlightRed = new Highlight("foobar", TextColor.ANSI.RED, null);
 
     @Test
     void noMatch() {
@@ -49,7 +49,7 @@ class HighlightTest {
     }
 
     @Test
-    void twoSeperateRedMatches() {
+    void twoSeparateRedMatches() {
         String text = "Foo foobar bas foobar bar";
         List<MatchedSection> matches = highlightRed.getMatches(text);
         assertEquals(2, matches.size());

@@ -50,16 +50,13 @@ public class MatchedSection {
         if (contains(other) || other.contains(this)) {
             return true;
         }
-        if (getStartIndex() >= other.getEndIndex() ||
-                getEndIndex() <= other.getStartIndex()) {
-            return false;
-        }
-        return true;
+        return getStartIndex() < other.getEndIndex()
+                && getEndIndex() > other.getStartIndex();
     }
 
     public boolean contains(MatchedSection other) {
-        return (getStartIndex() <= other.getStartIndex() &&
-                getEndIndex() >= other.getEndIndex());
+        return (getStartIndex() <= other.getStartIndex()
+                && getEndIndex() >= other.getEndIndex());
     }
 
     public List<MatchedSection> splitBy(MatchedSection other) {
