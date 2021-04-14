@@ -29,6 +29,7 @@ import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTextImpl;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
+import de.logrifle.data.parsing.TimeStampFormats;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -153,7 +154,7 @@ class LogReaderTest {
     void  logReaderShouldMaintainIncomingOrder() throws IOException, InterruptedException {
         LogDispatcher dispatcher = new DirectDispatcher();
         LineParser parser = new LineParserTimestampedTextImpl(
-                new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
+                new TimeStampFormat(TimeStampFormats.DEFAULT_TIME_MATCH_REGEX, TimeStampFormats.DEFAULT_DATE_FORMAT)
         );
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Path logfile = tempDir.resolve("log1.log");

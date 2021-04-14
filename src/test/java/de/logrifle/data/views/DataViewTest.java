@@ -28,6 +28,7 @@ import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TestLinesFactory;
 import de.logrifle.data.parsing.TimeStampFormat;
+import de.logrifle.data.parsing.TimeStampFormats;
 import de.logrifle.ui.UI;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class DataViewTest {
 
     private final LineParser parser = new LineParserTimestampedTextImpl(
-            new TimeStampFormat(TimeStampFormat.DEFAULT_TIME_MATCH_REGEX, TimeStampFormat.DEFAULT_DATE_FORMAT)
+            new TimeStampFormat(TimeStampFormats.DEFAULT_TIME_MATCH_REGEX, TimeStampFormats.DEFAULT_DATE_FORMAT)
     );
 
     private final LogDispatcher dispatcher = new DirectDispatcher();

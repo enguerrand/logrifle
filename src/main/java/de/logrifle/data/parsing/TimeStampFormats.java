@@ -20,13 +20,50 @@
 
 package de.logrifle.data.parsing;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class TimeStampFormats {
     public static final String DEFAULT_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\b.*";
     public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
     public static final String SECONDS_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2})\\b.*";
     public static final String SECONDS_DATE_FORMAT = "HH:mm:ss";
 
-    private TimeStampFormats() {
-        throw new IllegalStateException("Do not instantiate");
+    private static final List<TimeStampFormatTester> AUTO_DETECT_CANDIDATES = Stream.of(
+            new TimeStampFormat(DEFAULT_TIME_MATCH_REGEX, DEFAULT_DATE_FORMAT),
+            new TimeStampFormat(SECONDS_TIME_MATCH_REGEX, SECONDS_DATE_FORMAT)
+    ).map(TimeStampFormatTester::new).collect(Collectors.toList());
+
+    private final List<TimeStampFormatTester> formatCandidates;
+
+    public TimeStampFormats() {
+        this.formatCandidates = AUTO_DETECT_CANDIDATES;
+    }
+
+    private Collection<TimeStampFormat> getMatchingTimestampFormats(String line) {
+        return formatCandidates.stream()
+                .filter(t -> t.test(line))
+                .map(TimeStampFormatTester::getFormat)
+                .collect(Collectors.toList());
+    }
+
+    private static final class TimeStampFormatTester {
+        private final TimeStampFormat format;
+        private final TimeStampParser parser;
+
+        private TimeStampFormatTester(TimeStampFormat format) {
+            this.format = format;
+            this.parser = new TimeStampParser(format);
+        }
+
+        private boolean test(String input) {
+            return parser.parse(input).isPresent();
+        }
+
+        private TimeStampFormat getFormat() {
+            return format;
+        }
     }
 }

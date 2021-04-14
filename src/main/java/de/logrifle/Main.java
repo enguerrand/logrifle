@@ -116,7 +116,7 @@ public class Main {
                 .help("Format to parse timestamps. Defaults to " + TimeStampFormats.DEFAULT_DATE_FORMAT);
         parser.addArgument("--seconds")
                 .action(Arguments.storeTrue())
-                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormats.SECONDS_DATE_FORMAT+"\"");
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+ TimeStampFormats.SECONDS_DATE_FORMAT+"\"");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
