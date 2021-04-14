@@ -20,25 +20,13 @@
 
 package de.logrifle.data.parsing;
 
-import org.jetbrains.annotations.Nullable;
+public class TimeStampFormats {
+    public static final String DEFAULT_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\b.*";
+    public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
+    public static final String SECONDS_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2})\\b.*";
+    public static final String SECONDS_DATE_FORMAT = "HH:mm:ss";
 
-import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_TIME_MATCH_REGEX;
-import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_DATE_FORMAT;
-
-public class TimeStampFormat {
-    private final String regex;
-    private final String format;
-
-    public TimeStampFormat(@Nullable String regex, @Nullable String format) {
-        this.regex = regex != null ? regex : DEFAULT_TIME_MATCH_REGEX;
-        this.format = format != null ? format : DEFAULT_DATE_FORMAT;
-    }
-
-    public String getRegex() {
-        return regex;
-    }
-
-    public String getFormat() {
-        return format;
+    private TimeStampFormats() {
+        throw new IllegalStateException("Do not instantiate");
     }
 }

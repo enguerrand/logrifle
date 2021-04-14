@@ -34,6 +34,7 @@ import de.logrifle.data.io.MainFileOpenerImpl;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
+import de.logrifle.data.parsing.TimeStampFormats;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
 import de.logrifle.data.views.ViewsTree;
@@ -109,13 +110,13 @@ public class Main {
                 .help("Initially follow tail? Defaults to false");
         parser.addArgument("-r", "--timestamp-regex")
                 .type(String.class)
-                .help("Regular expression to find timestamps in log lines. Defaults to " + TimeStampFormat.DEFAULT_TIME_MATCH_REGEX);
+                .help("Regular expression to find timestamps in log lines. Defaults to " + TimeStampFormats.DEFAULT_TIME_MATCH_REGEX);
         parser.addArgument("-t", "--timestamp-format")
                 .type(String.class)
-                .help("Format to parse timestamps. Defaults to " + TimeStampFormat.DEFAULT_DATE_FORMAT);
+                .help("Format to parse timestamps. Defaults to " + TimeStampFormats.DEFAULT_DATE_FORMAT);
         parser.addArgument("--seconds")
                 .action(Arguments.storeTrue())
-                .help("Shorthand for --timestamp-regex \"" + TimeStampFormat.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormat.SECONDS_DATE_FORMAT+"\"");
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+TimeStampFormats.SECONDS_DATE_FORMAT+"\"");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
@@ -179,8 +180,8 @@ public class Main {
         String timestampRegex;
         String timestampFormat;
         if (timestampsSecondsFormat) {
-            timestampRegex = TimeStampFormat.SECONDS_TIME_MATCH_REGEX;
-            timestampFormat = TimeStampFormat.SECONDS_DATE_FORMAT;
+            timestampRegex = TimeStampFormats.SECONDS_TIME_MATCH_REGEX;
+            timestampFormat = TimeStampFormats.SECONDS_DATE_FORMAT;
         } else {
             timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
             timestampFormat = getOption(defaults, parserResult, "timestamp_format");
