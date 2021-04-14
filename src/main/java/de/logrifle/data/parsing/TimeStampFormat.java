@@ -22,6 +22,8 @@ package de.logrifle.data.parsing;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_TIME_MATCH_REGEX;
 import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_DATE_FORMAT;
 
@@ -40,5 +42,27 @@ public class TimeStampFormat {
 
     public String getFormat() {
         return format;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TimeStampFormat that = (TimeStampFormat) o;
+        return Objects.equals(regex, that.regex) &&
+                Objects.equals(format, that.format);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(regex, format);
+    }
+
+    @Override
+    public String toString() {
+        return "TimeStampFormat{" +
+                "regex='" + regex + '\'' +
+                ", format='" + format + '\'' +
+                '}';
     }
 }

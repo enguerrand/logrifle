@@ -20,10 +20,13 @@
 
 package de.logrifle.data.parsing;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TimeStampFormats {
@@ -47,13 +50,9 @@ public class TimeStampFormats {
     }
 
     public TimeStampFormats(List<TimeStampFormat> formatCandidates) {
-        List<TimeStampFormatTester> list = new ArrayList<>();
-        for (int index = 0, formatCandidatesSize = formatCandidates.size(); index < formatCandidatesSize; index++) {
-            TimeStampFormat format = formatCandidates.get(index);
-            TimeStampFormatTester timeStampFormatTester = new TimeStampFormatTester(format, index);
-            list.add(timeStampFormatTester);
-        }
-        this.formatCandidates = list;
+        this.formatCandidates = formatCandidates.stream()
+                .map(TimeStampFormatTester::new)
+                .collect(Collectors.toList());
     }
 
     public Collection<TimeStampFormat> getMatchingTimestampFormats(String line) {
@@ -63,15 +62,44 @@ public class TimeStampFormats {
                 .collect(Collectors.toList());
     }
 
+    public Optional<TimeStampFormat> autoDetectFormat(List<String> input) {
+        Map<TimeStampFormat, Long> matchCount = new HashMap<>();
+        for (String line : input) {
+            Collection<TimeStampFormat> matchingTimestampFormats = getMatchingTimestampFormats(line);
+            for (TimeStampFormat matchingTimestampFormat : matchingTimestampFormats) {
+                matchCount.compute(matchingTimestampFormat, (key, prevValue) -> {
+                    if (prevValue == null) {
+                        return 1L;
+                    } else {
+                        return prevValue + 1;
+                    }
+                });
+            }
+        }
+
+        List<TimeStampFormat> matchingForAtLeastHalfOfInput = matchCount.entrySet()
+                .stream()
+                .filter(entry -> {
+                    Long count = entry.getValue();
+                    return count >= input.size() * 0.5;
+                })
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        List<TimeStampFormat> formats = formatCandidates.stream()
+                .map(TimeStampFormatTester::getFormat)
+                .collect(Collectors.toList());
+        return matchingForAtLeastHalfOfInput.stream()
+                .min(Comparator.comparingInt(formats::indexOf))
+        ;
+    }
+
     private static final class TimeStampFormatTester {
         private final TimeStampFormat format;
         private final TimeStampParser parser;
-        private final int order;
 
-        private TimeStampFormatTester(TimeStampFormat format, int order) {
+        private TimeStampFormatTester(TimeStampFormat format) {
             this.format = format;
             this.parser = new TimeStampParser(format);
-            this.order = order;
         }
 
         private boolean test(String input) {
