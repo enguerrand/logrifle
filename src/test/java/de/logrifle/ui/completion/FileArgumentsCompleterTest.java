@@ -42,7 +42,7 @@ class FileArgumentsCompleterTest {
     @TempDir
     Path workingDirectory;
 
-    private static String SEP = System.getProperty("file.separator");
+    private static final String SEP = System.getProperty("file.separator");
 
     Function<String, String> pathPlaceHolderExpander;
     private String homeDir;
