@@ -42,6 +42,8 @@ class FileArgumentsCompleterTest {
     @TempDir
     Path workingDirectory;
 
+    private static String SEP = System.getProperty("file.separator");
+
     Function<String, String> pathPlaceHolderExpander;
     private String homeDir;
 
@@ -75,26 +77,26 @@ class FileArgumentsCompleterTest {
 
     private static Stream<Arguments> getCompletionTestArguments() {
         return Stream.of(
-                Arguments.of("foo/z", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("", Collections.singletonList("foo/"), Collections.singletonList("foo")),
-                Arguments.of("f", Collections.singletonList("foo/"), Collections.singletonList("foo")),
-                Arguments.of("foo", Collections.singletonList("foo/"), Collections.singletonList("foo")),
-                Arguments.of("foo/", Arrays.asList("foo/bar/", "foo/bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("foo/b", Arrays.asList("foo/bar/", "foo/bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("foo/bar", Collections.singletonList("foo/bar/"), Collections.singletonList("bar")),
-                Arguments.of("foo/bar/", Collections.singletonList("foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("foo/bar/ba", Collections.singletonList("foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("foo/bar/bas", Collections.singletonList("foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("foo/bar/baz", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("foo/bas", Collections.singletonList("foo/bas/"), Collections.singletonList("bas")),
+                Arguments.of("foo"+SEP+"z", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of("", Collections.singletonList("foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of("f", Collections.singletonList("foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of("foo", Collections.singletonList("foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of("foo"+SEP, Arrays.asList("foo"+SEP+"bar"+SEP, "foo/bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of("foo"+SEP+"b", Arrays.asList("foo"+SEP+"bar"+SEP, "foo"+SEP+"bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of("foo"+SEP+"bar", Collections.singletonList("foo"+SEP+"bar"+SEP), Collections.singletonList("bar")),
+                Arguments.of("foo"+SEP+"bar"+SEP, Collections.singletonList("foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("foo"+SEP+"bar"+SEP+"ba", Collections.singletonList("foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("foo"+SEP+"bar"+SEP+"bas", Collections.singletonList("foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("foo"+SEP+"bar"+SEP+"baz", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of("foo"+SEP+"bas", Collections.singletonList("foo"+SEP+"bas"+SEP), Collections.singletonList("bas")),
                 Arguments.of(
-                        "foo/bas/",
-                        Arrays.asList("foo/bas/bar", "foo/bas/barDir/", "foo/bas/baz"),
+                        "foo"+SEP+"bas"+SEP,
+                        Arrays.asList("foo"+SEP+"bas"+SEP+"bar", "foo"+SEP+"bas"+SEP+"barDir"+SEP+"", "foo"+SEP+"bas"+SEP+"baz"),
                         Arrays.asList("bar", "barDir", "baz")
                 ),
                 Arguments.of(
-                        "foo/bas/barDir/",
-                        Arrays.asList("foo/bas/barDir/subBar", "foo/bas/barDir/subBaz"),
+                        "foo"+SEP+"bas"+SEP+"barDir"+SEP,
+                        Arrays.asList("foo"+SEP+"bas"+SEP+"barDir"+SEP+"subBar", "foo"+SEP+"bas"+SEP+"barDir"+SEP+"subBaz"),
                         Arrays.asList("subBar", "subBaz")
                 )
         );
@@ -119,51 +121,50 @@ class FileArgumentsCompleterTest {
         Assertions.assertEquals(expectedOptions, fullCompletions.getOptions());
     }
 
-
     private static Stream<Arguments> getCompletionParentTestArguments() {
         return Stream.of(
-                Arguments.of("./z", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("", Arrays.asList("bar/", "bas/"), Arrays.asList("bar", "bas")),
+                Arguments.of("."+SEP+"z", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of("", Arrays.asList("bar"+SEP, "bas"+SEP), Arrays.asList("bar", "bas")),
                 Arguments.of("f", Collections.emptyList(), Collections.emptyList()),
                 Arguments.of(".", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("./", Arrays.asList("./bar/", "./bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("./b", Arrays.asList("./bar/", "./bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("./bar", Collections.singletonList("./bar/"), Collections.singletonList("bar")),
-                Arguments.of("./bar/", Collections.singletonList("./bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("./bar/ba", Collections.singletonList("./bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("./bar/bas", Collections.singletonList("./bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("./bar/baz", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("./bas", Collections.singletonList("./bas/"), Collections.singletonList("bas")),
+                Arguments.of("."+SEP, Arrays.asList("."+SEP+"bar"+SEP, "."+SEP+"bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of("."+SEP+"b", Arrays.asList("."+SEP+"bar/", "."+SEP+"bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of("."+SEP+"bar", Collections.singletonList("."+SEP+"bar"+SEP), Collections.singletonList("bar")),
+                Arguments.of("."+SEP+"bar"+SEP, Collections.singletonList("."+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("."+SEP+"bar"+SEP+"ba", Collections.singletonList("."+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("."+SEP+"bar"+SEP+"bas", Collections.singletonList("."+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of("."+SEP+"bar"+SEP+"baz", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of("."+SEP+"bas", Collections.singletonList("."+SEP+"bas"+SEP), Collections.singletonList("bas")),
                 Arguments.of(
-                        "./bas/",
-                        Arrays.asList("./bas/bar", "./bas/barDir/", "./bas/baz"),
+                        "."+SEP+"bas"+SEP,
+                        Arrays.asList("."+SEP+"bas"+SEP+"bar", "."+SEP+"bas"+SEP+"barDir"+SEP, "."+SEP+"bas"+SEP+"baz"),
                         Arrays.asList("bar", "barDir", "baz")
                 ),
                 Arguments.of(
-                        "./bas/barDir/",
-                        Arrays.asList("./bas/barDir/subBar", "./bas/barDir/subBaz"),
+                        "."+SEP+"bas"+SEP+"barDir"+SEP,
+                        Arrays.asList("."+SEP+"bas"+SEP+"barDir"+SEP+"subBar", "."+SEP+"bas"+SEP+"barDir"+SEP+"subBaz"),
                         Arrays.asList("subBar", "subBaz")
                 ),
-                Arguments.of("../foo/z", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("../", Collections.singletonList("../foo/"), Collections.singletonList("foo")),
-                Arguments.of("../f", Collections.singletonList("../foo/"), Collections.singletonList("foo")),
-                Arguments.of("../foo", Collections.singletonList("../foo/"), Collections.singletonList("foo")),
-                Arguments.of("../foo/", Arrays.asList("../foo/bar/", "../foo/bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("../foo/b", Arrays.asList("../foo/bar/", "../foo/bas/"), Arrays.asList("bar", "bas")),
-                Arguments.of("../foo/bar", Collections.singletonList("../foo/bar/"), Collections.singletonList("bar")),
-                Arguments.of("../foo/bar/", Collections.singletonList("../foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("../foo/bar/ba", Collections.singletonList("../foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("../foo/bar/bas", Collections.singletonList("../foo/bar/bas"), Collections.singletonList("bas")),
-                Arguments.of("../foo/bar/baz", Collections.emptyList(), Collections.emptyList()),
-                Arguments.of("../foo/bas", Collections.singletonList("../foo/bas/"), Collections.singletonList("bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"z", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of(".."+SEP, Collections.singletonList(".."+SEP+"foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of(".."+SEP+"f", Collections.singletonList(".."+SEP+"foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of(".."+SEP+"foo", Collections.singletonList(".."+SEP+"foo"+SEP), Collections.singletonList("foo")),
+                Arguments.of(".."+SEP+"foo"+SEP, Arrays.asList(".."+SEP+"foo"+SEP+"bar"+SEP, ".."+SEP+"foo"+SEP+"bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"b", Arrays.asList(".."+SEP+"foo"+SEP+"bar"+SEP, ".."+SEP+"foo"+SEP+"bas"+SEP), Arrays.asList("bar", "bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"bar", Collections.singletonList(".."+SEP+"foo"+SEP+"bar"+SEP), Collections.singletonList("bar")),
+                Arguments.of(".."+SEP+"foo"+SEP+"bar"+SEP, Collections.singletonList(".."+SEP+"foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"bar"+SEP+"ba", Collections.singletonList(".."+SEP+"foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"bar"+SEP+"bas", Collections.singletonList(".."+SEP+"foo"+SEP+"bar"+SEP+"bas"), Collections.singletonList("bas")),
+                Arguments.of(".."+SEP+"foo"+SEP+"bar"+SEP+"baz", Collections.emptyList(), Collections.emptyList()),
+                Arguments.of(".."+SEP+"foo"+SEP+"bas", Collections.singletonList(".."+SEP+"foo"+SEP+"bas"+SEP), Collections.singletonList("bas")),
                 Arguments.of(
-                        "../foo/bas/",
-                        Arrays.asList("../foo/bas/bar", "../foo/bas/barDir/", "../foo/bas/baz"),
+                        ".."+SEP+"foo"+SEP+"bas"+SEP,
+                        Arrays.asList(".."+SEP+"foo"+SEP+"bas"+SEP+"bar", ".."+SEP+"foo"+SEP+"bas"+SEP+"barDir"+SEP, ".."+SEP+"foo"+SEP+"bas"+SEP+"baz"),
                         Arrays.asList("bar", "barDir", "baz")
                 ),
                 Arguments.of(
-                        "../foo/bas/barDir/",
-                        Arrays.asList("../foo/bas/barDir/subBar", "../foo/bas/barDir/subBaz"),
+                        ".."+SEP+"foo"+SEP+"bas"+SEP+"barDir"+SEP,
+                        Arrays.asList(".."+SEP+"foo"+SEP+"bas"+SEP+"barDir"+SEP+"subBar", ".."+SEP+"foo"+SEP+"bas"+SEP+"barDir"+SEP+"subBaz"),
                         Arrays.asList("subBar", "subBaz")
                 )
         );
