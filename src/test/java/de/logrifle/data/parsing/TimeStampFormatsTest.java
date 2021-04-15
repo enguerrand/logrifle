@@ -32,11 +32,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.logrifle.data.parsing.TimeStampFormats.FORMAT_ISO_DATE_TIME;
 import static de.logrifle.data.parsing.TimeStampFormats.FORMAT_MILLIS;
 import static de.logrifle.data.parsing.TimeStampFormats.FORMAT_SECONDS;
 
 class TimeStampFormatsTest {
-    private List<TimeStampFormat> candidates = Arrays.asList(FORMAT_MILLIS, FORMAT_SECONDS);
+    private List<TimeStampFormat> candidates = Arrays.asList(FORMAT_MILLIS, FORMAT_SECONDS, FORMAT_ISO_DATE_TIME);
     private TimeStampFormats formats = new TimeStampFormats(candidates);
 
     private static Stream<Arguments> getMatchingFormatArgs() {
@@ -45,7 +46,9 @@ class TimeStampFormatsTest {
                 argsOf("21:17:04 aliquid unde", FORMAT_SECONDS),
                 argsOf("21:17:04 21:17:04.123 aliquid unde", FORMAT_MILLIS, FORMAT_SECONDS),
                 argsOf("21:17 aliquid unde"),
-                argsOf("21:17:61 aliquid unde")
+                argsOf("21:17:61 aliquid unde"),
+                argsOf("2021-04-15T22:35:32.287 slei", FORMAT_ISO_DATE_TIME),
+                argsOf("2021-04-15T22:35:32.287234+2:00 slei", FORMAT_ISO_DATE_TIME)
         );
     }
 
