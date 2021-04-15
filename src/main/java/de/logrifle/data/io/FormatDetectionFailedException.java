@@ -1,5 +1,5 @@
 /*
- *  Copyright 2021, Enguerrand de Rochefort
+ *  Copyright 2020, Enguerrand de Rochefort
  *
  * This file is part of logrifle.
  *
@@ -18,14 +18,23 @@
  *
  */
 
-package de.logrifle.data.parsing;
+package de.logrifle.data.io;
 
-import de.logrifle.data.io.FormatDetectionFailedException;
+import java.io.IOException;
 
-public interface LineParserProvider {
-    /**
-     * SampleContent is provided in the form of a supplier so the actual work of providing the sample content
-     * can be skipped if the provider does not care because the time stamp format is statically configured
-     */
-    LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws FormatDetectionFailedException;
+public class FormatDetectionFailedException extends IOException {
+    public FormatDetectionFailedException() {
+    }
+
+    public FormatDetectionFailedException(String s) {
+        super(s);
+    }
+
+    public FormatDetectionFailedException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
+
+    public FormatDetectionFailedException(Throwable throwable) {
+        super(throwable);
+    }
 }

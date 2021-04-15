@@ -20,7 +20,7 @@
 
 package de.logrifle.data.parsing;
 
-import de.logrifle.data.io.UnexpectedFileFormatException;
+import de.logrifle.data.io.FormatDetectionFailedException;
 
 import java.util.Collection;
 
@@ -34,10 +34,10 @@ public class LineParserProviderDynamicImpl implements LineParserProvider {
     }
 
     @Override
-    public LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws UnexpectedFileFormatException {
+    public LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws FormatDetectionFailedException {
         Collection<String> sampleContent = sampleContentFetcher.getSampleContent(lineCount);
         TimeStampFormat autoDetectedFormat = timeStampFormats.autoDetectFormat(sampleContent)
-                .orElseThrow(() -> new UnexpectedFileFormatException("Failed to auto-detect time stamp format. Please specify it manually"));
+                .orElseThrow(() -> new FormatDetectionFailedException("Failed to auto-detect time stamp format. Please specify it manually"));
         return new LineParserTimestampedTextImpl(autoDetectedFormat);
     }
 }

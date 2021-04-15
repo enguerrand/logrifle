@@ -38,7 +38,7 @@ public abstract class FileOpener {
 
     public abstract Collection<DataView> open(Path path) throws IOException;
 
-    protected LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws UnexpectedFileFormatException {
+    protected LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws FormatDetectionFailedException {
         return lineParserProvider.getParserFor(sampleContentFetcher);
     }
 }
