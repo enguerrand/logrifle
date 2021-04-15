@@ -27,15 +27,10 @@ import de.logrifle.data.views.DataView;
 import de.logrifle.ui.RingIterator;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 class ZipFileOpenerImpl implements FileOpener {
     private final LineParser lineParser;
@@ -52,22 +47,13 @@ class ZipFileOpenerImpl implements FileOpener {
         this.logDispatcher = logDispatcher;
     }
 
-    @Override
     public Collection<DataView> open(Path path) throws IOException {
-        try {
-            ZipFile zip = new ZipFile(path.toFile());
-            List<DataView> views = new ArrayList<>();
-            for (Enumeration e = zip.entries(); e.hasMoreElements(); ) {
-                ZipEntry entry = (ZipEntry) e.nextElement();
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                InputStream inputStream = zip.getInputStream(entry);
-                views.add(new LogInputStreamReader(inputStream, lineParser, textColorIterator.next(), logDispatcher, entry.getName()));
-            }
-            return views;
-        } catch (ZipException e) {
-            throw new UnexpectedFileFormatException(e);
+        List<DataView> dataViews = new ArrayList<>();
+        for (ZipEntryLines zipEntryLines : ZipFiles.readAllLines(path)) {
+            dataViews.add(
+                    new StaticLogReader(zipEntryLines.getLines(), lineParser, textColorIterator.next(), logDispatcher, zipEntryLines.getEntryName())
+            );
         }
+        return dataViews;
     }
 }

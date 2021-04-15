@@ -27,24 +27,19 @@ import de.logrifle.data.parsing.LineParseResult;
 import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.views.DataView;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public class LogInputStreamReader extends DataView {
+public class StaticLogReader extends DataView {
     private final List<Line> lines = new ArrayList<>();
 
-    public LogInputStreamReader(InputStream inputStream, LineParser lineParser, TextColor fileColor, LogDispatcher logDispatcher, String title) throws IOException {
+    public StaticLogReader(Iterable<String> allLines, LineParser lineParser, TextColor fileColor, LogDispatcher logDispatcher, String title) throws IOException {
         super(title, fileColor, logDispatcher, title.length());
-        String raw;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         int currentLineIndex = 0;
-        while ((raw = reader.readLine()) != null) {
+        for (String raw : allLines) {
             LineParseResult parseResult = lineParser.parse(currentLineIndex++, raw, this);
             if (parseResult.isNewLine()) {
                 lines.add(
