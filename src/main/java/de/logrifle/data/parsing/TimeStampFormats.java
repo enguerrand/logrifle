@@ -36,6 +36,7 @@ public class TimeStampFormats {
     public static final String SECONDS_DATE_FORMAT = "HH:mm:ss";
     public static final TimeStampFormat FORMAT_MILLIS = new TimeStampFormat(DEFAULT_TIME_MATCH_REGEX, DEFAULT_DATE_FORMAT);
     public static final TimeStampFormat FORMAT_SECONDS = new TimeStampFormat(SECONDS_TIME_MATCH_REGEX, SECONDS_DATE_FORMAT);
+    public static final Integer DEFAULT_AUTO_DETECTION_LINE_COUNT = 100;
 
 
     public static final List<TimeStampFormat> DEFAULT_AUTO_DETECT_CANDIDATES = Arrays.asList(
@@ -62,7 +63,7 @@ public class TimeStampFormats {
                 .collect(Collectors.toList());
     }
 
-    public Optional<TimeStampFormat> autoDetectFormat(List<String> input) {
+    public Optional<TimeStampFormat> autoDetectFormat(Collection<String> input) {
         Map<TimeStampFormat, Long> matchCount = new HashMap<>();
         for (String line : input) {
             Collection<TimeStampFormat> matchingTimestampFormats = getMatchingTimestampFormats(line);

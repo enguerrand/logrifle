@@ -32,6 +32,8 @@ import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.io.MainFileOpenerImpl;
 import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProvider;
+import de.logrifle.data.parsing.LineParserProviderDynamicImpl;
 import de.logrifle.data.parsing.LineParserProviderStaticImpl;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
@@ -91,6 +93,14 @@ public class Main {
                 .addHelp(false)
                 .defaultFormatWidth(100)
                 .build();
+        parser.addArgument("-a", "--auto-detect-time-format")
+                .action(Arguments.storeTrue())
+                .help("Attempt to detect the timestamp regex and format automatically using the file's first "
+                + TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT + " lines");
+        parser.addArgument("-A", "--auto-detect-time-format-line-count")
+                .type(Integer.class)
+                .help("Attempt to detect the timestamp regex and format automatically using the file's first " +
+                        "AUTO_DETECT_TIME_FORMAT_LINE_COUNT lines. (Overrides --auto-detect-time-format)");
         parser.addArgument("-h", "--help")
                 .action(Arguments.storeTrue())
                 .help("Print this help and exit");
@@ -202,8 +212,18 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
+        int autoDetectionLineCount = getIntegerOption(defaults, parserResult, "auto_detect_time_format_line_count", 0);
+        if (autoDetectionLineCount == 0 && getBooleanOption(defaults, parserResult, "auto_detect_time_format", false)) {
+            autoDetectionLineCount = TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT;
+        }
+        LineParserProvider lineParserProvider;
+        if (autoDetectionLineCount > 0) {
+            lineParserProvider = new LineParserProviderDynamicImpl(autoDetectionLineCount, new TimeStampFormats());
+        } else {
+            lineParserProvider = new LineParserProviderStaticImpl(lineParser);
+        }
         FileOpener fileOpener = new MainFileOpenerImpl(
-                new LineParserProviderStaticImpl(lineParser),
+                lineParserProvider,
                 textColorIterator,
                 workerPool,
                 logDispatcher,

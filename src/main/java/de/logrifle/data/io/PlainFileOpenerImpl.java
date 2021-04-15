@@ -54,7 +54,7 @@ class PlainFileOpenerImpl extends FileOpener {
     }
 
     @Override
-    public Collection<DataView> open(Path path) {
+    public Collection<DataView> open(Path path) throws UnexpectedFileFormatException {
         LineParser lineParser = getParserFor((desiredLinesCount) -> {
             try {
                 return Files.lines(path, charset)

@@ -20,10 +20,12 @@
 
 package de.logrifle.data.parsing;
 
+import de.logrifle.data.io.UnexpectedFileFormatException;
+
 public interface LineParserProvider {
     /**
      * SampleContent is provided in the form of a supplier so the actual work of providing the sample content
      * can be skipped if the provider does not care because the time stamp format is statically configured
      */
-    LineParser getParserFor(SampleContentFetcher sampleContentFetcher);
+    LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws UnexpectedFileFormatException;
 }

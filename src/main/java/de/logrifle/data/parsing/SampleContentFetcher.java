@@ -23,5 +23,5 @@ package de.logrifle.data.parsing;
 import java.util.Collection;
 
 public interface SampleContentFetcher {
-    Collection<String> getSampleContent(long desiredLinesCount);
+    Collection<String> getSampleContent(int desiredLinesCount);
 }
