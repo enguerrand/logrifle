@@ -23,35 +23,45 @@ package de.logrifle.data.io;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProvider;
 import de.logrifle.data.views.DataView;
 import de.logrifle.ui.RingIterator;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
-class ZipFileOpenerImpl implements FileOpener {
-    private final LineParser lineParser;
+class ZipFileOpenerImpl extends FileOpener {
     private final RingIterator<TextColor> textColorIterator;
     private final LogDispatcher logDispatcher;
+    private final Charset charset;
 
     ZipFileOpenerImpl(
-            LineParser lineParser,
+            LineParserProvider lineParserProvider,
             RingIterator<TextColor> textColorIterator,
-            LogDispatcher logDispatcher
+            LogDispatcher logDispatcher,
+            Charset charset
     ) {
-        this.lineParser = lineParser;
+        super(lineParserProvider);
         this.textColorIterator = textColorIterator;
         this.logDispatcher = logDispatcher;
+        this.charset = charset;
     }
 
     public Collection<DataView> open(Path path) throws IOException {
         List<DataView> dataViews = new ArrayList<>();
-        for (ZipEntryLines zipEntryLines : ZipFiles.readAllLines(path)) {
+        for (ZipEntryLines zipEntryLines : ZipFiles.readAllLines(path, charset)) {
+            List<String> lines = zipEntryLines.getLines();
+            LineParser lineParser = getParserFor((desiredLinesCount) -> lines.stream()
+                    .limit(desiredLinesCount)
+                    .collect(Collectors.toList()));
+
             dataViews.add(
-                    new StaticLogReader(zipEntryLines.getLines(), lineParser, textColorIterator.next(), logDispatcher, zipEntryLines.getEntryName())
+                    new StaticLogReader(lines, lineParser, textColorIterator.next(), logDispatcher, zipEntryLines.getEntryName())
             );
         }
         return dataViews;

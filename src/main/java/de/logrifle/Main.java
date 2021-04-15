@@ -32,6 +32,7 @@ import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.io.MainFileOpenerImpl;
 import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProviderStaticImpl;
 import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
 import de.logrifle.data.parsing.TimeStampFormat;
 import de.logrifle.data.parsing.TimeStampFormats;
@@ -201,7 +202,14 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
-        FileOpener fileOpener = new MainFileOpenerImpl(lineParser, textColorIterator, workerPool, logDispatcher, factory, charset);
+        FileOpener fileOpener = new MainFileOpenerImpl(
+                new LineParserProviderStaticImpl(lineParser),
+                textColorIterator,
+                workerPool,
+                logDispatcher,
+                factory,
+                charset
+        );
 
         for (Path logfile : logfiles) {
             try {

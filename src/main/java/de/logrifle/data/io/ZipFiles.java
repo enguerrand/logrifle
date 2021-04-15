@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,12 +36,12 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 public class ZipFiles {
-    public static List<ZipEntryLines> readAllLines(Path path) throws IOException {
+    public static List<ZipEntryLines> readAllLines(Path path, Charset charset) throws IOException {
         List<ZipEntryLines> result = new ArrayList<>();
         for (InputStreamAndName inputStreamAndName : open(path)) {
             try {
                 result.add(
-                        readAllLines(inputStreamAndName)
+                        readAllLines(inputStreamAndName, charset)
                 );
             } finally {
                 inputStreamAndName.getInputStream().close();
@@ -67,10 +68,10 @@ public class ZipFiles {
         }
     }
 
-    public static ZipEntryLines readAllLines(InputStreamAndName inputStreamAndName) throws IOException {
+    public static ZipEntryLines readAllLines(InputStreamAndName inputStreamAndName, Charset charset) throws IOException {
         List<String> lines = new LinkedList<>();
         String raw;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStreamAndName.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStreamAndName.getInputStream(), charset));
         while ((raw = reader.readLine()) != null) {
             lines.add(raw);
         }

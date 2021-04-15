@@ -24,25 +24,28 @@ import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactory;
 import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProvider;
 import de.logrifle.data.views.DataView;
 import de.logrifle.ui.RingIterator;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
-class PlainFileOpenerImpl implements FileOpener {
-    private final LineParser lineParser;
+class PlainFileOpenerImpl extends FileOpener {
     private final RingIterator<TextColor> textColorIterator;
     private final ExecutorService workerPool;
     private final LogDispatcher logDispatcher;
     private final RateLimiterFactory factory;
     private final Charset charset;
 
-    PlainFileOpenerImpl(LineParser lineParser, RingIterator<TextColor> textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
-        this.lineParser = lineParser;
+    PlainFileOpenerImpl(LineParserProvider lineParserProvider, RingIterator<TextColor> textColorIterator, ExecutorService workerPool, LogDispatcher logDispatcher, RateLimiterFactory factory, Charset charset) {
+        super(lineParserProvider);
         this.textColorIterator = textColorIterator;
         this.workerPool = workerPool;
         this.logDispatcher = logDispatcher;
@@ -52,6 +55,17 @@ class PlainFileOpenerImpl implements FileOpener {
 
     @Override
     public Collection<DataView> open(Path path) {
+        LineParser lineParser = getParserFor((desiredLinesCount) -> {
+            try {
+                return Files.lines(path, charset)
+                        .limit(desiredLinesCount)
+                        .collect(Collectors.toList())
+                ;
+            } catch (IOException e) {
+                return Collections.emptyList();
+            }
+        });
+
         return Collections.singleton(new LogReader(lineParser, path, textColorIterator.next(), workerPool, logDispatcher, factory, charset));
     }
 }

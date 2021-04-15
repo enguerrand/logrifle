@@ -20,12 +20,25 @@
 
 package de.logrifle.data.io;
 
+import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProvider;
+import de.logrifle.data.parsing.SampleContentFetcher;
 import de.logrifle.data.views.DataView;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 
-public interface FileOpener {
-    Collection<DataView> open(Path path) throws IOException;
+public abstract class FileOpener {
+    private final LineParserProvider lineParserProvider;
+
+    protected FileOpener(LineParserProvider lineParserProvider) {
+        this.lineParserProvider = lineParserProvider;
+    }
+
+    public abstract Collection<DataView> open(Path path) throws IOException;
+
+    protected LineParser getParserFor(SampleContentFetcher sampleContentFetcher) {
+        return lineParserProvider.getParserFor(sampleContentFetcher);
+    }
 }

@@ -23,7 +23,7 @@ package de.logrifle.data.io;
 import com.googlecode.lanterna.TextColor;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.base.RateLimiterFactory;
-import de.logrifle.data.parsing.LineParser;
+import de.logrifle.data.parsing.LineParserProvider;
 import de.logrifle.data.views.DataView;
 import de.logrifle.ui.RingIterator;
 
@@ -37,25 +37,28 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
-public class MainFileOpenerImpl implements FileOpener {
+public class MainFileOpenerImpl extends FileOpener {
     private final Map<Pattern, FileOpener> fileOpeners = new LinkedHashMap<>();
     private final Charset charset;
 
     public MainFileOpenerImpl(
-            LineParser lineParser,
+            LineParserProvider lineParserProvider,
             RingIterator<TextColor> textColorIterator,
             ExecutorService workerPool,
             LogDispatcher logDispatcher,
             RateLimiterFactory factory,
-            Charset charset) {
+            Charset charset
+    ) {
+        super(lineParserProvider);
         this.charset = charset;
         fileOpeners.put(Pattern.compile(".*\\.zip"), new ZipFileOpenerImpl(
-                lineParser,
+                lineParserProvider,
                 textColorIterator,
-                logDispatcher
+                logDispatcher,
+                this.charset
         ));
         fileOpeners.put(Pattern.compile(".*"), new PlainFileOpenerImpl(
-                lineParser,
+                lineParserProvider,
                 textColorIterator,
                 workerPool,
                 logDispatcher,
