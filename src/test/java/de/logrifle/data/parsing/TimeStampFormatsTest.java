@@ -40,18 +40,6 @@ class TimeStampFormatsTest {
     private List<TimeStampFormat> candidates = Arrays.asList(FORMAT_MILLIS, FORMAT_SECONDS, FORMAT_ISO_DATE_TIME);
     private TimeStampFormats formats = new TimeStampFormats(candidates);
 
-    private static Stream<Arguments> getMatchingFormatArgs() {
-        return Stream.of(
-                argsOf("21:17:04.714 aliquid unde", FORMAT_SECONDS, FORMAT_MILLIS),
-                argsOf("21:17:04 aliquid unde", FORMAT_SECONDS),
-                argsOf("21:17:04 21:17:04.123 aliquid unde", FORMAT_MILLIS, FORMAT_SECONDS),
-                argsOf("21:17 aliquid unde"),
-                argsOf("21:17:61 aliquid unde"),
-                argsOf("2021-04-15T22:35:32.287 slei", FORMAT_ISO_DATE_TIME),
-                argsOf("2021-04-15T22:35:32.287234+2:00 slei", FORMAT_ISO_DATE_TIME)
-        );
-    }
-
     private static Arguments argsOf(String input, TimeStampFormat... formats) {
         return Arguments.of(input, Arrays.asList(formats));
     }
@@ -64,14 +52,16 @@ class TimeStampFormatsTest {
         Assertions.assertTrue(matches.containsAll(expectedMatches));
     }
 
-
     private static Stream<Arguments> getMatchingFormatsArgs() {
         return Stream.of(
                 argsOf("21:17:04.714 aliquid unde", FORMAT_SECONDS, FORMAT_MILLIS),
                 argsOf("21:17:04 aliquid unde", FORMAT_SECONDS),
                 argsOf("21:17:04 21:17:04.123 aliquid unde", FORMAT_MILLIS, FORMAT_SECONDS),
+                argsOf("21:17:61 aliquid unde"),
                 argsOf("21:17 aliquid unde"),
-                argsOf("21:17:61 aliquid unde")
+                argsOf("2021-04-15T22:35:32.287 slei", FORMAT_ISO_DATE_TIME),
+                argsOf("2021-04-15T22:35:32.287234+2:00 slei", FORMAT_ISO_DATE_TIME),
+                argsOf("2021-04-17T21:00:04.303872+02:00 sle", FORMAT_ISO_DATE_TIME)
         );
     }
 
