@@ -154,7 +154,7 @@ class LogReaderTest {
     void  logReaderShouldMaintainIncomingOrder() throws IOException, InterruptedException {
         LogDispatcher dispatcher = new DirectDispatcher();
         LineParser parser = new LineParserTimestampedTextImpl(
-                new TimeStampFormat(TimeStampFormats.DEFAULT_TIME_MATCH_REGEX, TimeStampFormats.DEFAULT_DATE_FORMAT)
+                new TimeStampFormat(TimeStampFormats.MILLIS_TIME_MATCH_REGEX, TimeStampFormats.MILLIS_DATE_FORMAT)
         );
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Path logfile = tempDir.resolve("log1.log");

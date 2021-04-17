@@ -30,13 +30,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TimeStampFormats {
-    public static final String DEFAULT_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\b.*";
-    public static final String DEFAULT_DATE_FORMAT = "HH:mm:ss.SSS";
+    public static final String MILLIS_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\b.*";
+    public static final String MILLIS_DATE_FORMAT = "HH:mm:ss.SSS";
     public static final String SECONDS_TIME_MATCH_REGEX = ".*\\b(\\d{2}:\\d{2}:\\d{2})\\b.*";
     public static final String SECONDS_DATE_FORMAT = "HH:mm:ss";
     public static final String ISO_DATE_TIME_MATCH_REGEX = ".*([2-9]\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*";
     public static final String ISO_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    public static final TimeStampFormat FORMAT_MILLIS = new TimeStampFormat(DEFAULT_TIME_MATCH_REGEX, DEFAULT_DATE_FORMAT);
+    public static final TimeStampFormat FORMAT_MILLIS = new TimeStampFormat(MILLIS_TIME_MATCH_REGEX, MILLIS_DATE_FORMAT);
     public static final TimeStampFormat FORMAT_SECONDS = new TimeStampFormat(SECONDS_TIME_MATCH_REGEX, SECONDS_DATE_FORMAT);
     public static final TimeStampFormat FORMAT_ISO_DATE_TIME = new TimeStampFormat(ISO_DATE_TIME_MATCH_REGEX, ISO_DATE_TIME_FORMAT);
     public static final Integer DEFAULT_AUTO_DETECTION_LINE_COUNT = 100;

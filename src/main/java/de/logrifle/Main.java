@@ -58,6 +58,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -93,14 +94,10 @@ public class Main {
                 .addHelp(false)
                 .defaultFormatWidth(100)
                 .build();
-        parser.addArgument("-a", "--auto-detect-time-format")
-                .action(Arguments.storeTrue())
-                .help("Attempt to detect the timestamp regex and format automatically using the file's first "
-                + TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT + " lines");
-        parser.addArgument("-A", "--auto-detect-time-format-line-count")
+        parser.addArgument("-a", "--auto-detection-line-count")
                 .type(Integer.class)
-                .help("Attempt to detect the timestamp regex and format automatically using the file's first " +
-                        "AUTO_DETECT_TIME_FORMAT_LINE_COUNT lines. (Overrides --auto-detect-time-format)");
+                .help("Attempt to detect the timestamp regex and format automatically using the file's first "
+                        + "AUTO_DETECTION_LINE_COUNT lines. (Defaults to "+TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT+")");
         parser.addArgument("-h", "--help")
                 .action(Arguments.storeTrue())
                 .help("Print this help and exit");
@@ -119,15 +116,21 @@ public class Main {
         parser.addArgument("-f", "--follow")
                 .type(Boolean.class)
                 .help("Initially follow tail? Defaults to false");
+        parser.addArgument("--milliseconds")
+                .action(Arguments.storeTrue())
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.MILLIS_TIME_MATCH_REGEX + "\" --timestamp-format \""+ TimeStampFormats.MILLIS_DATE_FORMAT +"\". " +
+                        "When specified, options --seconds and --auto-detection-line-count are ignored.");
         parser.addArgument("-r", "--timestamp-regex")
                 .type(String.class)
-                .help("Regular expression to find timestamps in log lines. Defaults to " + TimeStampFormats.DEFAULT_TIME_MATCH_REGEX);
-        parser.addArgument("-t", "--timestamp-format")
-                .type(String.class)
-                .help("Format to parse timestamps. Defaults to " + TimeStampFormats.DEFAULT_DATE_FORMAT);
+                .help("Regular expression to find timestamps in log lines. Also requires --timestamp-format. " +
+                        "When specified, --auto-detection-line-count, --seconds and --milliseconds are ignored.");
         parser.addArgument("--seconds")
                 .action(Arguments.storeTrue())
-                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+ TimeStampFormats.SECONDS_DATE_FORMAT+"\"");
+                .help("Shorthand for --timestamp-regex \"" + TimeStampFormats.SECONDS_TIME_MATCH_REGEX + "\" --timestamp-format \""+ TimeStampFormats.SECONDS_DATE_FORMAT+"\". " +
+                        "When specified, option --auto-detection-line-count is ignored.");
+        parser.addArgument("-t", "--timestamp-format")
+                .type(String.class)
+                .help("Format to parse timestamps. Also requires --timestamp-regex. When specified, --auto-detection-line-count, --seconds and --milliseconds are ignored.");
         parser.addArgument("-v", "--version")
                 .action(Arguments.storeTrue())
                 .help("Print version info and exit");
@@ -155,8 +158,7 @@ public class Main {
             try {
                 charset = Charset.forName(charsetName);
             } catch (RuntimeException e) {
-                System.err.println("Error: Unknown charset: "+charsetName);
-                System.exit(-1);
+                errorOut("Error: Unknown charset: "+charsetName);
             }
         }
         List<Path> logfiles = parserResult.getList("logfile").stream()
@@ -173,8 +175,7 @@ public class Main {
             try {
                 commands.addAll(Files.readAllLines(Paths.get(commandsFile)));
             } catch (IOException e) {
-                System.err.println("Commands file "+ commandsFile + " could not be opened. Cause: " + e.toString());
-                System.exit(-1);
+                errorOut("Commands file "+ commandsFile + " could not be opened. Cause: " + e);
             }
         }
 
@@ -187,17 +188,21 @@ public class Main {
         ScheduledExecutorService timerPool = Executors.newScheduledThreadPool(10);
 
         LogDispatcher logDispatcher = new LogDispatcher();
+        boolean timestampsMillisFormat = getBooleanOption(defaults, parserResult, "milliseconds", false);
         boolean timestampsSecondsFormat = getBooleanOption(defaults, parserResult, "seconds", false);
-        String timestampRegex;
-        String timestampFormat;
-        if (timestampsSecondsFormat) {
-            timestampRegex = TimeStampFormats.SECONDS_TIME_MATCH_REGEX;
-            timestampFormat = TimeStampFormats.SECONDS_DATE_FORMAT;
-        } else {
-            timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
-            timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        @Nullable String timestampRegex = getOption(defaults, parserResult, "timestamp_regex");
+        @Nullable String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
+        if (timestampFormat == null && timestampRegex != null || timestampFormat != null && timestampRegex == null) {
+            errorOut("if either timestamp_regex or timestamp_format are supplied, both of these options must be specified.");
+        } else if (timestampFormat == null) {
+            if (timestampsMillisFormat) {
+                timestampRegex = TimeStampFormats.MILLIS_TIME_MATCH_REGEX;
+                timestampFormat = TimeStampFormats.MILLIS_DATE_FORMAT;
+            } else if (timestampsSecondsFormat){
+                timestampRegex = TimeStampFormats.SECONDS_TIME_MATCH_REGEX;
+                timestampFormat = TimeStampFormats.SECONDS_DATE_FORMAT;
+            }
         }
-        LineParser lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
         List<DataView> logReaders = new ArrayList<>();
         RingIterator<TextColor> textColorIterator = new RingIterator<>(Arrays.asList(
                 TextColor.ANSI.BLUE,
@@ -212,16 +217,16 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
-        int autoDetectionLineCount = getIntegerOption(defaults, parserResult, "auto_detect_time_format_line_count", 0);
-        if (autoDetectionLineCount == 0 && getBooleanOption(defaults, parserResult, "auto_detect_time_format", false)) {
-            autoDetectionLineCount = TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT;
-        }
+        LineParser lineParser;
         LineParserProvider lineParserProvider;
-        if (autoDetectionLineCount > 0) {
-            lineParserProvider = new LineParserProviderDynamicImpl(autoDetectionLineCount, new TimeStampFormats());
-        } else {
+        if (timestampRegex != null && timestampFormat != null) {
+            lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
             lineParserProvider = new LineParserProviderStaticImpl(lineParser);
+        } else {
+            int autoDetectionLineCount = getIntegerOption(defaults, parserResult, "auto_detection_line_count", TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT);
+            lineParserProvider = new LineParserProviderDynamicImpl(autoDetectionLineCount, new TimeStampFormats());
         }
+
         FileOpener fileOpener = new MainFileOpenerImpl(
                 lineParserProvider,
                 textColorIterator,
@@ -242,8 +247,7 @@ public class Main {
                     );
                 }
             } catch (IOException e) {
-                System.err.println("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e.toString());
-                System.exit(-1);
+                errorOut("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e);
             }
         }
         LineLabelDisplayMode lineLabelDisplayMode;
@@ -359,5 +363,10 @@ public class Main {
             return fallBack;
         }
         return Double.parseDouble(defaultValue);
+    }
+
+    private static void errorOut(String message) {
+        System.err.println(message);
+        System.exit(1);
     }
 }

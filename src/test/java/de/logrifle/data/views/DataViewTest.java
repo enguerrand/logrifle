@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class DataViewTest {
 
     private final LineParser parser = new LineParserTimestampedTextImpl(
-            new TimeStampFormat(TimeStampFormats.DEFAULT_TIME_MATCH_REGEX, TimeStampFormats.DEFAULT_DATE_FORMAT)
+            new TimeStampFormat(TimeStampFormats.MILLIS_TIME_MATCH_REGEX, TimeStampFormats.MILLIS_DATE_FORMAT)
     );
 
     private final LogDispatcher dispatcher = new DirectDispatcher();

@@ -24,16 +24,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_TIME_MATCH_REGEX;
-import static de.logrifle.data.parsing.TimeStampFormats.DEFAULT_DATE_FORMAT;
+import static de.logrifle.data.parsing.TimeStampFormats.MILLIS_TIME_MATCH_REGEX;
+import static de.logrifle.data.parsing.TimeStampFormats.MILLIS_DATE_FORMAT;
 
 public class TimeStampFormat {
     private final String regex;
     private final String format;
 
     public TimeStampFormat(@Nullable String regex, @Nullable String format) {
-        this.regex = regex != null ? regex : DEFAULT_TIME_MATCH_REGEX;
-        this.format = format != null ? format : DEFAULT_DATE_FORMAT;
+        this.regex = regex != null ? regex : MILLIS_TIME_MATCH_REGEX;
+        this.format = format != null ? format : MILLIS_DATE_FORMAT;
     }
 
     public String getRegex() {
