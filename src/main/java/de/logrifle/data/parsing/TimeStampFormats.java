@@ -22,6 +22,7 @@ package de.logrifle.data.parsing;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -68,11 +69,11 @@ public class TimeStampFormats {
     }
 
     public Optional<TimeStampFormat> autoDetectFormat(Collection<String> input) {
-        Map<TimeStampFormat, Long> matchCount = new HashMap<>();
+        Map<TimeStampFormat, Long> matchCounts = new HashMap<>();
         for (String line : input) {
             Collection<TimeStampFormat> matchingTimestampFormats = getMatchingTimestampFormats(line);
             for (TimeStampFormat matchingTimestampFormat : matchingTimestampFormats) {
-                matchCount.compute(matchingTimestampFormat, (key, prevValue) -> {
+                matchCounts.compute(matchingTimestampFormat, (key, prevValue) -> {
                     if (prevValue == null) {
                         return 1L;
                     } else {
@@ -82,20 +83,29 @@ public class TimeStampFormats {
             }
         }
 
-        List<TimeStampFormat> matchingForAtLeastHalfOfInput = matchCount.entrySet()
-                .stream()
-                .filter(entry -> {
-                    Long count = entry.getValue();
-                    return count >= input.size() * 0.5;
-                })
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        double matchThreshold = 0.8;
+        List<TimeStampFormat> aboveMatchThreshold = Collections.emptyList();
+        while (aboveMatchThreshold.isEmpty() && matchThreshold > 0.2) {
+            matchThreshold -= 0.1;
+            aboveMatchThreshold = findMatchesForThreshold(input, matchCounts, matchThreshold);
+        }
         List<TimeStampFormat> formats = formatCandidates.stream()
                 .map(TimeStampFormatTester::getFormat)
                 .collect(Collectors.toList());
-        return matchingForAtLeastHalfOfInput.stream()
+        return aboveMatchThreshold.stream()
                 .min(Comparator.comparingInt(formats::indexOf))
         ;
+    }
+
+    private List<TimeStampFormat> findMatchesForThreshold(Collection<String> input, Map<TimeStampFormat, Long> matchCounts, double matchThreshold) {
+        return matchCounts.entrySet()
+                .stream()
+                .filter(entry -> {
+                    Long count = entry.getValue();
+                    return count >= input.size() * matchThreshold;
+                })
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     private static final class TimeStampFormatTester {

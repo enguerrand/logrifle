@@ -37,7 +37,7 @@ public class LineParserProviderDynamicImpl implements LineParserProvider {
     public LineParser getParserFor(SampleContentFetcher sampleContentFetcher) throws FormatDetectionFailedException {
         Collection<String> sampleContent = sampleContentFetcher.getSampleContent(lineCount);
         TimeStampFormat autoDetectedFormat = timeStampFormats.autoDetectFormat(sampleContent)
-                .orElseThrow(() -> new FormatDetectionFailedException("Failed to auto-detect time stamp format. Please specify it manually"));
+                .orElseThrow(() -> new FormatDetectionFailedException("Failed to auto-detect time stamp format. Please specify it manually or increase the number of lines evaluated for auto-detection."));
         return new LineParserTimestampedTextImpl(autoDetectedFormat);
     }
 }

@@ -74,14 +74,12 @@ class TimeStampFormatsTest {
 
     private static Stream<Arguments> getAutoDetectionArgs() {
         return Stream.of(
-                Arguments.of(Arrays.asList(" 21:17:04 a", " 21:17:04.124 a"), FORMAT_MILLIS),
-                Arguments.of(Arrays.asList(" 21:17:04.124 a", " 21:17:04 a"), FORMAT_MILLIS),
+                Arguments.of(Arrays.asList(" 21:17:04.124 a", " 21:17:04.124 a", " 21:17:04.124 a", " 21:17:04.124 a", " 21:17:04.124 a", " 21:17:04.124 a", " 21:17:04 a", " 21:17:04.124 a", " 21:17:04.124 a"), FORMAT_MILLIS),
                 Arguments.of(Arrays.asList(" 21:17:04 a", " 21:17:04.124 a", " 21:17:04 a"), FORMAT_SECONDS),
-                Arguments.of(Arrays.asList(" 21:17:04 a", " 21:17:04.124 a", " 21:17:04 a", " 22:17:04.124 a"), FORMAT_MILLIS),
                 Arguments.of(Arrays.asList(" 21:17:04 a", " 21:17:04.12 a"), FORMAT_SECONDS),
                 Arguments.of(Arrays.asList(" 21:17:04 a", " 21:17:04 a"), FORMAT_SECONDS),
                 Arguments.of(Arrays.asList(" foo a", " 21:17:04 a"), FORMAT_SECONDS),
-                Arguments.of(Arrays.asList(" 21:17:04.124 a", " wups a"), FORMAT_MILLIS),
+                Arguments.of(Arrays.asList(" wups C", " 21:17:04.124 a", " wups a", " wups b"), FORMAT_MILLIS),
                 Arguments.of(Arrays.asList(" blajh a", " blubb a"), null)
         );
     }
