@@ -3,7 +3,7 @@ Lists of 14 third-party dependencies.
      (Eclipse Public License - v 1.0) (GNU Lesser General Public License) Logback Classic Module (ch.qos.logback:logback-classic:1.2.3 - http://logback.qos.ch/logback-classic)
      (Eclipse Public License - v 1.0) (GNU Lesser General Public License) Logback Core Module (ch.qos.logback:logback-core:1.2.3 - http://logback.qos.ch/logback-core)
      (GNU Lesser General Public License) Lanterna (com.googlecode.lanterna:lanterna:3.0.1 - https://github.com/mabe02/lanterna)
-     (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.6 - http://commons.apache.org/proper/commons-io/)
+     (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.7 - https://commons.apache.org/proper/commons-io/)
      (MIT) argparse4j (net.sourceforge.argparse4j:argparse4j:0.8.1 - http://argparse4j.github.io)
      (The Apache License, Version 2.0) org.apiguardian:apiguardian-api (org.apiguardian:apiguardian-api:1.1.0 - https://github.com/apiguardian-team/apiguardian)
      (The Apache Software License, Version 2.0) JetBrains Java Annotations (org.jetbrains:annotations:16.0.2 - https://github.com/JetBrains/java-annotations)
