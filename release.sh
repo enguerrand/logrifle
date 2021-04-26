@@ -7,8 +7,7 @@ EOF
 }
 function abort(){
     echo "Error: $@" >&2
-    print_usage
-    exit -1
+    exit 1
 }
 
 function ask_y(){
@@ -67,6 +66,10 @@ if [ "x$1" == "x-h" ] || [ "x$1" == "x--help" ];then
 fi
 
 cd $(dirname $0)
+
+if [ $(git status --porcelain | wc -l) -ne 0 ]; then
+    abort "You have uncommitted changes!"
+fi
 
 dst="./release"
 version=$(tail -n +2 pom.xml | grep version | head -n 1 | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/g')
