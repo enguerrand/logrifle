@@ -168,6 +168,9 @@ public abstract class DataView implements DataViewListener, LineSource {
 
     public int indexOfClosestTo(int indexToHit, int startSearchAt) {
         List<Line> allLines = getAllLines();
+        if (allLines.isEmpty()) {
+            return -1;
+        }
         Line from = allLines.get(startSearchAt);
         if (indexToHit == from.getIndex()) {
             return startSearchAt;
