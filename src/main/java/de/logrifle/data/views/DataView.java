@@ -127,6 +127,12 @@ public abstract class DataView implements DataViewListener, LineSource {
         }
     }
 
+    protected void fireLineVisibilityInvalidatedLater(Collection<Line> invalidatedLines) {
+        logDispatcher.execute(() -> {
+            fireLineVisibilityInvalidated(invalidatedLines);
+        });
+    }
+
     protected void fireLineVisibilityInvalidated(Collection<Line> invalidatedLines) {
         logDispatcher.checkOnDispatchThreadOrThrow();
         for (DataViewListener listener : this.listeners) {

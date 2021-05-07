@@ -153,9 +153,6 @@ public class BookmarksTest {
         bookmarks.toggle(LINES.get(2));
         bookmarks.clear();
         Assertions.assertEquals(0, bookmarks.count());
-        Assertions.assertEquals(
-                Arrays.asList(new Bookmark(LINES.get(2)), new Bookmark(LINES.get(3))),
-                removedBookmarks
-        );
+        Assertions.assertTrue(removedBookmarks.containsAll(Arrays.asList(new Bookmark(LINES.get(2)), new Bookmark(LINES.get(3)))));
     }
 }

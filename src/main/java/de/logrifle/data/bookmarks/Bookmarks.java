@@ -37,12 +37,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Bookmarks {
-    private final SortedSet<Bookmark> bookmarks = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
+    private final Set<Bookmark> bookmarks = ConcurrentHashMap.newKeySet();
     private final Set<BookmarksListener> listeners = new LinkedHashSet<>();
     private final LogDispatcher dispatcher;
     private final AtomicReference<Boolean> forceBookmarksVisible = new AtomicReference<>(false);
@@ -81,15 +82,17 @@ public class Bookmarks {
         return forceBookmarksVisible.get() && isLineBookmarked(line);
     }
 
-    public Set<Bookmark> getAll() {
-        return Collections.unmodifiableSortedSet(bookmarks);
+    public SortedSet<Bookmark> getAll() {
+        SortedSet<Bookmark> sorted = new TreeSet<>(Comparator.comparing(b -> b.getLine().getIndex()));
+        sorted.addAll(bookmarks);
+        return sorted;
     }
 
     public void removeBookmarksOf(LineSource lineSource) {
         List<Bookmark> toBeRemoved = this.bookmarks.stream()
                 .filter(l -> l.getLine().belongsTo(lineSource))
                 .collect(Collectors.toList());
-        if (toBeRemoved.isEmpty()){
+        if (toBeRemoved.isEmpty()) {
             return;
         }
         this.bookmarks.removeAll(toBeRemoved);
@@ -110,30 +113,32 @@ public class Bookmarks {
     }
 
     public Optional<Bookmark> findNext(int fromLineIndex) {
-        if (bookmarks.isEmpty()) {
+        SortedSet<Bookmark> sorted = getAll();
+        if (sorted.isEmpty()) {
             return Optional.empty();
         }
-        for (Bookmark bookmark : bookmarks) {
+        for (Bookmark bookmark : sorted) {
             if (bookmark.getLine().getIndex() > fromLineIndex) {
                 return Optional.of(bookmark);
             }
         }
-        return Optional.of(bookmarks.first());
+        return Optional.of(sorted.first());
     }
 
     public Optional<Bookmark> findPrevious(int fromLineIndex) {
-        if (bookmarks.isEmpty()) {
+        SortedSet<Bookmark> sorted = getAll();
+        if (sorted.isEmpty()) {
             return Optional.empty();
         }
-        ArrayList<Bookmark> bookmarksList = new ArrayList<>(this.bookmarks);
-        for (int i = bookmarksList.size()-1; i >= 0; i--) {
+        ArrayList<Bookmark> bookmarksList = new ArrayList<>(sorted);
+        for (int i = bookmarksList.size() - 1; i >= 0; i--) {
             Bookmark bookmark = bookmarksList.get(i);
             if (bookmark.getLine().getIndex() < fromLineIndex) {
                 return Optional.of(bookmark);
             }
 
         }
-        return Optional.of(this.bookmarks.last());
+        return Optional.of(sorted.last());
     }
 
     public Collection<String> export(LineLabelDisplayMode lineLabelDisplayMode) {

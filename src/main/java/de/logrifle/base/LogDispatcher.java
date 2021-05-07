@@ -22,23 +22,21 @@ package de.logrifle.base;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class LogDispatcher implements Executor {
     private final Executor singleThreadedExecutor;
-    private final ThreadLocal<Boolean> onThread = new ThreadLocal<>();
+    public static final String THREAD_NAME = "LDP";
 
     public LogDispatcher() {
-        singleThreadedExecutor = Executors.newSingleThreadExecutor();
-        singleThreadedExecutor.execute(() -> {
-            onThread.set(true);
-        });
+        singleThreadedExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, THREAD_NAME));
     }
 
     public void checkOnDispatchThreadOrThrow() {
         if (!isOnThread()) {
-            throw new IllegalStateException("Not on dispatch thread!");
+            throw new IllegalStateException("Not on dispatch thread! Current Thread: " + Thread.currentThread().getName() + " - expected: " + THREAD_NAME);
         }
     }
 
@@ -52,6 +50,6 @@ public class LogDispatcher implements Executor {
     }
 
     public boolean isOnThread() {
-        return onThread.get() != null;
+        return Objects.equals(THREAD_NAME, Thread.currentThread().getName());
     }
 }

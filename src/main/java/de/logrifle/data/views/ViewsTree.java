@@ -167,7 +167,7 @@ public class ViewsTree {
     }
 
     public void fireLinesVisiblityInvalidated(Collection<Line> invalidatedLines) {
-        rootNode.getDataView().fireLineVisibilityInvalidated(invalidatedLines);
+        rootNode.getDataView().fireLineVisibilityInvalidatedLater(invalidatedLines);
     }
 
     public BookmarksListener buildBookmarksListener() {
