@@ -143,7 +143,7 @@ public class Bookmarks {
 
     public Collection<String> export(LineLabelDisplayMode lineLabelDisplayMode) {
         return Lines.export(
-                bookmarks.stream()
+                getAll().stream()
                         .map(Bookmark::getLine)
                         .collect(Collectors.toList()),
                 lineLabelDisplayMode

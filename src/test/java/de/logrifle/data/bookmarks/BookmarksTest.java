@@ -24,6 +24,7 @@ import de.logrifle.base.DirectDispatcher;
 import de.logrifle.base.LogDispatcher;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.TestLinesFactory;
+import de.logrifle.ui.LineLabelDisplayMode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,5 +155,19 @@ public class BookmarksTest {
         bookmarks.clear();
         Assertions.assertEquals(0, bookmarks.count());
         Assertions.assertTrue(removedBookmarks.containsAll(Arrays.asList(new Bookmark(LINES.get(2)), new Bookmark(LINES.get(3)))));
+    }
+
+    @Test
+    void testExport() {
+        Bookmarks bookmarks = new Bookmarks(false, testLogDispatcher);
+        bookmarks.toggle(LINES.get(3));
+        bookmarks.toggle(LINES.get(2));
+        Collection<String> expected = Arrays.asList(
+                LINES.get(2).getRaw(),
+                LINES.get(3).getRaw()
+        );
+        Collection<String> exported = bookmarks.export(LineLabelDisplayMode.NONE);
+        Assertions.assertEquals(expected, exported);
+
     }
 }
