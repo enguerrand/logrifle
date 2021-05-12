@@ -66,6 +66,8 @@ public class CommandAutoCompleter {
                     .filter(c -> c.startsWith(currentCommand))
                     .collect(Collectors.toList());
             return new CompletionResult(matches, matches);
+        } else if (tokens.length == 0){
+            return CompletionResult.NO_MATCHES;
         } else {
             String arguments = currentInput.substring(prefix.length() + tokens[0].length());
             String trimmedArguments = Strings.trimStart(arguments);

@@ -83,6 +83,8 @@ class CommandAutoCompleterTest {
 
     private static Stream<Arguments> getMatchingArgs() {
         return Stream.of(
+                Arguments.of(":", Arrays.asList("foo", "foobar", "foobas", "bar"), Arrays.asList("foo", "foobar", "foobas", "bar"), 7),
+                Arguments.of(": ", Collections.emptyList(), Collections.emptyList(), 2),
                 Arguments.of(":f", Arrays.asList("foo", "foobar", "foobas"), Arrays.asList("foo", "foobar", "foobas"), 7),
                 Arguments.of(":foo", Arrays.asList("foo", "foobar", "foobas"), Arrays.asList("foo", "foobar", "foobas"), 7),
                 Arguments.of(":foob", Arrays.asList("foobar", "foobas"), Arrays.asList("foobar", "foobas"), 7),
@@ -108,6 +110,8 @@ class CommandAutoCompleterTest {
 
     private static Stream<Arguments> getCompleteArguments() {
         return Stream.of(
+                Arguments.of(": ", ": "),
+                Arguments.of(":", ":"),
                 Arguments.of(":f", ":foo"),
                 Arguments.of(":fo", ":foo"),
                 Arguments.of(":foo", ":foo"),
