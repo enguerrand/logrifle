@@ -95,7 +95,7 @@ public class Bookmarks {
         if (toBeRemoved.isEmpty()) {
             return;
         }
-        this.bookmarks.removeAll(toBeRemoved);
+        toBeRemoved.forEach(this.bookmarks::remove);
         fireRemoved(toBeRemoved);
     }
 
