@@ -22,14 +22,17 @@ package de.logrifle.data.parsing;
 
 import de.logrifle.data.views.LineSource;
 
+import java.util.concurrent.TimeUnit;
+
 public abstract class LineParser {
+    public static final long DATE_CHANGE_THRESHOLD_MILLIS = TimeUnit.SECONDS.toMillis(5L);
     private long lastParsedTimestamp = 0L;
     private long dateChangeCount = 0;
 
     public abstract LineParseResult parse(int index, String raw, LineSource source);
 
     protected long updateAndGetDateChangeCount(long parsedTimeStamp) {
-        if (parsedTimeStamp < lastParsedTimestamp) {
+        if (parsedTimeStamp + DATE_CHANGE_THRESHOLD_MILLIS < lastParsedTimestamp) {
             ++dateChangeCount;
         }
         lastParsedTimestamp = parsedTimeStamp;

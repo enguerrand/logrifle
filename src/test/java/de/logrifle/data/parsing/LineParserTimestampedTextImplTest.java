@@ -23,6 +23,7 @@ package de.logrifle.data.parsing;
 import de.logrifle.data.views.LineSourceTestImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -35,6 +36,22 @@ class LineParserTimestampedTextImplTest {
     @BeforeAll
     static void setUp() {
         Locale.setDefault(new Locale("en", "US"));
+    }
+
+
+    @Test
+    void testDateChangeCount() {
+        LineParserTimestampedTextImpl parser = new LineParserTimestampedTextImpl();
+        LineSourceTestImpl source = new LineSourceTestImpl("foo");
+        int index = 0;
+
+        Assertions.assertEquals(0, parser.parse(index++, "21:04:17.394 foobar", source).getParsedLine().getDateChangeCount());
+        Assertions.assertEquals(0, parser.parse(index++, "21:05:17.394 foobar", source).getParsedLine().getDateChangeCount());
+        Assertions.assertEquals(1, parser.parse(index++, "19:05:17.394 foobar", source).getParsedLine().getDateChangeCount());
+        Assertions.assertEquals(1, parser.parse(index++, "19:05:19.394 foobar", source).getParsedLine().getDateChangeCount());
+        Assertions.assertEquals(1, parser.parse(index++, "19:05:19.395 foobar", source).getParsedLine().getDateChangeCount());
+        Assertions.assertEquals(1, parser.parse(index++, "19:05:14.395 foobar", source).getParsedLine().getDateChangeCount()); // up to negative 5 secs should be considered a race condition in the log file
+        Assertions.assertEquals(1, parser.parse(index, "19:05:19.397 foobar", source).getParsedLine().getDateChangeCount());
     }
 
     @ParameterizedTest
@@ -69,6 +86,16 @@ class LineParserTimestampedTextImplTest {
             this.raw = raw;
             this.expectedTimestamp = expectedTimestamp;
             timeStampFormat = new TimeStampFormat(regex, format);
+        }
+    }
+
+    private static class LineAndDateChangeCount {
+        final String raw;
+        final int expectedChangeCount;
+
+        private LineAndDateChangeCount(String raw, int expectedChangeCount) {
+            this.raw = raw;
+            this.expectedChangeCount = expectedChangeCount;
         }
     }
 }
