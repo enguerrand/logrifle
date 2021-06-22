@@ -21,14 +21,16 @@
 package de.logrifle.data.parsing;
 
 public class LineParserProviderStaticImpl implements LineParserProvider {
-    private final LineParser staticParser;
+    private final String timestampRegex;
+    private final String timestampFormat;
 
-    public LineParserProviderStaticImpl(LineParser staticParser) {
-        this.staticParser = staticParser;
+    public LineParserProviderStaticImpl(String timestampRegex, String timestampFormat) {
+        this.timestampRegex = timestampRegex;
+        this.timestampFormat = timestampFormat;
     }
 
     @Override
     public LineParser getParserFor(SampleContentFetcher sampleContentFetcher) {
-        return staticParser;
+        return new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
     }
 }

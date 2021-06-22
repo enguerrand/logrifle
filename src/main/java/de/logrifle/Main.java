@@ -31,12 +31,9 @@ import de.logrifle.data.bookmarks.Bookmarks;
 import de.logrifle.data.highlights.HighlightsData;
 import de.logrifle.data.io.FileOpener;
 import de.logrifle.data.io.MainFileOpenerImpl;
-import de.logrifle.data.parsing.LineParser;
 import de.logrifle.data.parsing.LineParserProvider;
 import de.logrifle.data.parsing.LineParserProviderDynamicImpl;
 import de.logrifle.data.parsing.LineParserProviderStaticImpl;
-import de.logrifle.data.parsing.LineParserTimestampedTextImpl;
-import de.logrifle.data.parsing.TimeStampFormat;
 import de.logrifle.data.parsing.TimeStampFormats;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewMerged;
@@ -217,11 +214,9 @@ public class Main {
         RateLimiterFactory factory = (task, singleThreadedExecutor) ->
                 new RateLimiterImpl(task, singleThreadedExecutor, timerPool, 150);
 
-        LineParser lineParser;
         LineParserProvider lineParserProvider;
         if (timestampRegex != null && timestampFormat != null) {
-            lineParser = new LineParserTimestampedTextImpl(new TimeStampFormat(timestampRegex, timestampFormat));
-            lineParserProvider = new LineParserProviderStaticImpl(lineParser);
+            lineParserProvider = new LineParserProviderStaticImpl(timestampRegex, timestampFormat);
         } else {
             int autoDetectionLineCount = getIntegerOption(defaults, parserResult, "auto_detection_line_count", TimeStampFormats.DEFAULT_AUTO_DETECTION_LINE_COUNT);
             lineParserProvider = new LineParserProviderDynamicImpl(autoDetectionLineCount, new TimeStampFormats());
