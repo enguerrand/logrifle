@@ -22,6 +22,8 @@ package de.logrifle.data.highlights;
 
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.base.Patterns;
+import de.logrifle.data.views.UserInputProcessingFailedException;
 import de.logrifle.ui.HighlightingTextColors;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,16 +41,16 @@ public class Highlight {
     private final @Nullable TextColor bgColor;
     private final List<SGR> styles;
 
-    public Highlight(String regex, @Nullable HighlightingTextColors colors, SGR... styles) {
-        this.pattern = Pattern.compile(regex);
+    public Highlight(String regex, @Nullable HighlightingTextColors colors, SGR... styles) throws UserInputProcessingFailedException {
+        this.pattern = Patterns.compilePatternChecked(regex);
         this.regex = regex;
         this.fgColor = colors == null ? null : colors.getForeground();
         this.bgColor = colors == null ? null : colors.getBackground();
         this.styles = styles != null ? Arrays.asList(styles) : Collections.emptyList();
     }
 
-    public Highlight(String regex, @Nullable TextColor fgColor, @Nullable TextColor bgColor, SGR... styles) {
-        this.pattern = Pattern.compile(regex);
+    public Highlight(String regex, @Nullable TextColor fgColor, @Nullable TextColor bgColor, SGR... styles) throws UserInputProcessingFailedException {
+        this.pattern = Patterns.compilePatternChecked(regex);
         this.regex = regex;
         this.fgColor = fgColor;
         this.bgColor = bgColor;

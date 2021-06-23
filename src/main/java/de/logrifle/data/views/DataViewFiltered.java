@@ -22,6 +22,7 @@ package de.logrifle.data.views;
 
 
 import de.logrifle.base.LogDispatcher;
+import de.logrifle.base.Patterns;
 import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.cmd.ExecutionResult;
 import org.jetbrains.annotations.NotNull;
@@ -49,17 +50,13 @@ public class DataViewFiltered extends DataView {
             boolean inverted,
             LogDispatcher logDispatcher,
             Predicate<Line> forcedLineVisibilityCriterion
-    ) throws ViewCreationFailedException {
+    ) throws UserInputProcessingFailedException {
         super(deriveTitleFromRegex(regex, inverted), parentView.getViewColor(), logDispatcher, parentView.getMaxLineLabelLength());
         this.regex = regex;
         this.parentView = parentView;
         this.inverted = inverted;
         this.forcedLineVisibilityCriterion = forcedLineVisibilityCriterion;
-        try {
-            this.pattern = Pattern.compile(regex);
-        } catch (RuntimeException e) {
-            throw ViewCreationFailedException.from(e);
-        }
+        this.pattern = Patterns.compilePatternChecked(regex);
     }
 
     @NotNull
@@ -98,9 +95,13 @@ public class DataViewFiltered extends DataView {
         if (Objects.equals(this.pattern.pattern(), regex)) {
             return new ExecutionResult(false);
         }
-        this.pattern = Pattern.compile(regex);
-        onFullUpdate(parentView);
-        return new ExecutionResult(true);
+        try {
+            this.pattern = Patterns.compilePatternChecked(regex);
+            onFullUpdate(parentView);
+            return new ExecutionResult(true);
+        } catch (UserInputProcessingFailedException e) {
+            return new ExecutionResult(false, e.getMessage());
+        }
     }
 
     @Override

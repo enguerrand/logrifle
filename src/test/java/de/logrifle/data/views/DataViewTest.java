@@ -46,7 +46,7 @@ class DataViewTest {
     private final LogDispatcher dispatcher = new DirectDispatcher();
 
     @Test
-    void mergedLinesShouldBeSorted() throws InterruptedException, ViewCreationFailedException {
+    void mergedLinesShouldBeSorted() throws InterruptedException, UserInputProcessingFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 6;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -83,7 +83,7 @@ class DataViewTest {
     }
 
     @Test
-    void mergedLinesShouldMaintainOrderFromSources() throws InterruptedException, ViewCreationFailedException {
+    void mergedLinesShouldMaintainOrderFromSources() throws InterruptedException, UserInputProcessingFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 6;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -120,7 +120,7 @@ class DataViewTest {
     }
 
     @Test
-    void invisibleLinesShouldNotBeReturned() throws ViewCreationFailedException {
+    void invisibleLinesShouldNotBeReturned() throws UserInputProcessingFailedException {
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 2;
         int expectedJobCount = jobCountMergedViewInstantiation + jobCountLineAddition;
@@ -156,7 +156,7 @@ class DataViewTest {
     }
 
     @Test
-    void testForcedBookmarksDisplay() throws ViewCreationFailedException {
+    void testForcedBookmarksDisplay() throws UserInputProcessingFailedException {
         AtomicBoolean forceDisplay = new AtomicBoolean(true);
         int jobCountMergedViewInstantiation = 1;
         int jobCountLineAddition = 2;

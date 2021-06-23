@@ -35,7 +35,7 @@ import de.logrifle.data.parsing.Line;
 import de.logrifle.data.parsing.Lines;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
-import de.logrifle.data.views.ViewCreationFailedException;
+import de.logrifle.data.views.UserInputProcessingFailedException;
 import de.logrifle.data.views.ViewsTree;
 import de.logrifle.data.views.ViewsTreeNode;
 import de.logrifle.ui.cmd.CommandHandler;
@@ -195,7 +195,12 @@ public class MainController {
             this.queryHistory.remove(query);
             this.queryHistory.add(query);
         }
-        Pattern p = Pattern.compile(query.getSearchTerm());
+        Pattern p;
+        try {
+            p = Patterns.compilePatternChecked(query.getSearchTerm());
+        } catch (UserInputProcessingFailedException e) {
+            return new ExecutionResult(false, e.getMessage());
+        }
         LogView logView = this.mainWindow.getLogView();
         int focusedLineIndex = logView.getFocusedLineIndexInView();
         DataView dataView = this.mainWindow.getDataView();
@@ -267,17 +272,20 @@ public class MainController {
             } catch (ExecutionException e) {
                 return new ExecutionResult(false, e.getCause().toString());
             }
-        } catch (ViewCreationFailedException e) {
+        } catch (UserInputProcessingFailedException e) {
             return new ExecutionResult(false, "Cannot create filter: " + e.getMessage());
         }
     }
 
     public ExecutionResult addHighlight(String args, boolean caseInsensitive, @Nullable HighlightingTextColors colors) {
-        String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
-        Highlight highlight = new Highlight(regex, colors != null ? colors : highlightsIterator.next());
-        this.highlightsData.addHighlight(highlight);
-        return new ExecutionResult(true);
-
+        try {
+            String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
+            Highlight highlight = new Highlight(regex, colors != null ? colors : highlightsIterator.next());
+            this.highlightsData.addHighlight(highlight);
+            return new ExecutionResult(true);
+        } catch (UserInputProcessingFailedException e) {
+            return new ExecutionResult(false, e.getMessage());
+        }
     }
 
     public ExecutionResult deleteHighlight(String args) {

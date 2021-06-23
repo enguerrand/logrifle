@@ -21,6 +21,8 @@
 package de.logrifle.data.highlights;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.UserInputProcessingFailedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -28,7 +30,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HighlightTest {
-    private final Highlight highlightRed = new Highlight("foobar", TextColor.ANSI.RED, null);
+    private Highlight highlightRed;
+
+    @BeforeEach
+    void setUp() throws UserInputProcessingFailedException {
+        highlightRed = new Highlight("foobar", TextColor.ANSI.RED, null);
+    }
 
     @Test
     void noMatch() {

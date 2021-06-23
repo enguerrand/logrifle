@@ -20,6 +20,7 @@
 
 package de.logrifle.data.highlights;
 
+import de.logrifle.data.views.UserInputProcessingFailedException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -29,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MatchedSectionTest {
 
     @Test
-    void removePartsMatchedByAtEnd() {
+    void removePartsMatchedByAtEnd() throws UserInputProcessingFailedException {
         Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 16);
         MatchedSection chopped = a.removePartsMatchedBy(new MatchedSection(foo, 14, 18));
@@ -38,7 +39,7 @@ class MatchedSectionTest {
     }
 
     @Test
-    void removePartsMatchedByAtStart() {
+    void removePartsMatchedByAtStart() throws UserInputProcessingFailedException {
         Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 16);
         MatchedSection chopped = a.removePartsMatchedBy(new MatchedSection(foo, 4, 14));
@@ -47,7 +48,7 @@ class MatchedSectionTest {
     }
 
     @Test
-    void split() {
+    void split() throws UserInputProcessingFailedException {
         Highlight foo = new Highlight("foo", null);
         MatchedSection a = new MatchedSection(foo, 12, 18);
         List<MatchedSection> split = a.splitBy(new MatchedSection(foo, 14, 16));

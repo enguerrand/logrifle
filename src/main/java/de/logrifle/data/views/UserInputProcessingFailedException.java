@@ -22,12 +22,12 @@ package de.logrifle.data.views;
 
 import java.util.regex.PatternSyntaxException;
 
-public class ViewCreationFailedException extends Exception {
-    public ViewCreationFailedException(String message) {
+public class UserInputProcessingFailedException extends Exception {
+    public UserInputProcessingFailedException(String message) {
         super(message);
     }
 
-    public static ViewCreationFailedException from(Exception cause) {
+    public static UserInputProcessingFailedException from(Exception cause) {
         String message;
         if (cause instanceof PatternSyntaxException) {
             PatternSyntaxException syntaxException = (PatternSyntaxException) cause;
@@ -39,9 +39,6 @@ public class ViewCreationFailedException extends Exception {
         } else {
             message = cause.getClass().getSimpleName();
         }
-        return new ViewCreationFailedException(
-                message
-        );
+        return new UserInputProcessingFailedException(message);
     }
-
 }

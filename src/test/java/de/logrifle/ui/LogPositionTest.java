@@ -26,7 +26,7 @@ import de.logrifle.data.parsing.TestLinesFactory;
 import de.logrifle.data.views.DataView;
 import de.logrifle.data.views.DataViewFiltered;
 import de.logrifle.data.views.TestDataView;
-import de.logrifle.data.views.ViewCreationFailedException;
+import de.logrifle.data.views.UserInputProcessingFailedException;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,7 +90,7 @@ class LogPositionTest {
             "1,1,filtered,full,4,1",
             "2,0,filtered,full,5,0",
     })
-    void transferIfNeeded(int currentTopIndex, int currentFocusOffset, String fromView, String toView, int expectedTopIndex, int expectedFocusOffset) throws ViewCreationFailedException {
+    void transferIfNeeded(int currentTopIndex, int currentFocusOffset, String fromView, String toView, int expectedTopIndex, int expectedFocusOffset) throws UserInputProcessingFailedException {
         LogDispatcher dispatcher = new DirectDispatcher();
         DataView full = new TestDataView(dispatcher, "foobar", TestLinesFactory.buildTestLines());
         DataView filtered = new DataViewFiltered("line content [3-5]", full, false, dispatcher, l -> false);

@@ -20,6 +20,10 @@
 
 package de.logrifle.base;
 
+import de.logrifle.data.views.UserInputProcessingFailedException;
+
+import java.util.regex.Pattern;
+
 public class Patterns {
     private static final String CASE_INSENSITIVE_PREFIX = "(?i)";
     private Patterns() {
@@ -27,5 +31,12 @@ public class Patterns {
     }
     public static String makeCaseInsensitive(String regex) {
         return CASE_INSENSITIVE_PREFIX + regex;
+    }
+    public static Pattern compilePatternChecked(String regex) throws UserInputProcessingFailedException {
+        try {
+            return Pattern.compile(regex);
+        } catch (RuntimeException e) {
+            throw UserInputProcessingFailedException.from(e);
+        }
     }
 }

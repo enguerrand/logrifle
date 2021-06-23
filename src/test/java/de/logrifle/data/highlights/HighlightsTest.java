@@ -21,6 +21,7 @@
 package de.logrifle.data.highlights;
 
 import com.googlecode.lanterna.TextColor;
+import de.logrifle.data.views.UserInputProcessingFailedException;
 import de.logrifle.ui.ColoredString;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HighlightsTest {
 
     @Test
-    void applyHighlights() {
+    void applyHighlights() throws UserInputProcessingFailedException {
         Highlight highlightRed = new Highlight("red part", TextColor.ANSI.RED, null);
         Highlight highlightBlue = new Highlight("blue part", TextColor.ANSI.BLUE, null);
         Highlight highlightGreen = new Highlight(" part is", TextColor.ANSI.GREEN, null);
