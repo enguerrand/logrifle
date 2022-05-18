@@ -57,7 +57,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -314,7 +313,7 @@ public class Main {
     @NotNull
     private static Properties loadDefaults() {
         Properties defaults = new Properties();
-        try (InputStream input = new FileInputStream(DEFAULTS_FILE)) {
+        try (InputStream input = Files.newInputStream(Paths.get(DEFAULTS_FILE))) {
             defaults.load(input);
         } catch (IOException ignored) {
         }

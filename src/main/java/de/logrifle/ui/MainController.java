@@ -596,7 +596,7 @@ public class MainController {
         try {
             Collection<DataView> logfiles = logFileOpener.open(path);
             if (logfiles.isEmpty()) {
-                return new ExecutionResult(false, "No logfiles could be found unter " + path.toString());
+                return new ExecutionResult(false, "No logfiles could be found unter " + path);
             }
             return ExecutionResult.merged((logfiles.stream()
                     .map(viewsTree::addView)
@@ -626,7 +626,7 @@ public class MainController {
                 Thread.currentThread().interrupt();
                 return new ExecutionResult(false, "Interrupted while " + descriptionInPresentParticiple + "!");
             } catch (ExecutionException e) {
-                return new ExecutionResult(false, "Error while " + descriptionInPresentParticiple + ": "+e.toString());
+                return new ExecutionResult(false, "Error while " + descriptionInPresentParticiple + ": "+e);
             }
         } else {
             f.thenRunAsync(mainWindow::updateView, UI::runLater);
