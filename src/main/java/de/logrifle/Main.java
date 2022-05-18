@@ -60,6 +60,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -166,6 +167,10 @@ public class Main {
             parser.printUsage();
             return;
         }
+        String directories = logfiles.stream().filter(Files::isDirectory).map(Path::toString).collect(Collectors.joining(", "));
+        if (!directories.isEmpty()) {
+            errorOut("Cannot open directories as files: "+ directories);
+        }
         String commandsFile = getOption(defaults, parserResult, "commands_file");
         List<String> commands = new ArrayList<>();
         if (commandsFile != null) {
@@ -241,7 +246,7 @@ public class Main {
                                     logReaders.remove(openedView))
                     );
                 }
-            } catch (IOException e) {
+            } catch (IOException | UncheckedIOException e) {
                 errorOut("Logfile "+ logfile.toString() + " could not be opened. Cause: " + e);
             }
         }

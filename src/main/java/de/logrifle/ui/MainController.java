@@ -49,6 +49,7 @@ import de.logrifle.ui.completion.IndexArgumentsCompleter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -600,8 +601,8 @@ public class MainController {
             return ExecutionResult.merged((logfiles.stream()
                     .map(viewsTree::addView)
                     .collect(Collectors.toList())));
-        } catch (IOException e) {
-            return new ExecutionResult(false, "Could not open file: " + e.toString());
+        } catch (IOException | UncheckedIOException e) {
+            return new ExecutionResult(false, "Could not open file: " + e);
         }
     }
 

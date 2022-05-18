@@ -29,6 +29,7 @@ import de.logrifle.data.views.DataView;
 import de.logrifle.ui.RingIterator;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +62,7 @@ class PlainFileOpenerImpl extends FileOpener {
                         .limit(desiredLinesCount)
                         .collect(Collectors.toList())
                 ;
-            } catch (IOException e) {
+            } catch (IOException | UncheckedIOException e) {
                 return Collections.emptyList();
             }
         });
