@@ -6,7 +6,7 @@
 
     <groupId>de.logrifle</groupId>
     <artifactId>logrifle</artifactId>
-    <version>1.5.0</version>
+    <version>1.5.1</version>
     <properties>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
