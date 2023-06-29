@@ -279,6 +279,9 @@ public class MainController {
     }
 
     public ExecutionResult addHighlight(String args, boolean caseInsensitive, @Nullable HighlightingTextColors colors) {
+        if (args.isEmpty()) {
+            return new ExecutionResult(false, "Missing argument: highlight regex");
+        }
         try {
             String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
             Highlight highlight = new Highlight(regex, colors != null ? colors : highlightsIterator.next());
