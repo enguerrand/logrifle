@@ -195,6 +195,8 @@ public class Main {
         @Nullable String timestampFormat = getOption(defaults, parserResult, "timestamp_format");
         if (timestampFormat == null && timestampRegex != null || timestampFormat != null && timestampRegex == null) {
             errorOut("if either timestamp_regex or timestamp_format are supplied, both of these options must be specified.");
+        } else if (timestampsMillisFormat && timestampsSecondsFormat) {
+            errorOut("The options --seconds and --milliseconds are mutually exclusive.");
         } else if (timestampFormat == null) {
             if (timestampsMillisFormat) {
                 timestampRegex = TimeStampFormats.MILLIS_TIME_MATCH_REGEX;
