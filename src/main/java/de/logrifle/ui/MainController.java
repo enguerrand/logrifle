@@ -319,8 +319,15 @@ public class MainController {
             // Due to the previous check this should never happen
             return executionResult;
         }
-        // TODO: Would be nice to keep old styles here...
-        return prepareCommand(":highlight " + highlight.getRegex());
+        TextColor prevColor = highlight.getBgColor();
+        String colorSuffix = "";
+        for (TextColor.ANSI value : TextColor.ANSI.values()) {
+            if (value == prevColor) {
+                colorSuffix = "-" + value.name().toLowerCase();
+                break;
+            }
+        }
+        return prepareCommand(":highlight" + colorSuffix + " " + highlight.getRegex());
     }
 
     public ExecutionResult deleteFilter() {
