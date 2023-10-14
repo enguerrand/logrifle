@@ -157,6 +157,24 @@ public class CommandHandler {
             }
         });
 
+        register(new Command("filter-highlight", "fh", "Adds a filter that displays lines that match the regex provided as the first argument and highlights the matching text.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                ExecutionResult filterResult = mainController.addFilter(args, false, false, blocking);
+                ExecutionResult highlightResult = mainController.addHighlight(args, false, null);
+                return ExecutionResult.merged(filterResult, highlightResult);
+            }
+        });
+
+        register(new Command("ifilter-highlight", "ifh", "Adds a filter that displays lines that case-insensitively match the regex provided as the first argument and highlights the matching text.") {
+            @Override
+            protected ExecutionResult execute(String args, boolean blocking) {
+                ExecutionResult filterResult = mainController.addFilter(args, false, true, blocking);
+                ExecutionResult highlightResult = mainController.addHighlight(args, true, null);
+                return ExecutionResult.merged(filterResult, highlightResult);
+            }
+        });
+
         register(new Command("edit-filter", "ef", "Edits the currently focused filter.") {
             @Override
             protected ExecutionResult execute(String args, boolean blocking) {
