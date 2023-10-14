@@ -148,6 +148,7 @@ class LogReaderTest {
         Assertions.assertEquals(2, logReader.getLines(3, 2).size(), "at bounds index");
         Assertions.assertEquals(3, logReader.getLines(2, 3).size(), "at bounds index");
         Assertions.assertEquals(2, logReader.getLines(2, 2).size(), "in bounds index");
+        Assertions.assertEquals(lineCount, logReader.getLines(0, 8).size(), "too large range result size");
     }
 
     @Test
