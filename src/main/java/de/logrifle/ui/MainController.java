@@ -279,6 +279,9 @@ public class MainController {
     }
 
     public ExecutionResult addHighlight(String args, boolean caseInsensitive, @Nullable HighlightingTextColors colors) {
+        if (args.isEmpty()) {
+            return new ExecutionResult(false, "Missing argument: highlight regex");
+        }
         try {
             String regex = caseInsensitive ? Patterns.makeCaseInsensitive(args) : args;
             Highlight highlight = new Highlight(regex, colors != null ? colors : highlightsIterator.next());
@@ -316,8 +319,15 @@ public class MainController {
             // Due to the previous check this should never happen
             return executionResult;
         }
-        // TODO: Would be nice to keep old styles here...
-        return prepareCommand(":highlight " + highlight.getRegex());
+        TextColor prevColor = highlight.getBgColor();
+        String colorSuffix = "";
+        for (TextColor.ANSI value : TextColor.ANSI.values()) {
+            if (value == prevColor) {
+                colorSuffix = "-" + value.name().toLowerCase();
+                break;
+            }
+        }
+        return prepareCommand(":highlight" + colorSuffix + " " + highlight.getRegex());
     }
 
     public ExecutionResult deleteFilter() {

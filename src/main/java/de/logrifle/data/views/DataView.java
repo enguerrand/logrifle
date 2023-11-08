@@ -26,12 +26,7 @@ import de.logrifle.data.parsing.Line;
 import de.logrifle.ui.UI;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -94,12 +89,18 @@ public abstract class DataView implements DataViewListener, LineSource {
         if (snapshot == null || snapshot.isEmpty() || topIndex >= snapshot.size() || topIndex < 0) {
             return Collections.emptyList();
         }
-        if (maxCount == null || snapshot.size() <= topIndex + maxCount) {
-            return snapshot.subList(topIndex, snapshot.size());
+        Line[] snapshotArray = snapshot.toArray(new Line[0]);
+        int resultSize;
+        if (maxCount == null || snapshotArray.length <= topIndex + maxCount) {
+            resultSize = snapshotArray.length - topIndex;
         } else {
-            return snapshot.subList(topIndex, topIndex + maxCount);
+            resultSize = topIndex + maxCount - topIndex;
         }
+        Line[] sliced = new Line[resultSize];
+        System.arraycopy(snapshotArray, topIndex, sliced, 0, resultSize);
+        return Arrays.asList(sliced);
     }
+
     public void addListener(DataViewListener listener) {
         logDispatcher.checkOnDispatchThreadOrThrow();
         this.listeners.add(listener);

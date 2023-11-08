@@ -70,7 +70,7 @@
                         <id>enforce</id>
                         <configuration>
                             <rules>
-                                <dependencyConvergence/>
+                                <RequireUpperBoundDeps/>
                             </rules>
                         </configuration>
                         <goals>

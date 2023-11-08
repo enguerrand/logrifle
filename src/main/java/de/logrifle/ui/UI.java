@@ -42,9 +42,13 @@ public class UI {
         if (TEST_MODE) {
             return;
         }
-        if (THREAD == null || !Objects.equals(Thread.currentThread(), THREAD.getThread())) {
+        if (!isGuiThread()) {
             throw new IllegalStateException("This method must be called on the gui thread!");
         }
+    }
+
+    public static boolean isGuiThread() {
+        return THREAD != null && Objects.equals(Thread.currentThread(), THREAD.getThread());
     }
 
     public static CompletableFuture<Void> awaitInitialized() {
