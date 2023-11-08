@@ -11,9 +11,6 @@ fi
 cd "$(dirname "${0}")"
 
 cd repo
-for deb in ./*.deb; do
-    dpkg-sig -g "--pinentry-mode loopback" ${keyopt_dpkg} --sign builder "${deb}"
-done
 apt-ftparchive packages . > Packages
 
 cd ..
