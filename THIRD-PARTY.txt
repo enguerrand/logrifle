@@ -1,7 +1,5 @@
 
-Lists of 14 third-party dependencies.
-     (Eclipse Public License - v 1.0) (GNU Lesser General Public License) Logback Classic Module (ch.qos.logback:logback-classic:1.2.3 - http://logback.qos.ch/logback-classic)
-     (Eclipse Public License - v 1.0) (GNU Lesser General Public License) Logback Core Module (ch.qos.logback:logback-core:1.2.3 - http://logback.qos.ch/logback-core)
+Lists of 11 third-party dependencies.
      (GNU Lesser General Public License) Lanterna (com.googlecode.lanterna:lanterna:3.0.1 - https://github.com/mabe02/lanterna)
      (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.7 - https://commons.apache.org/proper/commons-io/)
      (MIT) argparse4j (net.sourceforge.argparse4j:argparse4j:0.8.1 - http://argparse4j.github.io)
@@ -13,4 +11,3 @@ Lists of 14 third-party dependencies.
      (Eclipse Public License v2.0) JUnit Platform Commons (org.junit.platform:junit-platform-commons:1.5.2 - https://junit.org/junit5/)
      (Eclipse Public License v2.0) JUnit Platform Engine API (org.junit.platform:junit-platform-engine:1.5.2 - https://junit.org/junit5/)
      (The Apache License, Version 2.0) org.opentest4j:opentest4j (org.opentest4j:opentest4j:1.2.0 - https://github.com/ota4j-team/opentest4j)
-     (MIT License) SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org)
