@@ -51,7 +51,10 @@ public class TestLogWriter {
     }
 
     public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed, @Nullable String outfileName, boolean exceptionsAllowed) throws IOException {
-        logger = new LogbackMock(outfileName != null ? outfileName : "out"+System.getProperty("file.separator")+"log.log");
+        Path outDir = Paths.get("out");
+        Files.createDirectories(outDir);
+        String logfileNameNotNull = outfileName != null ? outfileName : "log.log";
+        logger = new LogbackMock(outDir.resolve(logfileNameNotNull));
         executorService = Executors.newScheduledThreadPool(1);
         rTime = new Random(timingSeed != null ? timingSeed : System.currentTimeMillis());
         rContent = new Random(contentSeed != null ? contentSeed : System.currentTimeMillis());
@@ -157,8 +160,8 @@ public class TestLogWriter {
         private final DateTimeFormatter dateTimeFormatter;
 
 
-        LogbackMock(String logfileName) throws IOException {
-            out = new PrintStream(logfileName);
+        LogbackMock(Path logfileName) throws IOException {
+            out = new PrintStream(logfileName.toFile());
             dateTimeFormatter = DateTimeFormatter.ofPattern(TimeStampFormats.MILLIS_DATE_FORMAT)
                     .withZone(ZoneId.systemDefault());
         }
