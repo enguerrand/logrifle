@@ -20,16 +20,16 @@
 
 package de.logrifle.data.io;
 
+import de.logrifle.data.parsing.TimeStampFormats;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -38,9 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class TestLogWriter {
-    public final Logger logger;
-    public final Marker marker;
-
+    public final LogbackMock logger;
     private final ScheduledExecutorService executorService;
     private final Random rTime;
     private final Random rContent;
@@ -53,9 +51,7 @@ public class TestLogWriter {
     }
 
     public TestLogWriter(@Nullable Long timingSeed, @Nullable Long contentSeed, @Nullable String outfileName, boolean exceptionsAllowed) throws IOException {
-        System.setProperty("logfile.name", outfileName != null ? outfileName : "log.log");
-        logger = LoggerFactory.getLogger(TestLogWriter.class);
-        marker = MarkerFactory.getMarker("TEST");
+        logger = new LogbackMock(outfileName != null ? outfileName : "out"+System.getProperty("file.separator")+"log.log");
         executorService = Executors.newScheduledThreadPool(1);
         rTime = new Random(timingSeed != null ? timingSeed : System.currentTimeMillis());
         rContent = new Random(contentSeed != null ? contentSeed : System.currentTimeMillis());
@@ -93,18 +89,22 @@ public class TestLogWriter {
         }
         long delayMs = rTime.nextLong() % maxDelayMs;
         executorService.schedule(() -> {
-            writeRandomLogLine();
-            scheduleNext(maxDelayMs, maxLineCount - 1, f);
+            try {
+                writeRandomLogLine();
+                scheduleNext(maxDelayMs, maxLineCount - 1, f);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }, delayMs, TimeUnit.MILLISECONDS);
     }
 
-    void writeRandomLines(int count) {
+    void writeRandomLines(int count) throws IOException {
         for (int i = 0; i < count; i++) {
             writeRandomLogLine();
         }
     }
 
-    void writeRandomLogLine() {
+    void writeRandomLogLine() throws IOException {
         int wordCount = rContent.nextInt(20);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < wordCount; i++) {
@@ -118,18 +118,18 @@ public class TestLogWriter {
         if (debugLevel < 2 && exceptionsAllowed) {
             writeException(message, "Oops, something went wrong!");
         } else if (debugLevel < 12) {
-            logger.error(marker, message);
+            logger.error(message);
         } else if (debugLevel < 20) {
-            logger.warn(marker, message);
+            logger.warn(message);
         } else if (debugLevel < 40) {
-            logger.info(marker, message);
+            logger.info(message);
         } else {
-            logger.debug(marker, message);
+            logger.debug(message);
         }
     }
 
     void writeException(String message, String exceptionMessage) {
-        logger.error(marker, message, new RuntimeException(exceptionMessage));
+        logger.error(message, new RuntimeException(exceptionMessage));
     }
 
     private String nextRandomWord(){
@@ -148,6 +148,52 @@ public class TestLogWriter {
             logfileName = args[0];
         }
         TestLogWriter testLogWriter = new TestLogWriter(null, null, logfileName);
-        testLogWriter.start(1, null);
+        testLogWriter.start(1, 100);
+    }
+
+    private static class LogbackMock {
+
+        private final PrintStream out;
+        private final DateTimeFormatter dateTimeFormatter;
+
+
+        LogbackMock(String logfileName) throws IOException {
+            out = new PrintStream(logfileName);
+            dateTimeFormatter = DateTimeFormatter.ofPattern(TimeStampFormats.MILLIS_DATE_FORMAT)
+                    .withZone(ZoneId.systemDefault());
+        }
+
+        private void msg(String level, String message) {
+            String timestamp = dateTimeFormatter.format(Instant.now());
+            String threadName = Thread.currentThread().getName();
+            out.println(timestamp + " [" + threadName + "] " + level + " de.rochefort.logrifle.TestLogWriter - " + message);
+            out.flush();
+        }
+
+        public void info(String message) {
+            msg("INFO ", message);
+        }
+
+        public void debug(String message) {
+            msg("DEBUG", message);
+        }
+
+        public void warn(String message) {
+            msg("WARN ", message);
+        }
+
+        public void error(String message) {
+            msg("ERROR", message);
+        }
+
+        public void error(String message, Exception exception) {
+            msg("ERROR", message);
+            exception.printStackTrace(out);
+            out.flush();
+        }
+
+        public void close() {
+            out.close();
+        }
     }
 }
