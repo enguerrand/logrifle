@@ -3,6 +3,8 @@ set -e
 function print_usage(){
     cat << EOF
 Usage: $(basename $0)
+
+Note that this scripts that the .deb file was already created!
 EOF
 }
 function abort(){
